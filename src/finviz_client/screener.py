@@ -175,7 +175,7 @@ class FinvizScreener(FinvizClient):
         引け後決算発表で時間外取引上昇銘柄のスクリーニング（固定条件）
         
         固定フィルタ条件（変更不可）：
-        f=ah_change_u2,cap_smallover,earningsdate_todayafter,sh_avgvol_o100,sh_price_o10&ft=4&o=-afterchange&ar=60
+        f=ah_change_u2,cap_smallover,earningsdate_todayafter,sh_avgvol_o100,sh_price_o30&ft=4&o=-afterchange&ar=60
         
         Returns:
             StockData オブジェクトのリスト
@@ -613,17 +613,17 @@ class FinvizScreener(FinvizClient):
         """
         決算トレードフィルタを構築（固定条件）
         
-        固定フィルタ: f=cap_smallover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,sh_avgvol_o200,sh_price_o10,ta_change_u,ta_perf_0to-4w,ta_volatility_1tox&ft=4&o=-epssurprise&ar=60
+        固定フィルタ: f=cap_midover,earningsdate_yesterdayafter|todaybefore,fa_epsrev_ep,fa_netmargin_3to,sh_avgvol_o200,sh_price_o30,ta_change_u,ta_perf_0to-4w&ft=4&o=-epssurprise&ar=60
         
         固定条件：
-        - 時価総額：スモール以上 (cap_smallover)
+        - 時価総額：ミッド以上 (cap_midover)
         - 決算発表：昨日の引け後または今日の寄り付き前 (earningsdate_yesterdayafter|todaybefore)
         - EPS予想：上方修正 (fa_epsrev_ep)
+        - ネットマージン：3%以上 (fa_netmargin_3to)
         - 平均出来高：200K以上 (sh_avgvol_o200)
-        - 株価：10以上 (sh_price_o10)
+        - 株価：$30以上 (sh_price_o30)
         - 価格変動：上昇 (ta_change_u)
         - 4週パフォーマンス：0%から下落（下落後回復候補） (ta_perf_0to-4w)
-        - ボラティリティ：1倍以上 (ta_volatility_1tox)
         - 株式のみ (ft=4)
         - EPSサプライズ降順ソート (o=-epssurprise)
         - 最大結果件数：60件 (ar=60)
@@ -633,26 +633,26 @@ class FinvizScreener(FinvizClient):
             # 決算発表期間：昨日の引け後または今日の寄り付き前
             'earnings_recent': True,
             
-            # 時価総額：スモール以上
-            'market_cap': 'smallover',
+            # 時価総額：ミッド以上
+            'market_cap': 'midover',
             
             # EPS予想：上方修正
             'earnings_revision_positive': True,
             
+            # ネットマージン：3%以上
+            'net_margin_min': 3.0,
+            
             # 平均出来高：200K以上
             'avg_volume_min': 200000,
             
-            # 株価：10以上
-            'price_min': 10.0,
+            # 株価：$30以上
+            'price_min': 30.0,
             
             # 価格変動：上昇
             'price_change_positive': True,
             
             # 4週パフォーマンス：0%から下落（下落後回復候補）
             'performance_4w_range': '0_to_negative_4w',
-            
-            # ボラティリティ：1倍以上
-            'volatility_min': 1.0,
             
             # 株式のみ
             'stocks_only': True,
