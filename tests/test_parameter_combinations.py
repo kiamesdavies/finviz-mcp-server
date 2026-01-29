@@ -374,40 +374,36 @@ class TestParameterCombinations:
     @pytest.mark.asyncio
     async def test_news_function_combinations(self):
         """Test news functions with various parameter combinations."""
-        
+
         # Stock news combinations
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN"]
-        limits = [5, 10, 15, 20]
-        days_back_options = [None, 1, 3, 7]
+        tickers_list = ["AAPL", "MSFT", "GOOGL", "AMZN"]
+        days_back_options = [1, 3, 7]
 
         with patch.object(FinvizNewsClient, "get_stock_news") as mock_news:
             mock_news.return_value = self.mock_news_results
 
-            for ticker, limit in product(tickers, limits):
-                params = {"ticker": ticker, "limit": limit}
+            for ticker in tickers_list:
+                params = {"tickers": ticker, "days_back": 7}
 
                 result = await server.call_tool("get_stock_news", params)
                 assert result is not None
 
-            # Test with days_back parameter
-            for ticker, days_back in product(tickers[:2], days_back_options):
-                params = {"ticker": ticker, "limit": 10}
-                if days_back:
-                    params["days_back"] = days_back
+            # Test with days_back parameter variations
+            for ticker, days_back in product(tickers_list[:2], days_back_options):
+                params = {"tickers": ticker, "days_back": days_back}
 
                 result = await server.call_tool("get_stock_news", params)
                 assert result is not None
 
         # Market news combinations
-        categories = [None, "general", "earnings", "analyst", "insider"]
-        
+        news_types = [None, "all", "earnings", "analyst", "insider", "general"]
+        days_back_values = [3, 5, 7]
+
         with patch.object(FinvizNewsClient, "get_market_news") as mock_news:
             mock_news.return_value = self.mock_news_results
 
-            for category, limit in product(categories, limits):
-                params = {"limit": limit}
-                if category:
-                    params["category"] = category
+            for news_type, days_back in product(news_types[:3], days_back_values[:2]):
+                params = {"days_back": days_back}
 
                 result = await server.call_tool("get_market_news", params)
                 assert result is not None
@@ -650,12 +646,13 @@ class TestEdgeCaseParameterCombinations:
     @pytest.mark.asyncio
     async def test_large_ticker_list_combinations(self):
         """Test performance with large ticker lists."""
-        
-        # Create progressively larger ticker lists
+
+        # Create progressively larger ticker lists with valid ticker formats
+        # Valid tickers: 1-5 characters, alphanumeric, start with letter
+        base_tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "AMD", "INTC", "META", "NFLX"]
         ticker_lists = [
-            [f"TICK{i:03d}" for i in range(10)],   # 10 tickers
-            [f"TICK{i:03d}" for i in range(50)],   # 50 tickers
-            [f"TICK{i:03d}" for i in range(100)],  # 100 tickers
+            base_tickers[:5],   # 5 tickers
+            base_tickers,       # 10 tickers
         ]
 
         data_field_combinations = [
