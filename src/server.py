@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 from mcp.server.fastmcp import FastMCP
 from mcp.types import TextContent
 
-from .utils.validators import validate_ticker, validate_tickers, parse_tickers, validate_market_cap, validate_earnings_date, validate_price_range, validate_sector, validate_volume, validate_screening_params, validate_data_fields, validate_subtheme
+from .utils.validators import validate_ticker, validate_tickers, parse_tickers, validate_market_cap, validate_earnings_date, validate_price_range, validate_sector, validate_volume, validate_screening_params, validate_data_fields, validate_data_fields_with_suggestions, validate_subtheme
 from .utils.formatters import format_large_number
 from .finviz_client.base import FinvizClient
 from .finviz_client.screener import FinvizScreener
@@ -242,18 +242,33 @@ def get_stock_fundamentals(
     Args:
         ticker: Stock ticker symbol
         data_fields: Data fields to retrieve (all fields if not specified)
+
+    Common fields (lowercase snake_case - these are just examples):
+        Basic: price, volume, market_cap, company, sector, industry
+        Valuation: p_e, forward_p_e, p_b, p_s, peg, dividend_yield
+        Performance: performance_week, performance_month, performance_year
+        Technical: relative_strength_index_14, beta, relative_volume
+
+    Use list_available_fields() to see all 128 available fields.
     """
     try:
         # Validate ticker
         if not validate_ticker(ticker):
             raise ValueError(f"Invalid ticker: {ticker}")
-        
-        # Validate data fields
+
+        # Validate data fields with suggestions
         if data_fields:
-            field_errors = validate_data_fields(data_fields)
-            if field_errors:
-                raise ValueError(f"Invalid data fields: {', '.join(field_errors)}")
-        
+            invalid_fields, suggestions = validate_data_fields_with_suggestions(data_fields)
+            if invalid_fields:
+                error_lines = ["Invalid data fields:"]
+                for field in invalid_fields:
+                    if field in suggestions and suggestions[field]:
+                        error_lines.append(f"  - '{field}' -> Did you mean: {', '.join(suggestions[field])}?")
+                    else:
+                        error_lines.append(f"  - '{field}' (no similar fields found)")
+                error_lines.append("Use list_available_fields() to see all valid field names.")
+                raise ValueError("\n".join(error_lines))
+
         # Get fundamental data
         fundamental_data = finviz_client.get_stock_fundamentals(ticker, data_fields)
         
@@ -432,6 +447,14 @@ def get_multiple_stocks_fundamentals(
     Args:
         tickers: List of stock ticker symbols
         data_fields: Data fields to retrieve (all fields if not specified)
+
+    Common fields (lowercase snake_case - these are just examples):
+        Basic: price, volume, market_cap, company, sector, industry
+        Valuation: p_e, forward_p_e, p_b, p_s, peg, dividend_yield
+        Performance: performance_week, performance_month, performance_year
+        Technical: relative_strength_index_14, beta, relative_volume
+
+    Use list_available_fields() to see all 128 available fields.
     """
     try:
         if not tickers:
@@ -441,13 +464,20 @@ def get_multiple_stocks_fundamentals(
         invalid_tickers = [ticker for ticker in tickers if not validate_ticker(ticker)]
         if invalid_tickers:
             raise ValueError(f"Invalid tickers: {', '.join(invalid_tickers)}")
-        
-        # Validate data fields
+
+        # Validate data fields with suggestions
         if data_fields:
-            field_errors = validate_data_fields(data_fields)
-            if field_errors:
-                raise ValueError(f"Invalid data fields: {', '.join(field_errors)}")
-        
+            invalid_fields, suggestions = validate_data_fields_with_suggestions(data_fields)
+            if invalid_fields:
+                error_lines = ["Invalid data fields:"]
+                for field in invalid_fields:
+                    if field in suggestions and suggestions[field]:
+                        error_lines.append(f"  - '{field}' -> Did you mean: {', '.join(suggestions[field])}?")
+                    else:
+                        error_lines.append(f"  - '{field}' (no similar fields found)")
+                error_lines.append("Use list_available_fields() to see all valid field names.")
+                raise ValueError("\n".join(error_lines))
+
         results = finviz_client.get_multiple_stocks_fundamentals(tickers, data_fields)
         
         if not results:

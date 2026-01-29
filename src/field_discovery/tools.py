@@ -119,16 +119,14 @@ def list_available_fields() -> List[TextContent]:
     
     for category_name, sample_fields in categories.items():
         output_lines.append(f"{category_name}:")
-        # Show sample fields that exist in the mapping
+        # Show ALL sample fields that exist in the mapping (no truncation)
         existing_fields = [f for f in sample_fields if f in all_fields]
-        for field in existing_fields[:5]:  # Show first 5 as samples
+        for field in existing_fields:
             output_lines.append(f"- {field}")
-        if len(existing_fields) > 5:
-            output_lines.append(f"- ... and {len(existing_fields) - 5} more")
-        elif len(existing_fields) == 0:
+        if len(existing_fields) == 0:
             # If no predefined fields exist, show some from actual mapping
             available_fields_for_category = [f for f in all_fields if any(keyword in f for keyword in category_name.lower().split())]
-            for field in available_fields_for_category[:3]:
+            for field in available_fields_for_category:
                 output_lines.append(f"- {field}")
         output_lines.append("")
     
@@ -214,20 +212,17 @@ def get_field_categories() -> List[TextContent]:
         # Find existing fields in this category
         existing_fields = [f for f in config["fields"] if f in all_fields]
         field_count = len(existing_fields)
-        
+
         # Category header
         icon = config["icon"]
         name = config["name"]
         output_lines.append(f"{icon} {name.upper()} ({field_count} fields)")
-        
-        # Show sample fields
-        sample_fields = existing_fields[:5]  # Show first 5
-        if sample_fields:
-            field_list = ", ".join(sample_fields)
-            if len(existing_fields) > 5:
-                field_list += f", ..."
+
+        # Show ALL fields (no truncation)
+        if existing_fields:
+            field_list = ", ".join(existing_fields)
             output_lines.append(f"- {field_list}")
-        
+
         output_lines.append("")
     
     return [TextContent(type="text", text="\n".join(output_lines))]

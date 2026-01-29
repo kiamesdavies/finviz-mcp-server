@@ -1,5 +1,6 @@
 import re
-from typing import Optional, List, Any, Dict, Union
+import difflib
+from typing import Optional, List, Any, Dict, Union, Tuple
 from ..constants import ALL_PARAMETERS, SUBTHEME_VALUES
 
 def validate_ticker(ticker: str) -> bool:
@@ -461,6 +462,96 @@ def validate_data_fields(fields: List[str]) -> List[str]:
     valid_fields.update(additional_valid_fields)
     
     return [field for field in fields if field not in valid_fields]
+
+
+def validate_data_fields_with_suggestions(fields: List[str]) -> Tuple[List[str], Dict[str, List[str]]]:
+    """
+    Validate data fields and provide suggestions for invalid ones.
+
+    Args:
+        fields: List of data fields to validate
+
+    Returns:
+        Tuple of (invalid_fields, suggestions_dict) where suggestions_dict maps
+        each invalid field to a list of suggested valid field names
+    """
+    # Load valid fields dynamically from FINVIZ_COMPREHENSIVE_FIELD_MAPPING in constants.py
+    try:
+        from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+    except ImportError:
+        # When running directly
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+
+    valid_fields = set(FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys())
+
+    # Additional valid fields (for backward compatibility)
+    additional_valid_fields = {
+        'eps_growth_this_y', 'eps_growth_next_y', 'eps_growth_next_5y',
+        'eps_growth_past_5y', 'sales_growth_qtr', 'eps_growth_qtr',
+        'sales_growth_qoq', 'performance_1w', 'performance_1m',
+        'recommendation', 'analyst_recommendation',
+        'insider_own', 'institutional_own', 'insider_ownership', 'institutional_ownership',
+        'roi', 'debt_equity', 'book_value', 'performance_week', 'performance_month',
+        'short_float', 'profit_margin', 'all',
+        '200_day_simple_moving_average', '20_day_simple_moving_average', '50_day_high',
+        '50_day_low', '50_day_simple_moving_average', '52_week_high', '52_week_low',
+        'after_hours_change', 'after_hours_close', 'all_time_high', 'all_time_low',
+        'analyst_recom', 'average_true_range', 'average_volume', 'beta', 'book_sh',
+        'cash_sh', 'change', 'change_from_open', 'company', 'country', 'current_ratio',
+        'dividend', 'dividend_yield', 'earnings_date', 'employees', 'eps_growth_next_5_years',
+        'eps_growth_next_year', 'eps_growth_past_5_years', 'eps_growth_quarter_over_quarter',
+        'eps_growth_this_year', 'eps_next_q', 'eps_surprise', 'eps_ttm', 'float_percent',
+        'forward_p_e', 'gap', 'gross_margin', 'high', 'income', 'index', 'industry',
+        'insider_ownership', 'insider_transactions', 'institutional_ownership',
+        'institutional_transactions', 'ipo_date', 'low', 'lt_debt_equity', 'market_cap',
+        'no', 'open', 'operating_margin', 'optionable', 'p_b', 'p_cash', 'p_e',
+        'p_free_cash_flow', 'p_s', 'payout_ratio', 'peg', 'performance_10_minutes',
+        'performance_15_minutes', 'performance_1_hour', 'performance_1_minute',
+        'performance_2_hours', 'performance_2_minutes', 'performance_30_minutes',
+        'performance_3_minutes', 'performance_4_hours', 'performance_5_minutes',
+        'performance_half_year', 'performance_month', 'performance_quarter',
+        'performance_week', 'performance_year', 'performance_ytd', 'prev_close',
+        'price', 'profit_margin', 'quick_ratio', 'relative_strength_index_14',
+        'relative_volume', 'return_on_assets', 'return_on_equity', 'return_on_invested_capital',
+        'revenue_surprise', 'sales', 'sales_growth_past_5_years', 'sales_growth_quarter_over_quarter',
+        'sector', 'shares_float', 'shares_outstanding', 'short_float', 'short_interest',
+        'short_ratio', 'shortable', 'target_price', 'ticker', 'total_debt_equity',
+        'trades', 'volatility_month', 'volatility_week', 'volume'
+    }
+
+    valid_fields.update(additional_valid_fields)
+
+    # Build a list of all valid field names for fuzzy matching
+    all_valid_field_names = list(valid_fields)
+
+    invalid_fields = []
+    suggestions = {}
+
+    for field in fields:
+        if field not in valid_fields:
+            invalid_fields.append(field)
+            # Use difflib to find close matches
+            matches = difflib.get_close_matches(
+                field.lower(),
+                [f.lower() for f in all_valid_field_names],
+                n=3,
+                cutoff=0.4
+            )
+            # Map back to original case
+            if matches:
+                original_case_matches = []
+                for match in matches:
+                    for valid_field in all_valid_field_names:
+                        if valid_field.lower() == match and valid_field not in original_case_matches:
+                            original_case_matches.append(valid_field)
+                            break
+                suggestions[field] = original_case_matches
+
+    return invalid_fields, suggestions
+
 
 def validate_exchange(exchange: str) -> bool:
     """
