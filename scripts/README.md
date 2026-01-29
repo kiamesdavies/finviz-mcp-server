@@ -1,149 +1,149 @@
-# 🔍 Finviz Elite フィルター解析ツール群
+# 🔍 Finviz Elite Filter Analysis Tools
 
-Finvizの詳細フィルター項目を包括的に解析するためのPythonツール群です。Elite版の高度なスクリーニング機能を詳細に調査し、ドキュメント化することができます。
+A set of Python tools to comprehensively analyze Finviz filter options. These tools explore Elite-grade screening features in depth and generate documentation.
 
-## 📋 目次
+## 📋 Table of Contents
 
-- [🚀 クイックスタート](#-クイックスタート)
-- [🛠️ ツール一覧](#️-ツール一覧)
-- [💡 使用例](#-使用例)
-- [📊 解析結果](#-解析結果)
-- [⚙️ 設定とカスタマイズ](#️-設定とカスタマイズ)
-- [🔧 トラブルシューティング](#-トラブルシューティング)
+- [🚀 Quick Start](#-quick-start)
+- [🛠️ Tool List](#️-tool-list)
+- [💡 Examples](#-examples)
+- [📊 Analysis Results](#-analysis-results)
+- [⚙️ Configuration and Customization](#️-configuration-and-customization)
+- [🔧 Troubleshooting](#-troubleshooting)
 
-## 🚀 クイックスタート
+## 🚀 Quick Start
 
-### 最も簡単な方法（推奨）
+### Easiest method (recommended)
 
 ```bash
-# scriptsディレクトリに移動
+# Move to the scripts directory
 cd scripts
 
-# HTMLファイル解析（高速・推奨）
+# HTML file analysis (fast, recommended)
 python quick_html_analyze.py
 
-# カスタム範囲解析（レンジ指定URL）
+# Custom range analysis (range-based URLs)
 python quick_range_analyze.py
 ```
 
-### 手動でのファイル指定
+### Manually specify a file
 
 ```bash
-# 特定のHTMLファイルを解析
+# Analyze a specific HTML file
 python finviz_html_analyzer.py ../docs/finviz_screen_page.html
 
-# カスタム範囲パターン解析
+# Analyze custom range patterns
 python finviz_range_analyzer.py ../docs/finviz_screen_page.html
 ```
 
-## 🛠️ ツール一覧
+## 🛠️ Tool List
 
-### 📄 HTMLファイル解析（推奨）
+### 📄 HTML File Analysis (recommended)
 
-| ツール | 説明 | 特徴 |
-|--------|------|------|
-| `finviz_html_analyzer.py` | 保存されたHTMLファイルの解析エンジン | ⚡ 高速、🔒ログイン不要 |
-| `quick_html_analyze.py` | HTMLファイル解析の簡単実行ラッパー | 🎯 ワンクリック実行 |
+| Tool | Description | Highlights |
+|------|-------------|------------|
+| `finviz_html_analyzer.py` | Engine for parsing saved HTML files | ⚡ Fast, 🔒 No login required |
+| `quick_html_analyze.py` | Simple wrapper for HTML analysis | 🎯 One-command run |
 
-### 🎯 カスタム範囲解析（NEW!）
+### 🎯 Custom Range Analysis (NEW!)
 
-| ツール | 説明 | 特徴 |
-|--------|------|------|
-| `finviz_range_analyzer.py` | カスタム範囲指定時のURL解析 | 📈 レンジ指定、🔗 URL生成 |
-| `quick_range_analyze.py` | カスタム範囲解析の簡単実行 | 💡 実用的な例示 |
+| Tool | Description | Highlights |
+|------|-------------|------------|
+| `finviz_range_analyzer.py` | Analyze URL patterns for custom ranges | 📈 Range syntax, 🔗 URL generation |
+| `quick_range_analyze.py` | Simple wrapper for custom range analysis | 💡 Practical examples |
 
-### 🌐 Elite版ライブ解析（上級者用）
+### 🌐 Elite Live Analysis (advanced)
 
-| ツール | 説明 | 特徴 |
-|--------|------|------|
-| `finviz_elite_analyzer.py` | Seleniumを使用したライブ解析 | 🔄 リアルタイム、🔐 要ログイン |
-| `quick_analyze.py` | Elite版の簡単実行ラッパー | 🚀 自動化対応 |
+| Tool | Description | Highlights |
+|------|-------------|------------|
+| `finviz_elite_analyzer.py` | Live analysis via Selenium | 🔄 Real-time, 🔐 Login required |
+| `quick_analyze.py` | Simple wrapper for Elite analysis | 🚀 Automation-ready |
 
-## 💡 使用例
+## 💡 Examples
 
-### 基本的なフィルター解析
+### Basic filter analysis
 
 ```bash
-# HTMLファイルから全フィルターを解析
+# Parse all filters from an HTML file
 python quick_html_analyze.py
 
-# 出力: finviz_filters_analysis_finviz_screen_page.md (75+ フィルター)
-# 出力: finviz_filters_analysis_finviz_screen_page.json (詳細データ)
+# Output: finviz_filters_analysis_finviz_screen_page.md (75+ filters)
+# Output: finviz_filters_analysis_finviz_screen_page.json (detailed data)
 ```
 
-### カスタム範囲指定の解析
+### Custom range analysis
 
 ```bash
-# レンジ指定URLパターンを解析
+# Analyze range-based URL patterns
 python quick_range_analyze.py
 
-# 出力例:
-# - sh_price_10to50 → 株価 $10-$50
-# - cap_1to10 → 時価総額 $1B-$10B
-# - fa_pe_10to20 → PER 10-20倍
-# - fa_div_3to7 → 配当利回り 3-7%
+# Example outputs:
+# - sh_price_10to50 → Price $10-$50
+# - cap_1to10 → Market cap $1B-$10B
+# - fa_pe_10to20 → P/E 10-20
+# - fa_div_3to7 → Dividend yield 3-7%
 ```
 
-### 特定の出力形式
+### Specific output formats
 
 ```bash
-# Markdownのみ出力
+# Markdown only
 python finviz_html_analyzer.py --format markdown
 
-# JSONのみ出力
+# JSON only
 python finviz_range_analyzer.py --format json
 ```
 
-## 📊 解析結果
+## 📊 Analysis Results
 
-### 📋 基本フィルター解析結果
+### 📋 Base Filter Analysis
 
-- **75+種類のフィルター項目**を自動検出
-- **数千のオプション値**を詳細に抽出
-- **8つの主要カテゴリー**に自動分類：
-  - 📈 基本情報系（取引所、指数、セクター等）
-  - 💰 株価・時価総額系
-  - 📊 財務・収益性系
-  - 🔄 出来高・取引系
-  - 📅 日付・イベント系
-  - 🎯 テクニカル分析系
-  - 👥 アナリスト・推奨系
-  - ⚙️ その他・特殊系
+- Automatically detects **75+ filter items**
+- Extracts **thousands of option values** in detail
+- Auto-classifies into **8 major categories**:
+  - 📈 Basic info (exchanges, indices, sectors, etc.)
+  - 💰 Price & market cap
+  - 📊 Financial & profitability
+  - 🔄 Volume & trading
+  - 📅 Dates & events
+  - 🎯 Technical analysis
+  - 👥 Analysts & recommendations
+  - ⚙️ Other & special
 
-### 🎯 カスタム範囲解析結果（NEW!）
+### 🎯 Custom Range Analysis (NEW!)
 
-- **レンジ対応フィルター**の特定
-- **URLパターン構造**の詳細解析
-- **実践的な使用例**とベストプラクティス
-- **20+種類の既知パターン**：
-  - 💵 価格範囲: `sh_price_10to50`
-  - 📊 時価総額: `cap_1to10`
-  - 📈 PER範囲: `fa_pe_10to20`
-  - 💎 配当利回り: `fa_div_3to7`
-  - 📉 ベータ値: `ta_beta_0.5to1.5`
+- Identifies **range-capable filters**
+- Detailed analysis of **URL pattern structures**
+- **Practical examples** and best practices
+- **20+ known patterns** such as:
+  - 💵 Price range: `sh_price_10to50`
+  - 📊 Market cap: `cap_1to10`
+  - 📈 P/E range: `fa_pe_10to20`
+  - 💎 Dividend yield: `fa_div_3to7`
+  - 📉 Beta range: `ta_beta_0.5to1.5`
 
-### 📁 出力ファイル形式
+### 📁 Output Formats
 
-#### Markdown形式（ドキュメント用）
-- `finviz_filters_analysis_*.md` - 基本フィルター解析
-- `finviz_range_analysis_*.md` - カスタム範囲解析
+#### Markdown (docs)
+- `finviz_filters_analysis_*.md` - Base filter analysis
+- `finviz_range_analysis_*.md` - Custom range analysis
 
-#### JSON形式（プログラム用）
-- `finviz_filters_analysis_*.json` - 構造化データ
-- `finviz_range_analysis_*.json` - 範囲パターンデータ
+#### JSON (programmatic)
+- `finviz_filters_analysis_*.json` - Structured data
+- `finviz_range_analysis_*.json` - Range pattern data
 
-## ⚙️ 設定とカスタマイズ
+## ⚙️ Configuration and Customization
 
-### 🎛️ 解析パラメーター
+### 🎛️ Analysis parameters
 
 ```python
-# フィルター除外設定
+# Exclude filters
 EXCLUDE_FILTERS = ['generic_filter', 'test_*']
 
-# 出力制限
+# Output limit
 MAX_OPTIONS_PER_FILTER = 1000
 
-# 既知の範囲パターン追加
+# Add known range patterns
 CUSTOM_RANGE_PATTERNS = {
     'my_filter': {
         'type': 'percentage',
@@ -153,39 +153,39 @@ CUSTOM_RANGE_PATTERNS = {
 }
 ```
 
-### 🔧 出力カスタマイズ
+### 🔧 Output customization
 
 ```bash
-# 特定のカテゴリーのみ解析
+# Analyze specific categories only
 python finviz_html_analyzer.py --categories "basic,financial"
 
-# 詳細度レベル指定
+# Choose detail level
 python finviz_range_analyzer.py --detail-level high
 ```
 
-## 🔧 トラブルシューティング
+## 🔧 Troubleshooting
 
-### よくある問題と解決方法
+### Common issues and solutions
 
-#### 1. HTMLファイルが見つからない
+#### 1. HTML file not found
 
 ```bash
-❌ finviz_screen_page.html が見つかりません
+❌ finviz_screen_page.html not found
 
-✅ 解決方法:
-- docs/finviz_screen_page.html が存在することを確認
-- パスを明示的に指定: python quick_html_analyze.py ../docs/finviz_screen_page.html
+✅ Solution:
+- Confirm docs/finviz_screen_page.html exists
+- Provide an explicit path: python quick_html_analyze.py ../docs/finviz_screen_page.html
 ```
 
-#### 2. 解析結果が空
+#### 2. Empty analysis results
 
 ```bash
-❌ フィルターが検出されませんでした
+❌ No filters were detected
 
-✅ 解決方法:
-- HTMLファイルが正しいFinvizページか確認
-- ファイルサイズが適切か確認（通常100KB+）
-- エンコーディング問題の可能性 → UTF-8で保存し直す
+✅ Solution:
+- Confirm the HTML file is a valid Finviz page
+- Confirm the file size is reasonable (typically 100KB+)
+- Possible encoding issue → re-save as UTF-8
 ```
 
 #### 3. ImportError
@@ -193,47 +193,8 @@ python finviz_range_analyzer.py --detail-level high
 ```bash
 ❌ ImportError: No module named 'bs4'
 
-✅ 解決方法:
+✅ Solution:
 pip install -r requirements.txt
 ```
 
-### 📞 サポート
-
-問題が解決しない場合：
-
-1. **ログファイル確認**: `finviz_analyzer.log`
-2. **詳細モード実行**: `--verbose` フラグを追加
-3. **依存関係確認**: `pip list | grep -E "(beautifulsoup4|lxml|selenium)"`
-
-## 🎯 実践的な活用例
-
-### URLパターンの実用例
-
-```bash
-# 複合条件の例
-https://finviz.com/screener.ashx?v=111&f=sec_technology,cap_1to10,fa_pe_10to25,sh_price_20to100
-
-# 分解すると:
-# sec_technology → テクノロジーセクター
-# cap_1to10 → 時価総額 $1B-$10B
-# fa_pe_10to25 → PER 10-25倍
-# sh_price_20to100 → 株価 $20-$100
-```
-
-### 解析結果の活用方法
-
-1. **MCP サーバー開発**: JSON出力をスクリーニング機能の実装に活用
-2. **投資戦略**: 範囲指定でポートフォリオ候補を絞り込み
-3. **API開発**: URLパターンを自動生成するツールの開発
-
----
-
-## 📈 パフォーマンス
-
-- **HTMLファイル解析**: ~2-5秒（75+ フィルター）
-- **カスタム範囲解析**: ~1-3秒（20+ パターン）
-- **出力ファイルサイズ**: 50-200KB（Markdown）、20-100KB（JSON）
-
----
-
-**💡 Tips**: 初回実行時は `quick_html_analyze.py` と `quick_range_analyze.py` を両方実行することをお勧めします。包括的な解析結果が得られます。 
+### 📞 Support

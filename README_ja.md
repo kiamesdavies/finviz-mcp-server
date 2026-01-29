@@ -1,562 +1,120 @@
 # Finviz MCP Server
 
-[English](README.md) | **日本語**
+**English** | [Japanese](README_ja.md)
 
-**Finviz MCP Server**は、Finvizのスクリーニング機能を利用して株式データを取得し、分析を行うためのMCP（Model Context Protocol）サーバーです。
+A Model Context Protocol (MCP) server that provides comprehensive stock screening and fundamental analysis capabilities using Finviz data.
 
-## 🚀 新機能：完全なカラム対応（128カラム）
+## Features
 
-**2024年版：Finvizの全128カラムに完全対応！**
+### Stock Screening Tools
+- **Earnings Screener**: Find stocks with upcoming earnings announcements
+- **Volume Surge Screener**: Detect stocks with unusual volume and price movements
+- **Trend Analysis**: Identify uptrend and momentum stocks
+- **Dividend Growth Screener**: Find dividend-paying stocks with growth potential
+- **ETF Screener**: Screen exchange-traded funds
+- **Premarket/Afterhours Earnings**: Track earnings reactions in extended hours
 
-### 📊 サポートされるデータフィールド
+### Fundamental Analysis
+- Individual stock fundamental data retrieval
+- Multiple stock comparison
+- Sector and industry performance analysis
+- News and sentiment tracking
 
-提供されたFinvizカラムリストに完全対応：
+### Technical Analysis
+- RSI, Beta, and volatility metrics
+- Moving average analysis (SMA 20/50/200)
+    - **NEW:** `get_moving_average_position` – see how far price sits above/below the 20-, 50-, and 200-day SMAs in a single call
+- Relative volume analysis
+- 52-week high/low tracking
 
-#### 基本情報・市場データ
-- No., Ticker, Company, Index, Sector, Industry, Country
-- Market Cap, P/E, Forward P/E, PEG, P/S, P/B, P/Cash, P/Free Cash Flow
-- Book/sh, Cash/sh, Dividend, Dividend Yield, Payout Ratio
+## 📄 SEC Filing Features
 
-#### 収益性・成長指標
-- EPS (ttm), EPS Next Q, EPS Growth (This/Next/Past 5 Years)
-- Sales Growth (Past 5 Years, Quarter Over Quarter)
-- Return on Assets, Return on Equity, Return on Invested Capital
-- Gross/Operating/Profit Margin
-
-#### 技術指標・パフォーマンス
-- **短時間パフォーマンス**: 1分〜4時間
-- **長期パフォーマンス**: 週次〜10年、設定来
-- Beta, Average True Range, Volatility (Week/Month)
-- 移動平均線（20/50/200日）、52週高値・安値
-
-#### 株式・取引情報
-- Shares Outstanding/Float, Float %, Insider/Institutional Ownership
-- Short Float/Ratio/Interest, Optionable, Shortable
-- Volume, Average Volume, Relative Volume, Trades
-- Target Price, Analyst Recommendation
-
-#### 詳細OHLC・時間外取引
-- Prev Close, Open, High, Low, Change from Open
-- After-Hours Close/Change, Gap
-
-#### ETF専用フィールド
-- Asset Type, ETF Type, Sector/Theme, Region, Active/Passive
-- Net Expense Ratio, Total Holdings, Assets Under Management
-- Net Asset Value, Net Flows (1M/3M/YTD/1Y)
-- All-Time High/Low, Return Since Inception
-
-## 🔧 機能一覧
-
-### 📈 スクリーニング機能
-
-1. **決算発表予定銘柄スクリーニング**
-   ```python
-   # 今日の決算発表予定銘柄
-   finviz_earnings_screener(earnings_date="today_after")
-   ```
-
-2. **出来高急増銘柄スクリーニング**
-   ```python
-   # デフォルト条件適用：スモール以上、出来高1.5倍以上、価格2%以上上昇等
-   finviz_volume_surge_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_volume_surge_screener(
-       min_relative_volume=3.0,
-       min_price_change=5.0,
-       sectors=["Technology", "Healthcare"]
-   )
-   
-   # デフォルト条件:
-   # - 時価総額: スモール以上 ($300M+)
-   # - 株式のみ: ETF除外
-   # - 平均出来高: 100,000以上
-   # - 株価: $10以上
-   # - 相対出来高: 1.5倍以上
-   # - 価格変動: 2%以上上昇
-   # - 200日移動平均線上
-   # - 価格変動降順ソート
-   ```
-
-3. **上昇トレンド銘柄スクリーニング**
-   ```python
-   # デフォルト条件適用：スモール以上、100K出来高以上、株価10以上等
-   finviz_uptrend_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_uptrend_screener(
-       trend_type="strong_uptrend",
-       sma_period="200",
-       sectors=["Technology", "Healthcare"]
-   )
-   
-   # デフォルト条件:
-   # - 時価総額: スモール以上 ($300M+)
-   # - 平均出来高: 100,000以上
-   # - 株価: $10以上
-   # - 52週高値から30%以内
-   # - 4週パフォーマンス上昇
-   # - 20日・200日移動平均線上
-   # - 50日移動平均線が200日移動平均線上
-   # - EPS成長率（年次）降順ソート
-   ```
-
-4. **配当成長銘柄スクリーニング**
-   ```python
-   # デフォルト条件適用：ミッド以上、配当利回り2%以上、成長率プラス等
-   finviz_dividend_growth_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_dividend_growth_screener(
-       min_dividend_yield=3.0,
-       min_roe=15.0,
-       max_pe_ratio=20.0
-   )
-   
-   # デフォルト条件:
-   # - 時価総額: ミッド以上 ($2B+)
-   # - 配当利回り: 2%以上
-   # - EPS 5年成長率: プラス
-   # - EPS QoQ成長率: プラス
-   # - EPS YoY成長率: プラス
-   # - PBR: 5以下
-   # - PER: 30以下
-   # - 売上5年成長率: プラス
-   # - 売上QoQ成長率: プラス
-   # - 地域: アメリカ
-   # - 株式のみ
-   # - 200日移動平均でソート
-   ```
-
-5. **ETF戦略スクリーニング**
-   ```python
-   # 株式ETF、経費率0.5%以下
-   finviz_etf_screener(
-       asset_class="equity",
-       max_expense_ratio=0.5
-   )
-   ```
-
-### 📊 決算関連特化機能
-
-6. **寄り付き前決算上昇銘柄**
-   ```python
-   # デフォルト条件適用：スモール以上、寄り付き前決算、価格2%以上上昇等
-   finviz_earnings_premarket_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_earnings_premarket_screener(
-       earnings_timing="today_before",
-       min_price_change=3.0,
-       sectors=["Technology", "Healthcare"]
-   )
-   
-   # デフォルト条件:
-   # - 時価総額: スモール以上 ($300M+)
-   # - 決算発表: 今日の寄り付き前
-   # - 平均出来高: 100,000以上
-   # - 株価: $10以上
-   # - 価格変動: 2%以上上昇
-   # - 株式のみ
-   # - 価格変動降順ソート
-   # - 最大結果件数: 60件
-   ```
-
-7. **時間外決算上昇銘柄**
-   ```python
-   # デフォルト条件適用：スモール以上、引け後決算、時間外2%以上上昇等
-   finviz_earnings_afterhours_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_earnings_afterhours_screener(
-       earnings_timing="today_after",
-       min_afterhours_change=3.0,
-       sectors=["Technology", "Healthcare"]
-   )
-   
-   # デフォルト条件:
-   # - 時間外取引変動: 2%以上上昇
-   # - 時価総額: スモール以上 ($300M+)
-   # - 決算発表: 今日の引け後
-   # - 平均出来高: 100,000以上
-   # - 株価: $10以上
-   # - 株式のみ
-   # - 時間外変動降順ソート
-   # - 最大結果件数: 60件
-   ```
-
-8. **決算トレード対象銘柄**
-   ```python
-   # デフォルト条件適用：スモール以上、昨日引け後・今日寄り付き前決算、EPS上方修正等
-   finviz_earnings_trading_screener()
-   
-   # 追加条件でカスタマイズ
-   finviz_earnings_trading_screener(
-       earnings_window="yesterday_after_today_before",
-       earnings_revision="eps_revenue_positive",
-       min_volatility=1.5,
-       sectors=["Technology", "Healthcare"]
-   )
-   
-   # デフォルト条件:
-   # - 時価総額: スモール以上 ($300M+)
-   # - 決算発表: 昨日の引け後または今日の寄り付き前
-   # - EPS予想: 上方修正
-   # - 平均出来高: 200,000以上
-   # - 株価: $10以上
-   # - 価格変動: 上昇トレンド
-   # - 4週パフォーマンス: 0%から下落（下落後回復候補）
-   # - ボラティリティ: 1倍以上
-   # - 株式のみ: ETF除外
-   # - ソート: EPSサプライズ降順
-   # - 最大結果件数: 60件
-   ```
-
-### 📄 SECファイリング情報
-
-9. **SECファイリング取得**
-   ```python
-   # 指定銘柄の全SECファイリング
-   get_sec_filings(ticker="MSFT", days_back=30)
-   
-   # 特定フォームのみ取得
-   get_sec_filings(
-       ticker="MSFT",
-       form_types=["10-K", "10-Q", "8-K"],
-       days_back=90
-   )
-   ```
-
-10. **主要SECファイリング**
+17. **SEC Filing List Retrieval**
     ```python
-    # 10-K、10-Q、8-K等の主要フォーム
-    get_major_sec_filings(ticker="MSFT", days_back=90)
-    ```
-
-11. **インサイダー取引情報**
-    ```python
-    # フォーム3、4、5のインサイダー情報
-    get_insider_sec_filings(ticker="MSFT", days_back=30)
-    ```
-
-12. **SECファイリング概要**
-    ```python
-    # 期間別ファイリング統計
-    get_sec_filing_summary(ticker="MSFT", days_back=90)
-    ```
-
-### 🎯 高度な分析機能
-
-9. **個別銘柄詳細分析**
-   ```python
-   # 全128フィールドを取得
-   finviz_get_stock_fundamentals(
-       ticker="AAPL",
-       data_fields=["all"]  # 全フィールド取得
-   )
-   ```
-
-10. **複数銘柄一括分析**
-    ```python
-    finviz_get_multiple_stocks_fundamentals(
-        tickers=["AAPL", "GOOGL", "MSFT"],
-        data_fields=["pe_ratio", "eps_growth_next_y", "target_price"]
-    )
-    ```
-
-### 📰 ニュース・市場分析
-
-11. **銘柄関連ニュース**
-    ```python
-    finviz_get_stock_news(ticker="TSLA", days_back=7)
-    ```
-
-12. **セクター・業界パフォーマンス**
-    ```python
-    # 基本セクター・業界・国別パフォーマンス
-    finviz_get_sector_performance()
-    finviz_get_industry_performance()
-    finviz_get_country_performance()
+    # All AAPL filings (past 30 days)
+    finviz_get_sec_filings(ticker="AAPL", days_back=30)
     
-    # 特定セクター内の業界別パフォーマンス（新機能）
-    finviz_get_sector_specific_industry_performance(
-        sector="technology"
-    )
+    # Major forms only (10-K, 10-Q, 8-K, etc.)
+    finviz_get_major_sec_filings(ticker="AAPL", days_back=90)
     
-    # 時価総額別パフォーマンス（新機能）
-    finviz_get_capitalization_performance()
-    
-    # 利用可能なセクター:
-    # - basicmaterials (基本素材)
-    # - communicationservices (通信サービス)
-    # - consumercyclical (消費者サイクリカル) 
-    # - consumerdefensive (消費者ディフェンシブ)
-    # - energy (エネルギー)
-    # - financial (金融)
-    # - healthcare (ヘルスケア)
-    # - industrials (工業)
-    # - realestate (不動産)
-    # - technology (テクノロジー)
-    # - utilities (公益事業)
-    
-    # 注意: Finviz APIの制限により、期間別パフォーマンスではなく
-    # 現在時点のスナップショット情報（Market Cap、P/E、Change等）を取得
+    # Insider trading related (Form 3, 4, 5, etc.)
+    finviz_get_insider_sec_filings(ticker="AAPL", days_back=30)
     ```
 
-## 🔍 使用例
+## Installation
 
-### 包括的な銘柄分析
+### Prerequisites
+- Python 3.11 or higher
+- **Finviz Elite Subscription** (required for full functionality)
+- Finviz API key (optional but recommended for higher rate limits)
 
-```python
-# 高成長テック株の包括的分析
-results = finviz_volume_surge_screener(
-    sectors=["Technology"],
-    min_price_change=5.0,
-    min_relative_volume=2.0,
-    min_eps_growth_next_y=20.0
-)
+> **Important**: This MCP server requires a Finviz Elite subscription to access comprehensive screening and data features. For more details about Finviz Elite and subscription options, visit: https://elite.finviz.com/elite.ashx
 
-# 各銘柄の詳細データを取得（128フィールド対応）
-for stock in results[:5]:  # 上位5銘柄
-    details = finviz_get_stock_fundamentals(
-        ticker=stock['ticker'],
-        data_fields=[
-            "forward_pe", "peg", "roic", "eps_growth_next_5y",
-            "target_price", "analyst_recommendation",
-            "volatility_week", "rsi", "performance_ytd"
-        ]
-    )
-    print(f"{stock['ticker']}: {details}")
-```
+### Setup
 
-### 決算シーズン戦略
-
-```python
-# 来週決算予定の注目銘柄
-upcoming = finviz_upcoming_earnings_screener(
-    earnings_period="next_week",
-    min_avg_volume=1000000,
-    target_sectors=["Technology", "Healthcare"]
-)
-
-
-```
-
-### SECファイリング分析
-
-```python
-# 主要企業のSECファイリング分析
-major_filings = get_major_sec_filings(
-    ticker="AAPL",
-    days_back=90
-)
-
-# インサイダー取引の監視
-insider_activity = get_insider_sec_filings(
-    ticker="TSLA", 
-    days_back=30
-)
-
-# 決算関連ファイリングの確認
-earnings_filings = get_sec_filings(
-    ticker="MSFT",
-    form_types=["10-Q", "8-K"],
-    days_back=60
-)
-
-# ファイリング概要で全体把握
-filing_summary = get_sec_filing_summary(
-    ticker="GOOGL",
-    days_back=120
-)
-```
-
-## 🆕 新機能：拡張されたセクター・業界分析
-
-### セクター・業界パフォーマンス分析の全オプション対応
-
-HTMLセレクトタグから抽出されたFinvizの全パフォーマンス分析オプションに対応：
-
-#### 1. 基本分析
-- **セクター全体** (`get_sector_performance`)
-- **業界全体** (`get_industry_performance`) 
-- **国別** (`get_country_performance`)
-- **時価総額別** (`get_capitalization_performance`) ← **新機能**
-
-#### 2. セクター別業界分析 (`get_sector_specific_industry_performance`) ← **新機能**
-特定セクター内の業界別詳細パフォーマンス：
-
-- **基本素材** (basicmaterials)
-- **通信サービス** (communicationservices)
-- **消費者サイクリカル** (consumercyclical)
-- **消費者ディフェンシブ** (consumerdefensive)
-- **エネルギー** (energy)
-- **金融** (financial)
-- **ヘルスケア** (healthcare)
-- **工業** (industrials)
-- **不動産** (realestate)
-- **テクノロジー** (technology)
-- **公益事業** (utilities)
-
-#### 3. データ取得について
-Finviz APIの実際の構造に合わせ、現在時点のスナップショット情報を取得：
-- **Market Cap** (時価総額)
-- **P/E Ratio** (PER)
-- **Dividend Yield** (配当利回り)
-- **Change** (価格変動)
-- **Stock Count** (銘柄数)
-
-#### 4. 使用例
-```python
-# テクノロジーセクター内の業界別パフォーマンス
-finviz_get_sector_specific_industry_performance(
-    sector="technology"
-)
-
-# 時価総額別パフォーマンス（Large Cap, Mid Cap等）
-finviz_get_capitalization_performance()
-```
-
-## 📋 システム要件
-
-- Python 3.8+
-- pandas, requests, beautifulsoup4
-- MCol Context Protocol対応環境
-
-## 🛠️ インストール
-
+1. **Clone and setup the project:**
 ```bash
-git clone https://github.com/your-repo/finviz-mcp-server.git
-cd finviz-mcp-server
-pip install -r requirements.txt
-```
-
-## 🚀 起動方法
-
-```bash
-python run_server.py
-```
-
-## 📚 詳細ドキュメント
-
-- [設計書](docs/finviz_mcp_server_design.md)
-- [スクリーニングパラメータ](docs/finviz_screening_parameters.md)
-- [実装完了レポート](docs/IMPLEMENTATION_COMPLETE.md)
-- [ツールリファレンス](docs/tools_reference.md)
-
-## 🎯 主な特徴
-
-### ✅ 完全なFinviz対応
-- **128カラム完全サポート**：No.からTagsまで全フィールド
-- **ETF専用フィールド**：Net Flows、AUM、経費率など
-- **短時間パフォーマンス**：分単位から時間単位まで
-- **詳細OHLC**：Prev Close、Open、High、Low
-
-### ✅ 高度なスクリーニング
-- 15種類の専門的スクリーニング戦略
-- 決算トレード特化機能
-- セクター・業界分析
-- リアルタイム市場データ
-
-### ✅ 柔軟なデータ取得
-- 個別銘柄詳細分析
-- 複数銘柄一括処理
-- カスタムフィールド選択
-- 高速CSV export対応
-
-## 🔄 アップデート履歴
-
-### v2.1.0 (2024) - セクター・業界分析修正
-- Finviz APIの実際の構造に合わせたパラメータ修正
-- 時間枠パラメータの削除（v=152固定値対応）
-- 決算トレード対象銘柄のデフォルト条件設定
-- セクター・業界・国別・時価総額別分析の統一フォーマット
-
-### v2.0.0 (2024) - 完全カラム対応
-- Finviz全128カラムに完全対応
-- ETF専用フィールド追加
-- 短時間パフォーマンス対応
-- 詳細OHLC・時間外取引データ
-
-### v1.0.0 (2024) - 初期リリース
-- 基本スクリーニング機能
-- 決算分析機能
-- ニュース取得機能
-
-## インストール
-
-### 前提条件
-- Python 3.11以上
-- **Finviz Elite契約**（フル機能の利用に必要）
-- Finviz APIキー（オプション、ただしレート制限の向上のため推奨）
-
-> **重要**: このMCPサーバーは、包括的なスクリーニングとデータ機能にアクセスするためにFinviz Eliteの契約が必要です。Finviz Eliteの詳細と契約オプションについては、こちらをご覧ください: https://elite.finviz.com/elite.ashx
-
-### セットアップ
-
-1. **プロジェクトのクローンとセットアップ:**
-```bash
-# リポジトリをクローン
+# Clone the repository
 git clone <repository-url>
 cd finviz-mcp-server
 
-# Python 3.11で仮想環境を作成
+# Create virtual environment with Python 3.11
 python3.11 -m venv venv
 
-# 仮想環境をアクティベート
-source venv/bin/activate  # macOS/Linux
-# または
-venv\\Scripts\\activate     # Windows
+# Activate virtual environment
+source venv/bin/activate  # On macOS/Linux
+# or
+venv\\Scripts\\activate     # On Windows
 
-# 開発モードでパッケージをインストール
+# Install the package in development mode
 pip install -e .
 ```
 
-2. **環境変数の設定:**
+2. **Configure environment variables:**
 ```bash
-# サンプル環境ファイルをコピー
+# Copy the example environment file
 cp .env.example .env
 
-# .envファイルを編集してFinviz APIキーを追加
+# Edit .env file and add your Finviz API key
 FINVIZ_API_KEY=your_actual_api_key_here
 ```
 
-3. **インストールのテスト:**
+3. **Test the installation:**
 ```bash
-# サーバーが正しく起動するかテスト（停止するにはCtrl+C）
+# Test if the server starts correctly (press Ctrl+C to stop)
 finviz-mcp-server
 
-# stdio モードでサーバーが起動することを確認
+# You should see the server starting in stdio mode
 ```
 
-## 設定
+## Configuration
 
-サーバーは環境変数で設定できます：
+The server can be configured using environment variables:
 
-- `FINVIZ_API_KEY`: Finviz Elite APIキー（Elite機能に必要、レート制限を改善）
-- `MCP_SERVER_PORT`: サーバーポート（デフォルト: 8080）
-- `LOG_LEVEL`: ログレベル（デフォルト: INFO）
-- `RATE_LIMIT_REQUESTS_PER_MINUTE`: レート制限（デフォルト: 100）
+- `FINVIZ_API_KEY`: Your Finviz Elite API key (required for Elite features, improves rate limits)
+- `MCP_SERVER_PORT`: Server port (default: 8080)
+- `LOG_LEVEL`: Logging level (default: INFO)
+- `RATE_LIMIT_REQUESTS_PER_MINUTE`: Rate limiting (default: 100)
 
-> **注意**: APIキーは技術的にはオプションですが、高度なスクリーニング機能の多くは、Finviz Eliteの契約とAPIキーが適切に機能するために必要です。
+> **Note**: While the API key is technically optional, many advanced screening features require a Finviz Elite subscription and API key to function properly.
 
-## 使用方法
+## Usage
 
-### MCPサーバーの実行
+### Running the MCP Server
 
-サーバーはstdioベースのMCPサーバーとして動作します：
+The server runs as a stdio-based MCP server:
 
 ```bash
-# 仮想環境がアクティベートされていることを確認
+# Make sure virtual environment is activated
 source venv/bin/activate
 
-# サーバーを実行
+# Run the server
 finviz-mcp-server
 ```
 
-### Claude Desktopとの統合
+### Integration with Claude Desktop
 
-Claude DesktopのMCP設定ファイル（macOSでは `~/Library/Application Support/Claude/claude_desktop_config.json`）にサーバーを追加します：
+Add the server to your Claude Desktop MCP configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
@@ -575,14 +133,14 @@ Claude DesktopのMCP設定ファイル（macOSでは `~/Library/Application Supp
 }
 ```
 
-**重要な設定注意事項:**
-- `/path/to/your/project/` を実際のプロジェクトパスに置き換えてください
-- 仮想環境内の `finviz-mcp-server` 実行可能ファイルの絶対パスを使用してください
-- `cwd`（現在の作業ディレクトリ）をプロジェクトルートに設定してください
-- `your_api_key_here` を実際のFinviz APIキーに置き換えてください
+**Important Configuration Notes:**
+- Replace `/path/to/your/project/` with your actual project path
+- Use the absolute path to the `finviz-mcp-server` executable in your virtual environment
+- Set the `cwd` (current working directory) to your project root
+- Replace `your_api_key_here` with your actual Finviz API key
 
-**代替方法: .envファイルの使用**
-`.env`ファイルを使用する場合（セキュリティのため推奨）：
+**Alternative: Using .env file**
+If you prefer to use a `.env` file (recommended for security):
 
 ```json
 {
@@ -596,13 +154,13 @@ Claude DesktopのMCP設定ファイル（macOSでは `~/Library/Application Supp
 }
 ```
 
-`.env`ファイルに必要な環境変数がすべて含まれていることを確認してください。
+Make sure your `.env` file contains all required environment variables.
 
-### MCPツール
+### MCP Tools
 
-#### 決算スクリーナー
+#### Earnings Screener
 ```python
-# 今日の場後に決算発表予定の銘柄を検索
+# Find stocks with earnings today after market close
 earnings_screener(
     earnings_date="today_after",
     market_cap="large",
@@ -612,9 +170,9 @@ earnings_screener(
 )
 ```
 
-#### 出来高急増スクリーナー
+#### Volume Surge Screener
 ```python
-# 高出来高と価格上昇を示す銘柄を検索
+# Find stocks with high volume and price increases
 volume_surge_screener(
     market_cap="smallover",
     min_price=10,
@@ -624,26 +182,26 @@ volume_surge_screener(
 )
 ```
 
-#### 株式ファンダメンタルズ
+#### Stock Fundamentals
 ```python
-# 単一銘柄のファンダメンタルデータを取得
+# Get fundamental data for a single stock
 get_stock_fundamentals(
     ticker="AAPL",
     data_fields=["pe_ratio", "eps", "dividend_yield", "market_cap"]
 )
 
-# 複数銘柄のファンダメンタルデータを取得
+# Get fundamental data for multiple stocks
 get_multiple_stocks_fundamentals(
     tickers=["AAPL", "MSFT", "GOOGL"],
     data_fields=["pe_ratio", "eps", "market_cap"]
 )
 ```
 
-## 高度なスクリーニング例
+## Advanced Screening Examples
 
-### 決算ベース戦略
+### Earnings-Based Strategies
 
-#### プレマーケット決算モメンタム
+#### Premarket Earnings Momentum
 ```python
 earnings_premarket_screener(
     earnings_timing="today_before",
@@ -654,7 +212,7 @@ earnings_premarket_screener(
 )
 ```
 
-#### アフターアワーズ決算反応
+#### Afterhours Earnings Reactions
 ```python
 earnings_afterhours_screener(
     earnings_timing="today_after",
@@ -666,9 +224,9 @@ earnings_afterhours_screener(
 
 
 
-### テクニカル分析戦略
+### Technical Analysis Strategies
 
-#### トレンド反転候補
+#### Trend Reversal Candidates
 ```python
 trend_reversion_screener(
     market_cap="large",
@@ -678,7 +236,7 @@ trend_reversion_screener(
 )
 ```
 
-#### 強い上昇トレンド株
+#### Strong Uptrend Stocks
 ```python
 uptrend_screener(
     trend_type="strong_uptrend",
@@ -688,9 +246,9 @@ uptrend_screener(
 )
 ```
 
-### バリュー投資戦略
+### Value Investment Strategies
 
-#### 配当成長
+#### Dividend Growth
 ```python
 dividend_growth_screener(
     min_dividend_yield=2.0,
@@ -700,108 +258,81 @@ dividend_growth_screener(
 )
 ```
 
-## データモデル
+## Data Models
 
 ### StockData
-以下を含む包括的な株式情報：
-- 基本情報（ティッカー、会社名、セクター、業界）
-- 価格・出来高データ
-- テクニカル指標（RSI、ベータ、移動平均）
-    - **新機能:** `get_moving_average_position` — 現在株価が20・50・200日移動平均線から何%離れているかをワンコマンドで取得できます
-- ファンダメンタル指標（P/E、EPS、配当利回り）
-- 決算データ（サプライズ、予想、成長率）
-- パフォーマンス指標（1週間、1ヶ月、年初来）
+Comprehensive stock information including:
+- Basic info (ticker, company, sector, industry)
+- Price and volume data
+- Technical indicators (RSI, Beta, moving averages)
+- Fundamental metrics (P/E, EPS, dividend yield)
+- Earnings data (surprises, estimates, growth rates)
+- Performance metrics (1w, 1m, YTD)
 
-### スクリーニング結果
-以下を含む構造化された結果：
-- 使用されたクエリパラメータ
-- 一致する銘柄のリスト
-- 総数と実行時間
-- 読みやすくフォーマットされた出力
+### Screening Results
+Structured results with:
+- Query parameters used
+- List of matching stocks
+- Total count and execution time
+- Formatted output for easy reading
 
-## エラーハンドリング
+## Error Handling
 
-サーバーには包括的なエラーハンドリングが含まれています：
-- 全パラメータの入力値検証
-- レート制限保護
-- 再試行機能付きネットワークエラー回復
-- 詳細なエラーメッセージとログ記録
+The server includes comprehensive error handling:
+- Input validation for all parameters
+- Rate limiting protection
+- Network error recovery with retries
+- Detailed error messages and logging
 
-## レート制限
+## Rate Limiting
 
-Finvizサーバーへの配慮：
-- リクエスト間のデフォルト1秒遅延
-- 設定可能なレート制限
-- 指数バックオフ付き自動再試行
-- より高い制限のためのFinviz Elite APIキーサポート
+To respect Finviz's servers:
+- Default 1-second delay between requests
+- Configurable rate limiting
+- Automatic retry with exponential backoff
+- Finviz Elite API key support for higher limits
 
-## ログ記録
+## Logging
 
-設定可能なログレベル：
-- DEBUG: 詳細なリクエスト/レスポンス情報
-- INFO: 一般的な操作情報（デフォルト）
-- WARNING: 重要でない問題
-- ERROR: 重大なエラー
+Configurable logging levels:
+- DEBUG: Detailed request/response information
+- INFO: General operation information (default)
+- WARNING: Non-critical issues
+- ERROR: Critical errors
 
-## 貢献
+## Contributing
 
-1. リポジトリをフォーク
-2. 機能ブランチを作成
-3. 変更を加える
-4. 該当する場合はテストを追加
-5. プルリクエストを提出
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## ライセンス
+## License
 
-このプロジェクトはMITライセンスの下でライセンスされています - 詳細はLICENSEファイルを参照してください。
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 免責事項
+## Disclaimer
 
-このツールは教育および研究目的のためのものです。投資判断を行う前に、常に独自の調査を行ってください。本ソフトウェアの使用によって生じた金銭的損失について、作者は責任を負いません。
+This tool is for educational and research purposes only. Always conduct your own research before making investment decisions. The authors are not responsible for any financial losses incurred using this software.
 
-**Finviz Elite契約について**: このMCPサーバーは、フル機能を使用するためにFinviz Eliteの契約が必要です。無料のFinvizアカウントでは、スクリーニング機能とデータへのアクセスが制限されています。包括的な株式スクリーニング機能については、https://elite.finviz.com/elite.ashx でFinviz Eliteにご契約ください。
+**Finviz Elite Requirement**: This MCP server requires a Finviz Elite subscription for full functionality. Free Finviz accounts have limited access to screening features and data. For comprehensive stock screening capabilities, please subscribe to Finviz Elite at https://elite.finviz.com/elite.ashx
 
-## サポート
+## Support
 
-問題や機能要求については、GitHubのissue trackerをご利用ください。
+For issues and feature requests, please use the GitHub issue tracker.
 
-## 更新履歴
+## Support the Project
+
+If you find this project helpful, consider supporting its development:
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-Support_Development-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://coff.ee/tradermonty)
+
+## Changelog
 
 ### v1.0.0
-- 初回リリース
-- 基本スクリーニングツールの実装
-- ファンダメンタルデータ取得
-- MCPサーバー統合
-- 包括的なエラーハンドリングと検証
-
-## 🔐 セキュリティ設定
-
-### 環境変数の設定
-
-このMCPサーバーはFinviz Elite APIキーが必要です。セキュリティ上の理由から、APIキーは環境変数で設定してください。
-
-#### 方法1: 環境変数でAPIキーを設定
-
-```bash
-export FINVIZ_API_KEY="your_actual_api_key_here"
-```
-
-#### 方法2: .envファイルでAPIキーを設定
-
-プロジェクトルートに`.env`ファイルを作成：
-
-```bash
-# .env
-FINVIZ_API_KEY=your_actual_api_key_here
-MCP_SERVER_DEBUG=false
-```
-
-**⚠️ 重要な注意事項:**
-- APIキーは絶対にコードにハードコードしないでください
-- `.env`ファイルは`.gitignore`に追加してください
-- APIキーを誤ってGitHubにコミットした場合は、すぐにキーを無効化してください
-
-### APIキーの取得
-
-Finviz Elite APIキーは以下から取得できます：
-https://elite.finviz.com/
+- Initial release
+- Basic screening tools implementation
+- Fundamental data retrieval
+- MCP server integration
+- Comprehensive error handling and validation

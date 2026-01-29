@@ -1,72 +1,72 @@
 #!/usr/bin/env python3
 """
-Market Overview機能のテスト
+Tests for Market Overview functionality
 """
 import os
 import sys
 
-# プロジェクトルートをパスに追加
+# Add project root to the path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(project_root, 'src'))
 
 def test_import():
-    """インポートテスト"""
+    """Import test."""
     try:
         from utils.validators import validate_ticker
         from utils.finviz_client import FinvizClient
         from utils.screeners import FinvizScreener
-        print("✅ 必要なモジュールのインポート成功")
+        print("✅ Required modules imported successfully")
         return True
     except Exception as e:
-        print(f"❌ インポートエラー: {str(e)}")
+        print(f"❌ Import error: {str(e)}")
         return False
 
 def test_market_overview_syntax():
-    """構文チェック"""
+    """Syntax check."""
     try:
-        # server.pyの構文チェック
+        # Syntax check for server.py
         import ast
         with open('src/server.py', 'r', encoding='utf-8') as f:
             source = f.read()
         
         ast.parse(source)
-        print("✅ server.py 構文チェック成功")
+        print("✅ server.py syntax check succeeded")
         return True
     except SyntaxError as e:
-        print(f"❌ 構文エラー: {str(e)}")
-        print(f"   行 {e.lineno}: {e.text}")
+        print(f"❌ Syntax error: {str(e)}")
+        print(f"   Line {e.lineno}: {e.text}")
         return False
 
 def test_finviz_tools():
-    """Finvizツールの基本テスト"""
+    """Basic test for Finviz tools."""
     try:
-        # バリデーション機能テスト
+        # Validation function test
         from utils.validators import validate_ticker
         
-        # 正常なティッカー
+        # Valid tickers
         assert validate_ticker("SPY") == True
         assert validate_ticker("QQQ") == True
         assert validate_ticker("AAPL") == True
         
-        # 不正なティッカー
+        # Invalid tickers
         assert validate_ticker("") == False
         assert validate_ticker("12345") == False
         
-        print("✅ バリデーション機能テスト成功")
+        print("✅ Validation test succeeded")
         return True
     except Exception as e:
-        print(f"❌ バリデーションテストエラー: {str(e)}")
+        print(f"❌ Validation test error: {str(e)}")
         return False
 
 def main():
-    print("🚀 Market Overview 実装テスト開始")
+    print("🚀 Starting Market Overview implementation tests")
     print("=" * 50)
     
-    # テスト実行
+    # Run tests
     tests = [
-        ("インポートテスト", test_import),
-        ("構文チェック", test_market_overview_syntax),
-        ("Finvizツールテスト", test_finviz_tools)
+        ("Import test", test_import),
+        ("Syntax check", test_market_overview_syntax),
+        ("Finviz tools test", test_finviz_tools)
     ]
     
     passed = 0
@@ -77,16 +77,16 @@ def main():
         if test_func():
             passed += 1
         else:
-            print(f"❌ {test_name} 失敗")
+            print(f"❌ {test_name} failed")
     
     print("\n" + "=" * 50)
-    print(f"🎯 テスト結果: {passed}/{total} 通過")
+    print(f"🎯 Test results: {passed}/{total} passed")
     
     if passed == total:
-        print("✅ 全てのテストが成功しました！")
-        print("🚀 market_overview実装完了")
+        print("✅ All tests passed!")
+        print("🚀 market_overview implementation complete")
     else:
-        print("❌ 一部のテストが失敗しました")
+        print("❌ Some tests failed")
         
     return passed == total
 

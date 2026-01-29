@@ -1,115 +1,115 @@
 # Finviz MCP Server - Test Suite
 
-このディレクトリには、Finviz MCP Serverの包括的なテストスイートが含まれています。全22個のMCPツール機能を網羅的にテストし、様々なパラメーター組み合わせ、エラーハンドリング、統合テストを提供します。
+This directory contains a comprehensive test suite for the Finviz MCP Server. It covers all 22 MCP tool functions and provides tests for parameter combinations, error handling, and integration behavior.
 
-## テストファイル構成
+## Test File Structure
 
 ### 1. `test_e2e_screeners.py`
-**エンドツーエンド (E2E) テスト**
-- 全22個のMCPツール機能をテスト
-- 基本的な機能動作を検証
-- 各スクリーナーの基本パラメーターをテスト
+**End-to-end (E2E) tests**
+- Tests all 22 MCP tool functions
+- Verifies baseline behavior
+- Tests basic parameters for each screener
 
-**テスト対象ツール:**
-- Earnings Screeners (4種類)
-- Volume & Trend Screeners (4種類)  
-- Fundamental Data Tools (2種類)
-- News Functions (3種類)
-- Market Analysis Tools (5種類)
-- Technical Analysis Tools (4種類)
+**Tools covered:**
+- Earnings Screeners (4 types)
+- Volume & Trend Screeners (4 types)
+- Fundamental Data Tools (2 types)
+- News Functions (3 types)
+- Market Analysis Tools (5 types)
+- Technical Analysis Tools (4 types)
 
 ### 2. `test_parameter_combinations.py`
-**パラメーター組み合わせテスト**
-- 様々なパラメーター組み合わせを系統的にテスト
-- 境界値テスト
-- 大規模データでのパフォーマンステスト
-- セクター組み合わせの網羅的テスト
+**Parameter combination tests**
+- Systematically tests many parameter combinations
+- Boundary value tests
+- Performance tests with large datasets
+- Comprehensive sector combination coverage
 
-**主要テストケース:**
-- 価格範囲の組み合わせ (最小価格、最大価格)
-- 出来高フィルターの組み合わせ
-- 時価総額 × セクターの組み合わせ
-- テクニカル指標の複合条件
-- 大量ティッカーリストでのテスト
+**Key test cases:**
+- Price range combinations (min price, max price)
+- Volume filter combinations
+- Market cap × sector combinations
+- Composite technical indicator conditions
+- Tests with large ticker lists
 
 ### 3. `test_error_handling.py`
-**エラーハンドリング・エッジケーステスト**
-- 入力値検証テスト
-- ネットワークエラーハンドリング
-- データ検証・サニタイゼーション
-- 並行処理とパフォーマンス
-- リソース管理
+**Error handling and edge case tests**
+- Input validation tests
+- Network error handling
+- Data validation and sanitization
+- Concurrency and performance
+- Resource management
 
-**エラーシナリオ:**
-- 無効なティッカー形式
-- 不正なパラメーター値
-- ネットワーク接続エラー
-- HTTPエラー (400, 401, 403, 404, 429, 500, 503)
-- レート制限エラー
-- 不正なレスポンス形式
+**Error scenarios:**
+- Invalid ticker formats
+- Invalid parameter values
+- Network connection errors
+- HTTP errors (400, 401, 403, 404, 429, 500, 503)
+- Rate limit errors
+- Invalid response formats
 
 ### 4. `test_mcp_integration.py`
-**MCP統合テスト**
-- MCPプロトコル準拠テスト
-- サーバー初期化テスト
-- ツール登録・メタデータ検証
-- データシリアライゼーション
-- 並行処理テスト
+**MCP integration tests**
+- MCP protocol compliance tests
+- Server initialization tests
+- Tool registration and metadata validation
+- Data serialization
+- Concurrency tests
 
-**統合テスト項目:**
-- 全ツールの登録確認
-- パラメーター検証統合
-- レスポンス形式検証
-- 特殊文字・Unicode対応
-- 大容量データのシリアライゼーション
+**Integration checks:**
+- Verify all tools are registered
+- Parameter validation integration
+- Response format validation
+- Special characters and Unicode handling
+- Large payload serialization
 
 ### 5. `test_comprehensive_parameters.py`
-**包括的パラメーターテスト**
-- Finvizドキュメントの全パラメーター値をテスト
-- 取引所、指数、国、セクター、業界の網羅的テスト
-- 時価総額、価格範囲、配当利回りの詳細カテゴリー
-- 日付パラメーター、アナリスト推奨の全選択肢
-- カスタム範囲（frange）とモーダル（modal）パラメーター
-- テクニカル分析パラメーター（RSI、移動平均、パフォーマンス）
+**Comprehensive parameter tests**
+- Tests every parameter value from the Finviz docs
+- Exhaustive checks for exchanges, indices, countries, sectors, and industries
+- Detailed categories for market cap, price ranges, and dividend yields
+- All options for date parameters and analyst recommendations
+- Custom ranges (frange) and modal parameters
+- Technical analysis parameters (RSI, moving averages, performance)
 
 ### 6. `test_financial_parameters.py`
-**財務パラメーターテスト**  
-- P/E比、PEG比、PBR、D/E比の詳細テスト
-- ROE、ROA、利益率（粗利、営業利益、純利益）
-- 株主構成（内部者保有、機関投資家保有、浮動株）
-- ショート・インタレスト、オプション可用性
-- 目標株価の偏差範囲テスト
+**Financial parameter tests**
+- Detailed tests for P/E, PEG, P/B, D/E ratios
+- ROE, ROA, margins (gross, operating, net)
+- Ownership structure (insider, institutional, float)
+- Short interest and options availability
+- Target price deviation range tests
 
-## 使用方法
+## Usage
 
-### 1. 基本的なテスト実行
+### 1. Run basic tests
 
 ```bash
-# 全テストを実行
+# Run all tests
 python run_tests.py all
 
-# 特定のテストカテゴリを実行
-python run_tests.py e2e           # E2Eテスト
-python run_tests.py params        # パラメーター組み合わせテスト
-python run_tests.py errors        # エラーハンドリングテスト
-python run_tests.py integration   # MCP統合テスト
-python run_tests.py comprehensive # 包括的パラメーターテスト
-python run_tests.py financial     # 財務パラメーターテスト
+# Run specific test categories
+python run_tests.py e2e           # E2E tests
+python run_tests.py params        # Parameter combination tests
+python run_tests.py errors        # Error handling tests
+python run_tests.py integration   # MCP integration tests
+python run_tests.py comprehensive # Comprehensive parameter tests
+python run_tests.py financial     # Financial parameter tests
 
-# スモークテスト (クイック検証)
+# Smoke tests (quick verification)
 python run_tests.py smoke
 
-# パフォーマンステスト
+# Performance tests
 python run_tests.py performance
 ```
 
-### 2. pytestを直接使用
+### 2. Use pytest directly
 
 ```bash
-# 全テストを実行
+# Run all tests
 pytest tests/ -v
 
-# 特定のテストファイルを実行
+# Run specific test files
 pytest tests/test_e2e_screeners.py -v
 pytest tests/test_parameter_combinations.py -v
 pytest tests/test_error_handling.py -v
@@ -117,62 +117,62 @@ pytest tests/test_mcp_integration.py -v
 pytest tests/test_comprehensive_parameters.py -v
 pytest tests/test_financial_parameters.py -v
 
-# 特定のテストクラス・メソッドを実行
+# Run a specific test class/method
 pytest tests/test_e2e_screeners.py::TestFinvizScreenersE2E::test_earnings_screener_basic -v
 
-# 失敗時に詳細を表示
+# Show detailed tracebacks on failure
 pytest tests/ -v --tb=long
 
-# 最初の失敗で停止
+# Stop on first failure
 pytest tests/ -x
 ```
 
-### 3. カバレッジ付きテスト
+### 3. Tests with coverage
 
 ```bash
-# カバレッジレポート付きテスト
+# Run tests with coverage report
 python run_tests.py coverage
 
-# またはpytestで直接
+# Or run pytest directly
 pytest tests/ --cov=src --cov-report=html --cov-report=term
 ```
 
-### 4. 並行実行
+### 4. Parallel execution
 
 ```bash
-# 並行実行 (pytest-xdist使用)
+# Parallel execution (pytest-xdist)
 pytest tests/ -n auto
 
-# 4プロセスで並行実行
+# Parallel execution with 4 processes
 pytest tests/ -n 4
 ```
 
-## テスト環境セットアップ
+## Test Environment Setup
 
-### 1. 依存関係のインストール
+### 1. Install dependencies
 
 ```bash
-# 開発依存関係をインストール
+# Install development dependencies
 pip install -e .[dev]
 
-# または個別にインストール
+# Or install individually
 pip install pytest pytest-asyncio pytest-cov
 ```
 
-### 2. 環境変数設定
+### 2. Set environment variables
 
 ```bash
-# テスト用の環境変数設定 (オプション)
+# Environment variables for tests (optional)
 export FINVIZ_API_KEY=your_test_api_key
 export LOG_LEVEL=DEBUG
 export RATE_LIMIT_REQUESTS_PER_MINUTE=50
 ```
 
-## テストデータとモック
+## Test Data and Mocks
 
-### モックデータ構造
+### Mock data structure
 
-全テストは実際のFinvizサーバーに接続せず、モックデータを使用します：
+All tests use mock data without connecting to the real Finviz server:
 
 ```python
 mock_stock_data = {
@@ -189,115 +189,11 @@ mock_stock_data = {
 }
 ```
 
-### テストパターン
+### Test patterns
 
-1. **正常系テスト**: 期待される入力での動作確認
-2. **異常系テスト**: 無効な入力でのエラーハンドリング確認
-3. **境界値テスト**: 最小・最大値での動作確認
-4. **組み合わせテスト**: 複数パラメーターの組み合わせ確認
+1. **Happy path tests**: Verify expected behavior with valid inputs
+2. **Error path tests**: Verify error handling with invalid inputs
+3. **Boundary tests**: Verify behavior at min/max values
+4. **Combination tests**: Verify behavior for parameter combinations
 
-## CI/CD統合
-
-### GitHub Actions設定例
-
-```yaml
-name: Test Suite
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: pip install -e .[dev]
-      - run: python run_tests.py all
-```
-
-## パフォーマンス指標
-
-### テスト実行時間の目安
-
-- **E2Eテスト**: ~30秒 (50+ テストケース)
-- **パラメーター組み合わせテスト**: ~45秒 (100+ テストケース)
-- **エラーハンドリングテスト**: ~20秒 (60+ テストケース)
-- **MCP統合テスト**: ~15秒 (30+ テストケース)
-- **包括的パラメーターテスト**: ~60秒 (100+ テストケース)
-- **財務パラメーターテスト**: ~40秒 (60+ テストケース)
-- **全テスト**: ~3.5分 (400+ テストケース)
-
-### 並行実行での改善
-
-```bash
-# 標準実行: ~3.5分
-pytest tests/ -v
-
-# 並行実行: ~1分
-pytest tests/ -n auto -v
-```
-
-## トラブルシューティング
-
-### よくある問題
-
-1. **ModuleNotFoundError**
-   ```bash
-   # プロジェクトルートから実行
-   cd /path/to/finviz-mcp-server
-   python -m pytest tests/
-   ```
-
-2. **Import Error**
-   ```bash
-   # 開発モードでインストール
-   pip install -e .
-   ```
-
-3. **テストタイムアウト**
-   ```bash
-   # タイムアウト時間を延長
-   pytest tests/ --timeout=300
-   ```
-
-4. **メモリ不足**
-   ```bash
-   # 並行数を制限
-   pytest tests/ -n 2
-   ```
-
-## 継続的改善
-
-### テストの追加
-
-新しい機能を追加する際は、対応するテストも追加してください：
-
-1. `test_e2e_screeners.py` - 基本機能テスト
-2. `test_parameter_combinations.py` - パラメーター組み合わせテスト
-3. `test_error_handling.py` - エラーケーステスト
-4. `test_mcp_integration.py` - MCP統合テスト
-
-### テストカバレッジ目標
-
-- **ライン カバレッジ**: 90%以上
-- **ブランチ カバレッジ**: 85%以上
-- **関数 カバレッジ**: 95%以上
-
-### コードクオリティ
-
-```bash
-# コード品質チェック
-python run_tests.py lint    # flake8, black
-python run_tests.py types   # mypy
-```
-
-## 参考資料
-
-- [pytest documentation](https://docs.pytest.org/)
-- [pytest-asyncio](https://pytest-asyncio.readthedocs.io/)
-- [MCP Protocol Specification](https://spec.modelcontextprotocol.io/)
-- [Finviz API Documentation](https://finviz.com/help/technical-analysis)
-
----
-
-**注意**: このテストスイートは開発・テスト環境での使用を想定しています。本番環境では実際のFinviz APIを使用してください。
+## CI/CD Integration

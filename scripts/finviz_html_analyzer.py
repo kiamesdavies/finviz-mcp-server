@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Finviz HTML ファイル解析スクリプト
+Finviz HTML file analysis script.
 
-保存されたFinviz HTMLファイルを解析して、
-利用可能な全フィルター項目とその値を詳細に解析するスクリプト。
+Parses a saved Finviz HTML file and extracts all available filter
+parameters and their values in detail.
 
 Usage:
     python finviz_html_analyzer.py [html_file_path]
@@ -20,20 +20,20 @@ from pathlib import Path
 import argparse
 import logging
 
-# ログ設定
+# Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 @dataclass
 class FilterOption:
-    """フィルターオプションのデータクラス"""
+    """Filter option data class."""
     value: str
     label: str
     group: Optional[str] = None
 
 @dataclass
 class FilterParameter:
-    """フィルターパラメーターのデータクラス"""
+    """Filter parameter data class."""
     name: str
     id: str
     data_filter: str
@@ -44,65 +44,65 @@ class FilterParameter:
     data_url_selected: Optional[str] = None
 
 class FinvizHTMLAnalyzer:
-    """Finviz HTML解析クラス"""
+    """Finviz HTML analyzer."""
     
     def __init__(self, html_file_path: str):
         self.html_file_path = Path(html_file_path)
         self.filters = []
         
-        # 除外するフィルターのリスト（個人設定等）
+        # Filters to exclude (presets/personal settings)
         self.excluded_filters = {
-            'screenerpresetsselect',     # スクリーナープリセット選択
-            'screenerpresets',           # スクリーナープリセット
-            'fs_screenerpresetsselect',  # フルIDバージョン
-            'fs_screenerpresets',        # フルIDバージョン
+            'screenerpresetsselect',     # Screener preset selection
+            'screenerpresets',           # Screener preset
+            'fs_screenerpresetsselect',  # Full ID version
+            'fs_screenerpresets',        # Full ID version
         }
         
         if not self.html_file_path.exists():
-            raise FileNotFoundError(f"HTMLファイルが見つかりません: {html_file_path}")
+            raise FileNotFoundError(f"HTML file not found: {html_file_path}")
         
-        logger.info(f"除外フィルター: {', '.join(self.excluded_filters)}")
+        logger.info(f"Excluded filters: {', '.join(self.excluded_filters)}")
     
     def load_html(self) -> BeautifulSoup:
-        """HTMLファイルを読み込み"""
+        """Load HTML file."""
         try:
             with open(self.html_file_path, 'r', encoding='utf-8') as f:
                 html_content = f.read()
             
             soup = BeautifulSoup(html_content, 'html.parser')
-            logger.info(f"HTMLファイルを読み込みました: {self.html_file_path}")
+            logger.info(f"Loaded HTML file: {self.html_file_path}")
             return soup
             
         except UnicodeDecodeError:
-            # UTF-8で読み込めない場合、他のエンコーディングを試す
+            # If UTF-8 fails, try another encoding
             try:
                 with open(self.html_file_path, 'r', encoding='iso-8859-1') as f:
                     html_content = f.read()
                 soup = BeautifulSoup(html_content, 'html.parser')
-                logger.info(f"HTMLファイル読み込み成功 (iso-8859-1): {self.html_file_path}")
+                logger.info(f"Loaded HTML file (iso-8859-1): {self.html_file_path}")
                 return soup
             except Exception as e:
-                logger.error(f"HTMLファイル読み込みエラー: {e}")
+                logger.error(f"HTML file read error: {e}")
                 raise
         except Exception as e:
-            logger.error(f"HTMLファイル読み込みエラー: {e}")
+            logger.error(f"HTML file read error: {e}")
             raise
     
     def extract_filter_parameters(self) -> List[FilterParameter]:
-        """フィルターパラメーターを抽出"""
+        """Extract filter parameters."""
         try:
             soup = self.load_html()
             filters = []
             
-            # selectタグのフィルター要素を検索（複数のクラスパターンに対応）
+            # Find select-tag filters (support multiple class patterns)
             select_patterns = [
                 {'class': re.compile(r'screener-combo')},
                 {'class': re.compile(r'fv-select')},
                 {'class': re.compile(r'screener.*combo')},
-                {'id': re.compile(r'^fs_')},  # IDがfs_で始まるもの
+                {'id': re.compile(r'^fs_')},  # IDs starting with fs_
             ]
             
-            found_selects = set()  # 重複を防ぐ
+            found_selects = set()  # Avoid duplicates
             
             for pattern in select_patterns:
                 selects = soup.find_all('select', pattern)
@@ -115,10 +115,10 @@ class FinvizHTMLAnalyzer:
                             if filter_param:
                                 filters.append(filter_param)
                         except Exception as e:
-                            logger.warning(f"selectエレメント解析エラー ({select_id}): {e}")
+                            logger.warning(f"Select element parse error ({select_id}): {e}")
                             continue
             
-            # data-filter属性を持つselect要素も検索
+            # Also find select elements with data-filter
             data_filter_selects = soup.find_all('select', attrs={'data-filter': True})
             for select in data_filter_selects:
                 select_id = select.get('id', '')
@@ -129,24 +129,24 @@ class FinvizHTMLAnalyzer:
                         if filter_param:
                             filters.append(filter_param)
                     except Exception as e:
-                        logger.warning(f"data-filter select解析エラー ({select_id}): {e}")
+                        logger.warning(f"data-filter select parse error ({select_id}): {e}")
                         continue
             
-            logger.info(f"{len(filters)}個のフィルターパラメーターを検出しました")
+            logger.info(f"Detected {len(filters)} filter parameters")
             
-            # フィルターをdata-filter順でソート
+            # Sort filters by data-filter
             filters.sort(key=lambda x: x.data_filter)
             
             return filters
             
         except Exception as e:
-            logger.error(f"フィルターパラメーター抽出エラー: {e}")
+            logger.error(f"Filter parameter extraction error: {e}")
             return []
     
     def _parse_select_element(self, select) -> Optional[FilterParameter]:
-        """selectエレメントを解析してFilterParameterオブジェクトを作成"""
+        """Parse a select element into a FilterParameter."""
         try:
-            # 基本属性を取得
+            # Basic attributes
             select_id = select.get('id', '')
             data_filter = select.get('data-filter', '')
             data_url = select.get('data-url', '')
@@ -155,17 +155,17 @@ class FinvizHTMLAnalyzer:
             if not data_filter and not select_id:
                 return None
             
-            # data-filterがない場合、IDから推測
+            # If data-filter is missing, infer from ID
             if not data_filter and select_id.startswith('fs_'):
-                data_filter = select_id[3:]  # fs_を除去
+                data_filter = select_id[3:]  # Remove fs_
             
-            # 除外フィルターをチェック
+            # Check excluded filters
             if (select_id.lower() in self.excluded_filters or 
                 data_filter.lower() in self.excluded_filters):
-                logger.debug(f"フィルターを除外しました: {select_id} (data-filter: {data_filter})")
+                logger.debug(f"Excluded filter: {select_id} (data-filter: {data_filter})")
                 return None
             
-            # オプションを解析
+            # Parse options
             options = []
             current_group = None
             
@@ -176,7 +176,7 @@ class FinvizHTMLAnalyzer:
                     value = element.get('value', '')
                     label = element.get_text(strip=True)
                     
-                    # 空のラベルをスキップ
+                    # Skip empty labels
                     if not label:
                         continue
                     
@@ -187,10 +187,10 @@ class FinvizHTMLAnalyzer:
                     )
                     options.append(option)
             
-            # 選択された値を取得
+            # Get selected value
             selected_option = select.find('option', selected=True)
             if not selected_option:
-                # data-selected属性もチェック
+                # Also check data-selected attribute
                 selected_value = select.get('data-selected', '')
             else:
                 selected_value = selected_option.get('value', '')
@@ -206,107 +206,107 @@ class FinvizHTMLAnalyzer:
             )
             
         except Exception as e:
-            logger.warning(f"selectエレメント解析中にエラー: {e}")
+            logger.warning(f"Error parsing select element: {e}")
             return None
     
     def _get_filter_name_from_id(self, element_id: str, data_filter: str = '') -> str:
-        """element IDまたはdata-filterからフィルター名を推定"""
-        # ID → 名前のマッピング（拡張版）
+        """Infer a filter name from element ID or data-filter."""
+        # ID -> name mapping (extended)
         id_to_name = {
-            'fs_exch': 'Exchange (取引所)',
-            'fs_idx': 'Index (指数)',
-            'fs_sec': 'Sector (セクター)',
-            'fs_ind': 'Industry (業界)',
-            'fs_geo': 'Country (国)',
-            'fs_cap': 'Market Cap (時価総額)',
-            'fs_sh_price': 'Price (株価)',
-            'fs_fa_div': 'Dividend Yield (配当利回り)',
-            'fs_fa_epsrev': 'EPS/Revenue Revision (EPS・売上改訂)',
-            'fs_sh_short': 'Short Float (ショート比率)',
-            'fs_an_recom': 'Analyst Recommendation (アナリスト推奨)',
-            'fs_sh_opt': 'Option/Short (オプション/ショート)',
-            'fs_earningsdate': 'Earnings Date (決算日)',
-            'fs_ipodate': 'IPO Date (IPO日)',
-            'fs_sh_avgvol': 'Average Volume (平均出来高)',
-            'fs_sh_relvol': 'Relative Volume (相対出来高)',
-            'fs_sh_curvol': 'Current Volume (当日出来高)',
-            'fs_sh_trades': 'Trades (取引回数)',
-            'fs_sh_outstanding': 'Shares Outstanding (発行済株式数)',
-            'fs_sh_float': 'Float (浮動株数)',
-            'fs_ta_perf2': 'Performance 2 (パフォーマンス 2)',
-            'fs_ta_perf': 'Performance (パフォーマンス)',
-            'fs_targetprice': 'Target Price (目標株価)',
-            'fs_ta_highlow52w': '52W High/Low (52週高値/安値)',
-            'fs_ta_sma20': 'SMA20 (20日移動平均)',
-            'fs_ta_sma50': 'SMA50 (50日移動平均)',
-            'fs_ta_sma200': 'SMA200 (200日移動平均)',
-            'fs_ta_change': 'Change (変化)',
-            'fs_ta_volume': 'Volume (出来高)',
-            'fs_fa_pe': 'P/E Ratio (PER)',
-            'fs_fa_peg': 'PEG Ratio (PEG比)',
-            'fs_fa_ps': 'P/S Ratio (PSR)',
-            'fs_fa_pb': 'P/B Ratio (PBR)',
-            'fs_fa_pc': 'P/C Ratio (PCR)',
-            'fs_fa_pfcf': 'P/FCF Ratio (P/FCF比)',
-            'fs_fa_epsyoy': 'EPS Growth YoY (EPS前年比成長)',
-            'fs_fa_epsqoq': 'EPS Growth QoQ (EPS前四半期比成長)',
-            'fs_fa_salesyoy': 'Sales Growth YoY (売上前年比成長)',
-            'fs_fa_salesqoq': 'Sales Growth QoQ (売上前四半期比成長)',
-            'fs_fa_eps5y': 'EPS Growth 5Y (EPS5年成長)',
-            'fs_fa_sales5y': 'Sales Growth 5Y (売上5年成長)',
+            'fs_exch': 'Exchange',
+            'fs_idx': 'Index',
+            'fs_sec': 'Sector',
+            'fs_ind': 'Industry',
+            'fs_geo': 'Country',
+            'fs_cap': 'Market Cap',
+            'fs_sh_price': 'Price',
+            'fs_fa_div': 'Dividend Yield',
+            'fs_fa_epsrev': 'EPS/Revenue Revision',
+            'fs_sh_short': 'Short Float',
+            'fs_an_recom': 'Analyst Recommendation',
+            'fs_sh_opt': 'Option/Short',
+            'fs_earningsdate': 'Earnings Date',
+            'fs_ipodate': 'IPO Date',
+            'fs_sh_avgvol': 'Average Volume',
+            'fs_sh_relvol': 'Relative Volume',
+            'fs_sh_curvol': 'Current Volume',
+            'fs_sh_trades': 'Trades',
+            'fs_sh_outstanding': 'Shares Outstanding',
+            'fs_sh_float': 'Float',
+            'fs_ta_perf2': 'Performance 2',
+            'fs_ta_perf': 'Performance',
+            'fs_targetprice': 'Target Price',
+            'fs_ta_highlow52w': '52W High/Low',
+            'fs_ta_sma20': 'SMA20 (20-day moving average)',
+            'fs_ta_sma50': 'SMA50 (50-day moving average)',
+            'fs_ta_sma200': 'SMA200 (200-day moving average)',
+            'fs_ta_change': 'Change',
+            'fs_ta_volume': 'Volume',
+            'fs_fa_pe': 'P/E Ratio',
+            'fs_fa_peg': 'PEG Ratio',
+            'fs_fa_ps': 'P/S Ratio',
+            'fs_fa_pb': 'P/B Ratio',
+            'fs_fa_pc': 'P/C Ratio',
+            'fs_fa_pfcf': 'P/FCF Ratio',
+            'fs_fa_epsyoy': 'EPS Growth YoY',
+            'fs_fa_epsqoq': 'EPS Growth QoQ',
+            'fs_fa_salesyoy': 'Sales Growth YoY',
+            'fs_fa_salesqoq': 'Sales Growth QoQ',
+            'fs_fa_eps5y': 'EPS Growth 5Y',
+            'fs_fa_sales5y': 'Sales Growth 5Y',
             'fs_fa_roe': 'ROE',
             'fs_fa_roa': 'ROA',
             'fs_fa_roi': 'ROI',
-            'fs_fa_curratio': 'Current Ratio (流動比率)',
-            'fs_fa_quickratio': 'Quick Ratio (当座比率)',
-            'fs_fa_ltdebt': 'LT Debt/Eq (長期負債比率)',
-            'fs_fa_debt': 'Debt/Eq (負債比率)',
-            'fs_fa_grossmargin': 'Gross Margin (売上総利益率)',
-            'fs_fa_opermargin': 'Operating Margin (営業利益率)',
-            'fs_fa_profitmargin': 'Profit Margin (純利益率)',
-            'fs_fa_payout': 'Payout Ratio (配当性向)',
-            'fs_fa_insiderown': 'Insider Own (インサイダー所有)',
-            'fs_fa_insidertrans': 'Insider Trans (インサイダー取引)',
-            'fs_fa_insthold': 'Inst Hold (機関投資家保有)',
-            'fs_fa_insttrans': 'Inst Trans (機関投資家取引)',
+            'fs_fa_curratio': 'Current Ratio',
+            'fs_fa_quickratio': 'Quick Ratio',
+            'fs_fa_ltdebt': 'LT Debt/Eq',
+            'fs_fa_debt': 'Debt/Eq',
+            'fs_fa_grossmargin': 'Gross Margin',
+            'fs_fa_opermargin': 'Operating Margin',
+            'fs_fa_profitmargin': 'Profit Margin',
+            'fs_fa_payout': 'Payout Ratio',
+            'fs_fa_insiderown': 'Insider Own',
+            'fs_fa_insidertrans': 'Insider Trans',
+            'fs_fa_insthold': 'Inst Hold',
+            'fs_fa_insttrans': 'Inst Trans',
         }
         
-        # data-filter → 名前のマッピング
+        # data-filter -> name mapping
         filter_to_name = {
-            'exch': 'Exchange (取引所)',
-            'idx': 'Index (指数)',
-            'sec': 'Sector (セクター)',
-            'ind': 'Industry (業界)',
-            'geo': 'Country (国)',
-            'cap': 'Market Cap (時価総額)',
-            'sh_price': 'Price (株価)',
-            'fa_div': 'Dividend Yield (配当利回り)',
-            'fa_epsrev': 'EPS/Revenue Revision (EPS・売上改訂)',
-            'sh_short': 'Short Float (ショート比率)',
-            'an_recom': 'Analyst Recommendation (アナリスト推奨)',
-            'sh_opt': 'Option/Short (オプション/ショート)',
-            'earningsdate': 'Earnings Date (決算日)',
-            'ipodate': 'IPO Date (IPO日)',
-            'sh_avgvol': 'Average Volume (平均出来高)',
-            'sh_relvol': 'Relative Volume (相対出来高)',
-            'sh_curvol': 'Current Volume (当日出来高)',
-            'sh_trades': 'Trades (取引回数)',
-            'sh_outstanding': 'Shares Outstanding (発行済株式数)',
-            'sh_float': 'Float (浮動株数)',
-            'ta_perf2': 'Performance 2 (パフォーマンス 2)',
-            'ta_perf': 'Performance (パフォーマンス)',
-            'targetprice': 'Target Price (目標株価)',
+            'exch': 'Exchange',
+            'idx': 'Index',
+            'sec': 'Sector',
+            'ind': 'Industry',
+            'geo': 'Country',
+            'cap': 'Market Cap',
+            'sh_price': 'Price',
+            'fa_div': 'Dividend Yield',
+            'fa_epsrev': 'EPS/Revenue Revision',
+            'sh_short': 'Short Float',
+            'an_recom': 'Analyst Recommendation',
+            'sh_opt': 'Option/Short',
+            'earningsdate': 'Earnings Date',
+            'ipodate': 'IPO Date',
+            'sh_avgvol': 'Average Volume',
+            'sh_relvol': 'Relative Volume',
+            'sh_curvol': 'Current Volume',
+            'sh_trades': 'Trades',
+            'sh_outstanding': 'Shares Outstanding',
+            'sh_float': 'Float',
+            'ta_perf2': 'Performance 2',
+            'ta_perf': 'Performance',
+            'targetprice': 'Target Price',
         }
         
-        # IDから名前を取得
+        # Resolve by ID
         if element_id in id_to_name:
             return id_to_name[element_id]
         
-        # data-filterから名前を取得
+        # Resolve by data-filter
         if data_filter in filter_to_name:
             return filter_to_name[data_filter]
         
-        # フォールバック
+        # Fallback
         if element_id:
             return element_id.replace('fs_', '').replace('_', ' ').title()
         elif data_filter:
@@ -315,28 +315,28 @@ class FinvizHTMLAnalyzer:
             return 'Unknown Filter'
     
     def categorize_filters(self, filters: List[FilterParameter]) -> Dict[str, List[FilterParameter]]:
-        """フィルターをカテゴリー別に分類"""
+        """Categorize filters by category."""
         categories = {
-            '基本情報系パラメーター': [],
-            '株価・時価総額系パラメーター': [],
-            '配当・財務系パラメーター': [],
-            'アナリスト・推奨系パラメーター': [],
-            '日付系パラメーター': [],
-            '出来高・取引系パラメーター': [],
-            '株式発行系パラメーター': [],
-            'テクニカル分析系パラメーター': [],
-            'その他パラメーター': []
+            'Basic info parameters': [],
+            'Price/Market Cap parameters': [],
+            'Dividend/Financial parameters': [],
+            'Analyst/Recommendation parameters': [],
+            'Date parameters': [],
+            'Volume/Trading parameters': [],
+            'Share issuance parameters': [],
+            'Technical analysis parameters': [],
+            'Other parameters': []
         }
         
         category_keywords = {
-            '基本情報系パラメーター': ['exchange', 'index', 'sector', 'industry', 'country', 'exch', 'idx', 'sec', 'ind', 'geo'],
-            '株価・時価総額系パラメーター': ['market cap', 'price', 'target price', 'cap', 'sh_price', 'targetprice'],
-            '配当・財務系パラメーター': ['dividend', 'eps', 'revenue', 'short', 'pe', 'pb', 'ps', 'roe', 'roa', 'margin', 'debt', 'fa_'],
-            'アナリスト・推奨系パラメーター': ['analyst', 'recommendation', 'an_recom'],
-            '日付系パラメーター': ['earnings date', 'ipo date', 'earningsdate', 'ipodate'],
-            '出来高・取引系パラメーター': ['volume', 'trades', 'sh_avgvol', 'sh_relvol', 'sh_curvol', 'sh_trades'],
-            '株式発行系パラメーター': ['shares', 'float', 'outstanding', 'sh_outstanding', 'sh_float'],
-            'テクニカル分析系パラメーター': ['performance', 'sma', 'change', 'high', 'low', 'ta_'],
+            'Basic info parameters': ['exchange', 'index', 'sector', 'industry', 'country', 'exch', 'idx', 'sec', 'ind', 'geo'],
+            'Price/Market Cap parameters': ['market cap', 'price', 'target price', 'cap', 'sh_price', 'targetprice'],
+            'Dividend/Financial parameters': ['dividend', 'eps', 'revenue', 'short', 'pe', 'pb', 'ps', 'roe', 'roa', 'margin', 'debt', 'fa_'],
+            'Analyst/Recommendation parameters': ['analyst', 'recommendation', 'an_recom'],
+            'Date parameters': ['earnings date', 'ipo date', 'earningsdate', 'ipodate'],
+            'Volume/Trading parameters': ['volume', 'trades', 'sh_avgvol', 'sh_relvol', 'sh_curvol', 'sh_trades'],
+            'Share issuance parameters': ['shares', 'float', 'outstanding', 'sh_outstanding', 'sh_float'],
+            'Technical analysis parameters': ['performance', 'sma', 'change', 'high', 'low', 'ta_'],
         }
         
         for filter_param in filters:
@@ -350,12 +350,12 @@ class FinvizHTMLAnalyzer:
                     break
             
             if not assigned:
-                categories['その他パラメーター'].append(filter_param)
+                categories['Other parameters'].append(filter_param)
         
         return categories
     
     def export_to_markdown(self, filters: List[FilterParameter], output_file: str = None):
-        """フィルター情報をMarkdown形式でエクスポート"""
+        """Export filter information to Markdown."""
         if output_file is None:
             output_file = f"finviz_filters_analysis_{self.html_file_path.stem}.md"
         
@@ -363,10 +363,10 @@ class FinvizHTMLAnalyzer:
             categorized_filters = self.categorize_filters(filters)
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                f.write("# Finviz フィルターパラメーター詳細一覧\n\n")
-                f.write(f"HTMLファイル: `{self.html_file_path.name}`\n")
-                f.write(f"解析日時: {os.path.getctime(self.html_file_path)}\n\n")
-                f.write("このドキュメントは、Finvizのスクリーニング機能で使用できる全パラメーターとその取得可能な値を詳細に記載しています。\n\n")
+                f.write("# Finviz Filter Parameter Details\n\n")
+                f.write(f"HTML file: `{self.html_file_path.name}`\n")
+                f.write(f"Analyzed at: {os.path.getctime(self.html_file_path)}\n\n")
+                f.write("This document lists all parameters available in Finviz screening, along with their possible values.\n\n")
                 
                 for category, category_filters in categorized_filters.items():
                     if not category_filters:
@@ -378,21 +378,21 @@ class FinvizHTMLAnalyzer:
                         f.write(f"### {filter_param.name} - `{filter_param.data_filter}`\n")
                         
                         if filter_param.selected_value:
-                            f.write(f"**現在選択値**: `{filter_param.selected_value}`\n\n")
+                            f.write(f"**Current selected value**: `{filter_param.selected_value}`\n\n")
                         
                         if filter_param.options:
-                            # グループがある場合とない場合で表示を分ける
+                            # Switch layout depending on whether groups exist
                             has_groups = any(option.group for option in filter_param.options)
                             
                             if has_groups:
-                                f.write("| 値 | 説明 | グループ |\n")
+                                f.write("| Value | Description | Group |\n")
                                 f.write("|---|---|---|\n")
                                 
                                 for option in filter_param.options:
                                     group = option.group or "-"
                                     f.write(f"| `{option.value}` | {option.label} | {group} |\n")
                             else:
-                                f.write("| 値 | 説明 |\n")
+                                f.write("| Value | Description |\n")
                                 f.write("|---|---|\n")
                                 
                                 for option in filter_param.options:
@@ -400,31 +400,31 @@ class FinvizHTMLAnalyzer:
                             
                             f.write("\n")
                         
-                        # data-url情報があれば追加
+                        # Include data-url if present
                         if filter_param.data_url:
                             f.write(f"**Data URL**: `{filter_param.data_url}`\n\n")
                         
                         f.write("\n")
                 
-                # 使用方法セクション
-                f.write("## 使用方法\n\n")
-                f.write("これらのパラメーターは、Finvizのスクリーニング機能でURLのクエリパラメーターとして使用されます。\n\n")
-                f.write("### 例:\n")
+                # Usage section
+                f.write("## Usage\n\n")
+                f.write("These parameters are used as URL query parameters for Finviz screening.\n\n")
+                f.write("### Example:\n")
                 f.write("```\n")
                 f.write("https://finviz.com/screener.ashx?v=111&f=cap_large,sec_technology,ta_perf_1w_o5\n")
                 f.write("```\n\n")
-                f.write("### 複数条件の組み合わせ:\n")
-                f.write("- パラメーターはカンマ区切りで複数指定可能\n")
-                f.write("- 異なるカテゴリーのパラメーターは AND 条件で結合\n")
-                f.write("- 同一カテゴリーの複数値は OR 条件で結合（一部例外あり）\n\n")
+                f.write("### Combining multiple conditions:\n")
+                f.write("- You can specify multiple parameters separated by commas\n")
+                f.write("- Parameters from different categories are combined with AND\n")
+                f.write("- Multiple values within the same category are combined with OR (with a few exceptions)\n\n")
             
-            logger.info(f"フィルター情報を {output_file} に出力しました")
+            logger.info(f"Wrote filter info to {output_file}")
             
         except Exception as e:
-            logger.error(f"Markdown出力エラー: {e}")
+            logger.error(f"Markdown export error: {e}")
     
     def export_to_json(self, filters: List[FilterParameter], output_file: str = None):
-        """フィルター情報をJSON形式でエクスポート"""
+        """Export filter information to JSON."""
         if output_file is None:
             output_file = f"finviz_filters_analysis_{self.html_file_path.stem}.json"
         
@@ -453,7 +453,7 @@ class FinvizHTMLAnalyzer:
                     'options': options_data
                 }
                 
-                # data-url情報があれば追加
+                # Include data-url if present
                 if filter_param.data_url:
                     filter_info['data_url'] = filter_param.data_url
                 if filter_param.data_url_selected:
@@ -464,52 +464,52 @@ class FinvizHTMLAnalyzer:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(filter_data, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"フィルター情報を {output_file} に出力しました")
+            logger.info(f"Wrote filter info to {output_file}")
             
         except Exception as e:
-            logger.error(f"JSON出力エラー: {e}")
+            logger.error(f"JSON export error: {e}")
     
     def print_summary(self, filters: List[FilterParameter]):
-        """解析結果のサマリーを表示"""
+        """Print a summary of analysis results."""
         print("\n" + "="*60)
-        print("📊 Finviz フィルター解析結果サマリー")
+        print("📊 Finviz Filter Analysis Summary")
         print("="*60)
         
         categorized = self.categorize_filters(filters)
         
-        print(f"📄 ソースファイル: {self.html_file_path.name}")
-        print(f"🔢 総フィルター数: {len(filters)}")
-        print(f"📂 カテゴリー数: {len([c for c, f in categorized.items() if f])}")
+        print(f"📄 Source file: {self.html_file_path.name}")
+        print(f"🔢 Total filters: {len(filters)}")
+        print(f"📂 Category count: {len([c for c, f in categorized.items() if f])}")
         
-        print("\n📋 カテゴリー別統計:")
+        print("\n📋 Category breakdown:")
         for category, category_filters in categorized.items():
             if category_filters:
-                print(f"  📊 {category}: {len(category_filters)}個")
+                print(f"  📊 {category}: {len(category_filters)} items")
         
-        # Top 5 フィルター（オプション数順）
+        # Top 5 filters (by option count)
         top_filters = sorted(filters, key=lambda x: len(x.options), reverse=True)[:5]
-        print(f"\n🔝 オプション数上位5フィルター:")
+        print("\n🔝 Top 5 filters by option count:")
         for i, filter_param in enumerate(top_filters, 1):
-            print(f"  {i}. {filter_param.name}: {len(filter_param.options)}個のオプション")
+            print(f"  {i}. {filter_param.name}: {len(filter_param.options)} options")
         
         print("\n" + "="*60)
     
     def analyze(self, export_format: str = 'both'):
-        """完全な解析を実行"""
+        """Run full analysis."""
         try:
-            logger.info("フィルター解析を開始します...")
+            logger.info("Starting filter analysis...")
             
-            # フィルター抽出
+            # Extract filters
             filters = self.extract_filter_parameters()
             
             if not filters:
-                logger.error("フィルターが検出されませんでした")
+                logger.error("No filters detected")
                 return False
             
-            # サマリー表示
+            # Show summary
             self.print_summary(filters)
             
-            # 結果出力
+            # Output results
             if export_format in ['markdown', 'both']:
                 self.export_to_markdown(filters)
             
@@ -519,16 +519,16 @@ class FinvizHTMLAnalyzer:
             return True
             
         except Exception as e:
-            logger.error(f"解析実行エラー: {e}")
+            logger.error(f"Analysis error: {e}")
             return False
 
 def main():
-    """メイン実行関数"""
+    """Main entry function."""
     parser = argparse.ArgumentParser(
-        description='Finviz HTMLファイル解析ツール',
+        description='Finviz HTML analysis tool',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用例:
+Examples:
   python finviz_html_analyzer.py finviz_screen_page.html
   python finviz_html_analyzer.py finviz_screen_page.html --format json
   python finviz_html_analyzer.py finviz_screen_page.html --format markdown
@@ -539,32 +539,32 @@ def main():
         'html_file',
         nargs='?',
         default='finviz_screen_page.html',
-        help='解析するHTMLファイルのパス (デフォルト: finviz_screen_page.html)'
+        help='Path to the HTML file to analyze (default: finviz_screen_page.html)'
     )
     
     parser.add_argument(
         '--format', '-f',
         choices=['markdown', 'json', 'both'],
         default='both',
-        help='出力形式を指定 (デフォルト: both)'
+        help='Output format (default: both)'
     )
     
     args = parser.parse_args()
     
-    print("🔍 Finviz HTML フィルター解析ツール")
+    print("🔍 Finviz HTML Filter Analysis Tool")
     print("="*50)
     
     try:
-        # 解析器初期化
+        # Initialize analyzer
         analyzer = FinvizHTMLAnalyzer(args.html_file)
         
-        # 解析実行
+        # Run analysis
         success = analyzer.analyze(export_format=args.format)
         
         if success:
-            print("\n✅ 解析が完了しました！")
+            print("\n✅ Analysis complete!")
             
-            # 出力ファイル確認
+            # Check output files
             stem = Path(args.html_file).stem
             
             if args.format in ['markdown', 'both']:
@@ -579,14 +579,14 @@ def main():
                     size = os.path.getsize(json_file) / 1024
                     print(f"📊 {json_file} ({size:.1f} KB)")
         else:
-            print("\n❌ 解析に失敗しました")
+            print("\n❌ Analysis failed")
             return 1
             
     except FileNotFoundError as e:
-        print(f"❌ ファイルエラー: {e}")
+        print(f"❌ File error: {e}")
         return 1
     except Exception as e:
-        print(f"❌ 予期しないエラー: {e}")
+        print(f"❌ Unexpected error: {e}")
         return 1
     
     return 0

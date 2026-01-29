@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Finviz カスタム範囲解析スクリプト
+Finviz Custom Range Analysis Script
 
-Finvizのカスタム範囲（手入力レンジ）指定時のURLパターンを解析するスクリプト。
-通常のフィルター解析に加えて、レンジ指定時の動的URLパターンも抽出します。
+Analyzes URL patterns used when specifying custom ranges (manual range inputs) in Finviz.
+In addition to standard filter analysis, it extracts dynamic URL patterns for range inputs.
 
 Usage:
     python finviz_range_analyzer.py [html_file_path]
@@ -20,11 +20,11 @@ from pathlib import Path
 import argparse
 import logging
 
-# 既存のHTMLアナライザーをインポート
+# Import the existing HTML analyzer
 try:
     from finviz_html_analyzer import FinvizHTMLAnalyzer, FilterParameter, FilterOption
 except ImportError:
-    print("❌ finviz_html_analyzer.py が見つかりません")
+    print("❌ finviz_html_analyzer.py not found")
     sys.exit(1)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RangePattern:
-    """カスタム範囲パターンのデータクラス"""
+    """Data class for a custom range pattern."""
     filter_name: str
     parameter_name: str
     range_type: str  # 'numeric', 'percentage', 'currency', 'volume', 'date'
@@ -44,7 +44,7 @@ class RangePattern:
 
 @dataclass
 class CustomInputField:
-    """カスタム入力フィールドのデータクラス"""
+    """Data class for a custom input field."""
     field_id: str
     field_type: str
     associated_filter: str
@@ -52,14 +52,14 @@ class CustomInputField:
     validation_pattern: Optional[str] = None
 
 class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
-    """Finviz カスタム範囲解析クラス（HTMLアナライザーを拡張）"""
+    """Finviz custom range analysis class (extends the HTML analyzer)."""
     
     def __init__(self, html_file_path: str):
         super().__init__(html_file_path)
         self.range_patterns = []
         self.custom_inputs = []
         
-        # 既知の範囲パラメーターパターン
+        # Known range parameter patterns
         self.known_range_patterns = {
             'sh_price': {
                 'type': 'currency',
@@ -190,12 +190,12 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         }
     
     def extract_custom_input_fields(self) -> List[CustomInputField]:
-        """カスタム入力フィールドを抽出"""
+        """Extract custom input fields."""
         try:
             soup = self.load_html()
             custom_inputs = []
             
-            # input要素でフィルター関連のものを検索
+            # Search input elements related to filters
             input_patterns = [
                 {'type': 'text', 'class': re.compile(r'.*range.*|.*custom.*')},
                 {'type': 'number'},
@@ -211,7 +211,7 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                     placeholder = input_elem.get('placeholder', '')
                     pattern_attr = input_elem.get('pattern', '')
                     
-                    # 関連するフィルターを推定
+                    # Guess the associated filter
                     associated_filter = self._guess_associated_filter(input_id, placeholder)
                     
                     if associated_filter or input_id:
@@ -224,15 +224,15 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                         )
                         custom_inputs.append(custom_input)
             
-            logger.info(f"{len(custom_inputs)}個のカスタム入力フィールドを検出しました")
+            logger.info(f"Detected {len(custom_inputs)} custom input fields")
             return custom_inputs
             
         except Exception as e:
-            logger.error(f"カスタム入力フィールド抽出エラー: {e}")
+            logger.error(f"Custom input field extraction error: {e}")
             return []
     
     def _guess_associated_filter(self, input_id: str, placeholder: str) -> str:
-        """入力フィールドに関連するフィルターを推定"""
+        """Infer the filter associated with an input field."""
         search_text = f"{input_id} {placeholder}".lower()
         
         filter_keywords = {
@@ -255,14 +255,14 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         return ''
     
     def analyze_data_url_patterns(self, filters: List[FilterParameter]) -> List[RangePattern]:
-        """data-url属性からカスタム範囲パターンを解析"""
+        """Analyze custom range patterns from data-url attributes."""
         range_patterns = []
         
         for filter_param in filters:
             if not filter_param.data_url and not filter_param.data_url_selected:
                 continue
             
-            # data-urlからレンジパターンを抽出
+            # Extract range patterns from data-url
             urls_to_analyze = []
             if filter_param.data_url:
                 urls_to_analyze.append(filter_param.data_url)
@@ -276,22 +276,22 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         return range_patterns
     
     def _extract_range_patterns_from_url(self, url: str, filter_name: str) -> List[RangePattern]:
-        """URLからレンジパターンを抽出"""
+        """Extract range patterns from a URL."""
         patterns = []
         
-        # URL内のフィルター部分を解析
+        # Parse the filter portion of the URL
         if 'f=' in url:
             filter_part = url.split('f=')[1].split('&')[0]
             filter_items = filter_part.split(',')
             
             for item in filter_items:
                 if filter_name in item:
-                    # レンジパターンを検索
+                    # Look for a range pattern
                     range_match = re.search(r'(\d+(?:\.\d+)?)to(\d+(?:\.\d+)?)', item)
                     if range_match:
                         min_val, max_val = range_match.groups()
                         
-                        # 既知のパターンから詳細情報を取得
+                        # Get detailed info from known patterns
                         pattern_info = self.known_range_patterns.get(filter_name, {})
                         
                         pattern = RangePattern(
@@ -309,7 +309,7 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         return patterns
     
     def generate_range_examples(self, filter_name: str) -> List[Dict[str, str]]:
-        """指定されたフィルターのレンジ例を生成"""
+        """Generate range examples for the given filter."""
         if filter_name not in self.known_range_patterns:
             return []
         
@@ -332,18 +332,18 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         return examples
     
     def export_range_analysis_to_markdown(self, filters: List[FilterParameter], output_file: str = None):
-        """カスタム範囲解析結果をMarkdown形式でエクスポート"""
+        """Export custom range analysis results to Markdown."""
         if output_file is None:
             output_file = f"finviz_range_analysis_{self.html_file_path.stem}.md"
         
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
-                f.write("# Finviz カスタム範囲・レンジ指定 詳細解析\n\n")
-                f.write(f"HTMLファイル: `{self.html_file_path.name}`\n\n")
-                f.write("このドキュメントは、Finvizでカスタム範囲（手入力レンジ）を指定した際のURLパターンを詳細に解析した結果です。\n\n")
+                f.write("# Finviz Custom Range / Range Input Detailed Analysis\n\n")
+                f.write(f"HTML file: `{self.html_file_path.name}`\n\n")
+                f.write("This document details URL patterns when specifying custom ranges (manual inputs) in Finviz.\n\n")
                 
-                # カスタム範囲対応フィルター一覧
-                f.write("## 🎯 カスタム範囲対応フィルター一覧\n\n")
+                # List of range-capable filters
+                f.write("## 🎯 Range-Capable Filters\n\n")
                 
                 range_capable_filters = []
                 for filter_param in filters:
@@ -351,42 +351,42 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                     if has_custom:
                         range_capable_filters.append(filter_param)
                 
-                f.write(f"検出されたカスタム範囲対応フィルター数: **{len(range_capable_filters)}個**\n\n")
+                f.write(f"Detected range-capable filters: **{len(range_capable_filters)}**\n\n")
                 
                 for filter_param in range_capable_filters:
                     f.write(f"### {filter_param.name} - `{filter_param.data_filter}`\n")
                     
-                    # カスタム範囲の例を生成
+                    # Generate custom range examples
                     examples = self.generate_range_examples(filter_param.data_filter)
                     
                     if examples:
-                        f.write("#### 📊 レンジ指定例\n\n")
-                        f.write("| 範囲 | URLパラメーター | 説明 | 完全URL例 |\n")
+                        f.write("#### 📊 Range Examples\n\n")
+                        f.write("| Range | URL Parameter | Description | Full URL Example |\n")
                         f.write("|---|---|---|---|\n")
                         
-                        for example in examples[:3]:  # 上位3つの例のみ表示
+                        for example in examples[:3]:  # Show top 3 examples
                             f.write(f"| `{example['range']}` | `{example['url_parameter']}` | {example['description']} | `{example['full_url_example']}` |\n")
                         
                         f.write("\n")
                     
-                    # 既知のパターン情報
+                    # Known pattern info
                     if filter_param.data_filter in self.known_range_patterns:
                         pattern_info = self.known_range_patterns[filter_param.data_filter]
-                        f.write(f"- **データ型**: {pattern_info['type']}\n")
-                        f.write(f"- **単位**: {pattern_info['unit']}\n")
-                        f.write(f"- **フォーマット**: {pattern_info['format']}\n")
+                        f.write(f"- **Data type**: {pattern_info['type']}\n")
+                        f.write(f"- **Unit**: {pattern_info['unit']}\n")
+                        f.write(f"- **Format**: {pattern_info['format']}\n")
                     
                     f.write("\n")
                 
-                # URLパターン構造解析
-                f.write("## 🔗 URLパターン構造解析\n\n")
-                f.write("### 基本構造\n")
+                # URL pattern structure analysis
+                f.write("## 🔗 URL Pattern Structure Analysis\n\n")
+                f.write("### Basic Structure\n")
                 f.write("```\n")
                 f.write("https://finviz.com/screener.ashx?v=111&f=[filter1],[filter2],[filter3]\n")
                 f.write("```\n\n")
                 
-                f.write("### カスタム範囲のパターン\n")
-                f.write("| フィルター | パターン | 例 |\n")
+                f.write("### Custom Range Patterns\n")
+                f.write("| Filter | Pattern | Example |\n")
                 f.write("|---|---|---|\n")
                 
                 for filter_name, pattern_info in self.known_range_patterns.items():
@@ -395,80 +395,80 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                 
                 f.write("\n")
                 
-                # 実践的な使用例
-                f.write("## 💡 実践的な使用例\n\n")
+                # Practical usage examples
+                f.write("## 💡 Practical Examples\n\n")
                 
                 practical_examples = [
                     {
-                        'title': '価格範囲 $10-$50の銘柄',
+                        'title': 'Stocks priced $10-$50',
                         'url': 'https://finviz.com/screener.ashx?v=111&f=sh_price_10to50',
-                        'description': '株価が$10から$50の範囲にある銘柄'
+                        'description': 'Stocks with prices between $10 and $50'
                     },
                     {
-                        'title': '時価総額 $1B-$10Bの中型株',
+                        'title': 'Mid-cap stocks with $1B-$10B market cap',
                         'url': 'https://finviz.com/screener.ashx?v=111&f=cap_1to10',
-                        'description': '時価総額が$1Bから$10Bの中型株'
+                        'description': 'Stocks with market caps between $1B and $10B'
                     },
                     {
-                        'title': 'PER 10-20倍の割安株',
+                        'title': 'Value stocks with P/E 10-20',
                         'url': 'https://finviz.com/screener.ashx?v=111&f=fa_pe_10to20',
-                        'description': 'PERが10倍から20倍の適正評価銘柄'
+                        'description': 'Stocks with P/E between 10 and 20'
                     },
                     {
-                        'title': '配当利回り 3-7%の高配当株',
+                        'title': 'High-dividend stocks with 3-7% yield',
                         'url': 'https://finviz.com/screener.ashx?v=111&f=fa_div_3to7',
-                        'description': '配当利回りが3%から7%の高配当銘柄'
+                        'description': 'Stocks with dividend yields between 3% and 7%'
                     },
                     {
-                        'title': '複合条件: テクノロジー × 中型株 × 適正PER',
+                        'title': 'Combined: Technology × mid-cap × reasonable P/E',
                         'url': 'https://finviz.com/screener.ashx?v=111&f=sec_technology,cap_1to10,fa_pe_10to25',
-                        'description': 'テクノロジーセクターの中型株でPER10-25倍'
+                        'description': 'Technology sector mid-caps with P/E 10-25'
                     }
                 ]
                 
                 for i, example in enumerate(practical_examples, 1):
                     f.write(f"### {i}. {example['title']}\n")
                     f.write(f"**URL**: `{example['url']}`\n\n")
-                    f.write(f"**説明**: {example['description']}\n\n")
+                    f.write(f"**Description**: {example['description']}\n\n")
                 
-                # レンジ指定のベストプラクティス
-                f.write("## 🎯 レンジ指定のベストプラクティス\n\n")
-                f.write("### 📈 数値の指定方法\n")
-                f.write("- **整数**: `10to50` (10から50)\n")
-                f.write("- **小数**: `1.5to3.5` (1.5から3.5)\n")
-                f.write("- **負数**: `-10to10` (-10%から+10%)\n\n")
+                # Range input best practices
+                f.write("## 🎯 Range Input Best Practices\n\n")
+                f.write("### 📈 Numeric formats\n")
+                f.write("- **Integers**: `10to50` (10 to 50)\n")
+                f.write("- **Decimals**: `1.5to3.5` (1.5 to 3.5)\n")
+                f.write("- **Negative values**: `-10to10` (-10% to +10%)\n\n")
                 
-                f.write("### 💰 通貨・単位の考慮\n")
-                f.write("- **株価**: ドル単位 `sh_price_10to50` ($10-$50)\n")
-                f.write("- **時価総額**: 10億ドル単位 `cap_1to10` ($1B-$10B)\n")
-                f.write("- **出来高**: 千株単位 `sh_avgvol_100to500` (100K-500K)\n\n")
+                f.write("### 💰 Currency and unit considerations\n")
+                f.write("- **Price**: USD `sh_price_10to50` ($10-$50)\n")
+                f.write("- **Market cap**: billions USD `cap_1to10` ($1B-$10B)\n")
+                f.write("- **Volume**: thousands of shares `sh_avgvol_100to500` (100K-500K)\n\n")
                 
-                f.write("### ⚠️ 注意点\n")
-                f.write("- 最小値は最大値より小さく設定\n")
-                f.write("- 極端な値は結果が0件になる可能性\n")
-                f.write("- 一部のフィルターは特定の範囲のみ有効\n\n")
+                f.write("### ⚠️ Notes\n")
+                f.write("- Ensure min is less than max\n")
+                f.write("- Extreme values may return zero results\n")
+                f.write("- Some filters only support specific ranges\n\n")
             
-            logger.info(f"カスタム範囲解析結果を {output_file} に出力しました")
+            logger.info(f"Exported custom range analysis to {output_file}")
             
         except Exception as e:
-            logger.error(f"範囲解析Markdown出力エラー: {e}")
+            logger.error(f"Range analysis Markdown export error: {e}")
     
     def analyze_with_ranges(self, export_format: str = 'both'):
-        """完全な解析（範囲パターン含む）を実行"""
+        """Run full analysis (including range patterns)."""
         try:
-            logger.info("フィルター・レンジ解析を開始します...")
+            logger.info("Starting filter and range analysis...")
             
-            # 基本フィルター抽出
+            # Extract base filters
             filters = self.extract_filter_parameters()
             
             if not filters:
-                logger.error("フィルターが検出されませんでした")
+                logger.error("No filters were detected")
                 return False
             
-            # サマリー表示
+            # Print summary
             self.print_range_summary(filters)
             
-            # 結果出力
+            # Output results
             if export_format in ['markdown', 'both']:
                 self.export_to_markdown(filters)
                 self.export_range_analysis_to_markdown(filters)
@@ -480,11 +480,11 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
             return True
             
         except Exception as e:
-            logger.error(f"範囲解析実行エラー: {e}")
+            logger.error(f"Range analysis execution error: {e}")
             return False
     
     def export_range_analysis_to_json(self, filters: List[FilterParameter], output_file: str = None):
-        """レンジ解析結果をJSON形式でエクスポート"""
+        """Export range analysis results to JSON."""
         if output_file is None:
             output_file = f"finviz_range_analysis_{self.html_file_path.stem}.json"
         
@@ -497,7 +497,7 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                 'practical_examples': []
             }
             
-            # レンジ対応フィルター
+            # Range-capable filters
             for filter_param in filters:
                 has_custom = any(opt.value in ['frange', 'modal', 'custom'] for opt in filter_param.options)
                 if has_custom:
@@ -520,7 +520,7 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
                     
                     range_data['range_capable_filters'].append(filter_info)
             
-            # URLパターン
+            # URL patterns
             for filter_name, pattern_info in self.known_range_patterns.items():
                 range_data['url_patterns'][filter_name] = {
                     'pattern': f"{filter_name}_{{min}}to{{max}}",
@@ -532,36 +532,36 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(range_data, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"レンジ解析結果を {output_file} に出力しました")
+            logger.info(f"Exported range analysis results to {output_file}")
             
         except Exception as e:
-            logger.error(f"範囲解析JSON出力エラー: {e}")
+            logger.error(f"Range analysis JSON export error: {e}")
     
     def print_range_summary(self, filters: List[FilterParameter]):
-        """レンジ解析結果のサマリーを表示"""
+        """Print a summary of range analysis results."""
         print("\n" + "="*70)
-        print("📊 Finviz カスタム範囲・レンジ解析結果サマリー")
+        print("📊 Finviz Custom Range Analysis Summary")
         print("="*70)
         
         range_capable = [f for f in filters if any(opt.value in ['frange', 'modal', 'custom'] for opt in f.options)]
         
-        print(f"📄 ソースファイル: {self.html_file_path.name}")
-        print(f"🔢 総フィルター数: {len(filters)}")
-        print(f"🎯 レンジ対応フィルター数: {len(range_capable)}")
-        print(f"🔗 既知のレンジパターン数: {len(self.known_range_patterns)}")
+        print(f"📄 Source file: {self.html_file_path.name}")
+        print(f"🔢 Total filters: {len(filters)}")
+        print(f"🎯 Range-capable filters: {len(range_capable)}")
+        print(f"🔗 Known range patterns: {len(self.known_range_patterns)}")
         
         if range_capable:
-            print(f"\n🎯 レンジ対応フィルター:")
-            for filter_param in range_capable[:10]:  # 上位10個のみ表示
+            print("\n🎯 Range-capable filters:")
+            for filter_param in range_capable[:10]:  # Show top 10
                 examples_count = len(self.generate_range_examples(filter_param.data_filter))
-                print(f"  📈 {filter_param.name}: {examples_count}個の例")
+                print(f"  📈 {filter_param.name}: {examples_count} examples")
         
-        print("\n💡 レンジ指定URL例:")
+        print("\n💡 Range URL examples:")
         example_urls = [
-            "sh_price_10to50 → 株価 $10-$50",
-            "cap_1to10 → 時価総額 $1B-$10B", 
-            "fa_pe_10to20 → PER 10-20倍",
-            "fa_div_3to7 → 配当利回り 3-7%"
+            "sh_price_10to50 → Price $10-$50",
+            "cap_1to10 → Market cap $1B-$10B",
+            "fa_pe_10to20 → P/E 10-20",
+            "fa_div_3to7 → Dividend yield 3-7%"
         ]
         for example in example_urls:
             print(f"  🔗 {example}")
@@ -569,12 +569,12 @@ class FinvizRangeAnalyzer(FinvizHTMLAnalyzer):
         print("\n" + "="*70)
 
 def main():
-    """メイン実行関数"""
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='Finviz カスタム範囲解析ツール',
+        description='Finviz custom range analysis tool',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用例:
+Examples:
   python finviz_range_analyzer.py
   python finviz_range_analyzer.py ../docs/finviz_screen_page.html
   python finviz_range_analyzer.py --format json
@@ -585,32 +585,32 @@ def main():
         'html_file',
         nargs='?',
         default='../docs/finviz_screen_page.html',
-        help='解析するHTMLファイルのパス'
+        help='Path to the HTML file to analyze'
     )
     
     parser.add_argument(
         '--format', '-f',
         choices=['markdown', 'json', 'both'],
         default='both',
-        help='出力形式を指定 (デフォルト: both)'
+        help='Specify output format (default: both)'
     )
     
     args = parser.parse_args()
     
-    print("🎯 Finviz カスタム範囲・レンジ解析ツール")
+    print("🎯 Finviz Custom Range Analysis Tool")
     print("="*60)
     
     try:
-        # 解析器初期化
+        # Initialize analyzer
         analyzer = FinvizRangeAnalyzer(args.html_file)
         
-        # 解析実行
+        # Run analysis
         success = analyzer.analyze_with_ranges(export_format=args.format)
         
         if success:
-            print("\n✅ レンジ解析が完了しました！")
+            print("\n✅ Range analysis completed!")
             
-            # 出力ファイル確認
+            # Check output files
             stem = Path(args.html_file).stem
             
             if args.format in ['markdown', 'both']:
@@ -625,14 +625,14 @@ def main():
                     size = os.path.getsize(range_json_file) / 1024
                     print(f"📊 {range_json_file} ({size:.1f} KB)")
         else:
-            print("\n❌ レンジ解析に失敗しました")
+            print("\n❌ Range analysis failed")
             return 1
             
     except FileNotFoundError as e:
-        print(f"❌ ファイルエラー: {e}")
+        print(f"❌ File error: {e}")
         return 1
     except Exception as e:
-        print(f"❌ 予期しないエラー: {e}")
+        print(f"❌ Unexpected error: {e}")
         return 1
     
     return 0

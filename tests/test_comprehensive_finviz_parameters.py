@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Finviz スクリーニングパラメータ網羅的テスト
+Finviz Screening Parameters Comprehensive Test
 
-finviz_screening_parameters.md に記載されている全パラメータの
-型安全性と変換ロジックを包括的にテストします。
+Comprehensively tests type safety and conversion logic for all parameters
+listed in finviz_screening_parameters.md.
 """
 
 import sys
@@ -15,22 +15,22 @@ from src.utils.validators import validate_parameter_combination
 
 
 def test_numeric_parameter_conversions():
-    """数値パラメータの型安全変換をテスト"""
+    """Test type-safe conversion for numeric parameters."""
     print("🔢 Testing numeric parameter conversions...")
     
     client = FinvizClient()
     
-    # 価格パラメータテスト
+    # Price parameter tests
     price_test_cases = [
-        # 数値入力
+        # Numeric input
         (10, "10"),
         (10.5, "10.5"),
         (5.0, "5"),
-        # 文字列入力（数値）
+        # String input (numeric)
         ("15", "15"),
         ("7.5", "7.5"),
         ("20.0", "20"),
-        # Finviz形式入力
+        # Finviz format input
         ("o5", "o5"),
         ("u10", "u10"),
         ("o15.5", "o15.5"),
@@ -42,15 +42,15 @@ def test_numeric_parameter_conversions():
         status = "✓" if result == expected else "✗"
         print(f"     {status} {input_val} -> {result} (expected: {expected})")
     
-    # 数値パラメータテスト
+    # Numeric parameter tests
     numeric_test_cases = [
-        # 整数
+        # Integers
         (100, "100"),
         (500000, "500000"),
-        # 文字列（数値）
+        # String (numeric)
         ("200", "200"),
         ("1000", "1000"),
-        # Finviz形式
+        # Finviz format
         ("o100", "100"),
         ("u500", "500"),
         ("e5", "5"),
@@ -64,12 +64,12 @@ def test_numeric_parameter_conversions():
 
 
 def test_price_parameters():
-    """価格系パラメータの全パターンをテスト"""
+    """Test all price parameter patterns."""
     print("💰 Testing price parameters...")
     
     client = FinvizClient()
     
-    # Finvizプリセット形式テスト
+    # Finviz preset format tests
     print("   Finviz preset format tests:")
     preset_tests = [
         ("o5", "Over $5 preset"),
@@ -88,16 +88,16 @@ def test_price_parameters():
         except Exception as e:
             print(f"     ✗ {preset} ({description}): Error - {e}")
     
-    # 数値レンジ形式テスト
+    # Numeric range format tests
     print("   Numeric range format tests:")
     range_tests = [
-        # 下限のみ
+        # Min only
         ({"price_min": 10.5}, "Min price only: 10.5to"),
         ({"price_min": 5}, "Min price only: 5to"),
-        # 上下限
+        # Min and max
         ({"price_min": 10.5, "price_max": 20.11}, "Price range: 10.5to20.11"),
         ({"price_min": 5, "price_max": 50}, "Price range: 5to50"),
-        # 上限のみ
+        # Max only
         ({"price_max": 100}, "Max price only: to100"),
     ]
     
@@ -113,12 +113,12 @@ def test_price_parameters():
 
 
 def test_volume_parameters():
-    """出来高系パラメータの全パターンをテスト"""
+    """Test all volume parameter patterns."""
     print("📊 Testing volume parameters...")
     
     client = FinvizClient()
     
-    # Average Volume パラメータ
+    # Average Volume parameters
     avg_volume_patterns = {
         "u50": "Under 50K",
         "u100": "Under 100K",
@@ -138,11 +138,11 @@ def test_volume_parameters():
     for pattern, description in avg_volume_patterns.items():
         test_filters = {}
         
-        # 数値とFinviz形式両方でテスト
+        # Test both numeric and Finviz formats
         if pattern.startswith('o'):
-            test_filters['avg_volume_min'] = pattern  # Finviz形式
+            test_filters['avg_volume_min'] = pattern  # Finviz format
         elif pattern.startswith('u'):
-            test_filters['avg_volume_max'] = pattern  # Finviz形式
+            test_filters['avg_volume_max'] = pattern  # Finviz format
         elif 'to' in pattern:
             parts = pattern.split('to')
             test_filters['avg_volume_min'] = parts[0]
@@ -157,7 +157,7 @@ def test_volume_parameters():
         except Exception as e:
             print(f"     ✗ {pattern} ({description}): Error - {e}")
     
-    # Relative Volume パラメータ
+    # Relative Volume parameters
     rel_volume_patterns = {
         "o10": "Over 10",
         "o5": "Over 5", 
@@ -191,7 +191,7 @@ def test_volume_parameters():
 
 
 def test_market_cap_parameters():
-    """時価総額パラメータの全パターンをテスト"""
+    """Test all market cap parameter patterns."""
     print("🏛️ Testing market cap parameters...")
     
     client = FinvizClient()
@@ -227,7 +227,7 @@ def test_market_cap_parameters():
 
 
 def test_dividend_yield_parameters():
-    """配当利回りパラメータをテスト"""
+    """Test dividend yield parameters."""
     print("💸 Testing dividend yield parameters...")
     
     client = FinvizClient()
@@ -263,7 +263,7 @@ def test_dividend_yield_parameters():
 
 
 def test_earnings_date_parameters():
-    """決算日パラメータをテスト"""
+    """Test earnings date parameters."""
     print("📅 Testing earnings date parameters...")
     
     client = FinvizClient()
@@ -295,7 +295,7 @@ def test_earnings_date_parameters():
         except Exception as e:
             print(f"     ✗ {pattern} ({description}): Error - {e}")
     
-    # カスタム日付範囲のテスト
+    # Custom date range tests
     print("   Custom date range tests:")
     custom_date_tests = [
         ("06-30-2025x07-04-2025", "Custom range"),
@@ -316,7 +316,7 @@ def test_earnings_date_parameters():
 
 
 def test_sector_parameters():
-    """セクターパラメータをテスト"""
+    """Test sector parameters."""
     print("🏭 Testing sector parameters...")
     
     client = FinvizClient()
@@ -335,8 +335,8 @@ def test_sector_parameters():
         "Utilities"
     ]
     
-    # 単一セクター
-    for sector in sectors[:3]:  # 最初の3つだけテスト
+    # Single sector
+    for sector in sectors[:3]:  # Test only the first 3
         test_filters = {'sectors': [sector]}
         
         try:
@@ -348,7 +348,7 @@ def test_sector_parameters():
         except Exception as e:
             print(f"     ✗ {sector}: Error - {e}")
     
-    # 複数セクター
+    # Multiple sectors
     test_filters = {'sectors': ["Technology", "Healthcare", "Financial Services"]}
     try:
         params = client._convert_filters_to_finviz(test_filters)
@@ -361,7 +361,7 @@ def test_sector_parameters():
 
 
 def test_complex_parameter_combinations():
-    """複雑なパラメータ組み合わせをテスト"""
+    """Test complex parameter combinations."""
     print("🔗 Testing complex parameter combinations...")
     
     client = FinvizClient()
@@ -406,12 +406,12 @@ def test_complex_parameter_combinations():
         print(f"   Testing: {test_case['name']}")
         
         try:
-            # パラメータ組み合わせの検証
+            # Validate parameter combinations
             validation_errors = validate_parameter_combination(test_case['filters'])
             if validation_errors:
                 print(f"     ⚠ Validation warnings: {validation_errors}")
             
-            # Finviz形式への変換
+            # Convert to Finviz format
             params = client._convert_filters_to_finviz(test_case['filters'])
             if 'f' in params:
                 print(f"     ✓ Generated filter: {params['f']}")
@@ -424,7 +424,7 @@ def test_complex_parameter_combinations():
 
 
 def test_error_handling():
-    """エラーハンドリングをテスト"""
+    """Test error handling."""
     print("🚨 Testing error handling...")
     
     client = FinvizClient()
@@ -459,13 +459,13 @@ def test_error_handling():
 
 
 def main():
-    """メイン実行関数"""
+    """Main entry point."""
     print("=" * 80)
     print("🧪 Finviz Screening Parameters Comprehensive Test")
     print("=" * 80)
     print()
     
-    # 全テストを実行
+    # Run all tests
     test_numeric_parameter_conversions()
     print()
     

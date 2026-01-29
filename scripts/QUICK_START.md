@@ -1,95 +1,95 @@
-# Finviz HTML解析 クイックスタートガイド
+# Finviz HTML Analysis Quick Start Guide
 
-## 🚀 最速で解析を開始する
+## 🚀 Start the Analysis Fast
 
-### Step 1: HTMLファイルを取得
-1. ブラウザで [Finviz Elite Screener](https://elite.finviz.com/screener.ashx) を開く
-2. ページ全体を `finviz_screen_page.html` として保存
-   - **Chrome**: Ctrl+S → 「Webページ、完全」を選択 → 保存
-   - **Firefox**: Ctrl+S → 「Webページ、完全」を選択 → 保存
-   - **Safari**: Cmd+S → 「Webアーカイブ」または「ページのソース」を選択 → 保存
+### Step 1: Obtain the HTML File
+1. Open [Finviz Elite Screener](https://elite.finviz.com/screener.ashx) in your browser
+2. Save the full page as `finviz_screen_page.html`
+   - **Chrome**: Ctrl+S → select "Webpage, Complete" → Save
+   - **Firefox**: Ctrl+S → select "Webpage, Complete" → Save
+   - **Safari**: Cmd+S → select "Web Archive" or "Page Source" → Save
 
-### Step 2: 解析実行
+### Step 2: Run the Analysis
 ```bash
-# scriptsディレクトリに移動
+# Move to the scripts directory
 cd scripts
 
-# 依存関係インストール（初回のみ）
+# Install dependencies (first time only)
 pip install beautifulsoup4 lxml
 
-# 解析実行
+# Run the analysis
 python quick_html_analyze.py
 ```
 
-### Step 3: 結果確認
-解析完了後、以下のファイルが生成されます：
-- `finviz_filters_analysis_finviz_screen_page.md` - 読みやすいMarkdown形式
-- `finviz_filters_analysis_finviz_screen_page.json` - 構造化データ
+### Step 3: Check the Results
+After the analysis finishes, the following files are generated:
+- `finviz_filters_analysis_finviz_screen_page.md` - Readable Markdown format
+- `finviz_filters_analysis_finviz_screen_page.json` - Structured data
 
-## 📊 解析結果の活用
+## 📊 Using the Results
 
-### Markdownファイル
-- 各フィルター項目の詳細な説明
-- カテゴリー別に整理された一覧
-- 実際のURLでの使用方法
+### Markdown File
+- Detailed explanation for each filter item
+- Category-organized list
+- Examples of usage in actual URLs
 
-### JSONファイル
-- プログラムで処理可能なデータ形式
-- API開発やスクリプト作成に活用
-- フィルター値の自動補完機能に使用可能
+### JSON File
+- Machine-readable data format
+- Useful for API development and scripting
+- Can be used for filter value auto-completion
 
-## 🔧 トラブルシューティング
+## 🔧 Troubleshooting
 
-### よくある問題
+### Common Issues
 
-#### 1. "HTMLファイルが見つかりません"
-**解決方法:**
-- ファイル名が `finviz_screen_page.html` になっているか確認
-- scriptsディレクトリまたはその上位ディレクトリに配置されているか確認
-- ファイルパスを直接指定: `python quick_html_analyze.py /path/to/your/file.html`
+#### 1. "HTML file not found"
+**Solution:**
+- Confirm the filename is `finviz_screen_page.html`
+- Confirm it is placed in the `scripts` directory or its parent directory
+- Specify the file path directly: `python quick_html_analyze.py /path/to/your/file.html`
 
-#### 2. "インポートエラー"
-**解決方法:**
+#### 2. "Import error"
+**Solution:**
 ```bash
 pip install beautifulsoup4 lxml requests
 ```
 
-#### 3. "フィルターが検出されませんでした"
-**解決方法:**
-- HTMLファイルが完全に保存されているか確認
-- Finvizスクリーナーページ（フィルター部分を含む）が保存されているか確認
-- ファイルサイズが極端に小さくないか確認（通常100KB以上）
+#### 3. "No filters were detected"
+**Solution:**
+- Confirm the HTML file was saved completely
+- Confirm the Finviz screener page (including the filter section) was saved
+- Check the file size is not unusually small (typically 100KB+)
 
-### 手動実行
+### Manual Runs
 
-より詳細な制御が必要な場合：
+If you need more detailed control:
 ```bash
-# Markdownのみ出力
+# Markdown only
 python finviz_html_analyzer.py finviz_screen_page.html --format markdown
 
-# JSONのみ出力
+# JSON only
 python finviz_html_analyzer.py finviz_screen_page.html --format json
 
-# 別のHTMLファイルを解析
+# Analyze a different HTML file
 python finviz_html_analyzer.py my_custom_finviz_page.html
 ```
 
-## 💡 活用のヒント
+## 💡 Tips
 
-### 1. ドキュメント更新
-生成されたMarkdownファイルを元に、プロジェクトのパラメーター一覧を更新
+### 1. Update Docs
+Use the generated Markdown file to update the project's parameter list
 
-### 2. API開発
-JSONデータを使用して、Finviz風のスクリーニング機能をAPIとして実装
+### 2. API Development
+Use the JSON data to implement a Finviz-style screening API
 
-### 3. 自動化
-定期的にHTMLを取得・解析して、新しいパラメーターの追加を監視
+### 3. Automation
+Fetch and analyze HTML regularly to monitor new parameter additions
 
-### 4. フィルター検証
-実装したスクリーニング機能のパラメーター値が正しいか検証
+### 4. Filter Validation
+Verify that the implemented screening parameters have correct values
 
-## 📈 次のステップ
+## 📈 Next Steps
 
-1. **パラメーター実装**: 解析結果を元にスクリーニング機能を拡張
-2. **ドキュメント更新**: 新しく発見されたパラメーターをドキュメントに追加
-3. **自動化**: CI/CDパイプラインに組み込んで定期的な解析を実行 
+1. **Parameter implementation**: Expand screening features based on the analysis results
+2. **Documentation updates**: Add newly discovered parameters to the docs
+3. **Automation**: Integrate into a CI/CD pipeline to run analysis regularly

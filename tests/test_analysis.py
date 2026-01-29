@@ -2,56 +2,56 @@ import sys
 import os
 from collections import defaultdict, Counter
 
-# プロジェクトルートをPythonパスに追加
+# Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 def analyze_volume_surge_stocks():
-    """出来高急増銘柄の詳細分析"""
+    """Detailed analysis of volume surge stocks."""
     try:
         from src.finviz_client.screener import FinvizScreener
         screener = FinvizScreener()
         
-        print("=== 出来高急増銘柄の詳細分析 ===")
+        print("=== Detailed Analysis of Volume Surge Stocks ===")
         
-        # スクリーニング実行
+        # Run screening
         results = screener.volume_surge_screener()
-        print(f"総銘柄数: {len(results)}")
+        print(f"Total stocks: {len(results)}")
         
-        # セクター別分析
+        # Sector analysis
         sector_analysis = defaultdict(list)
         industry_analysis = defaultdict(list)
         
-        # 価格変動率別分析
+        # Price change analysis
         price_change_ranges = {
-            "10%以上": [],
+            "10%+": [],
             "5-10%": [],
             "2-5%": []
         }
         
-        # 時価総額別分析
+        # Market cap analysis
         market_cap_ranges = {
-            "大型 (50B+)": [],
-            "中型 (2B-50B)": [],
-            "小型 (300M-2B)": []
+            "Large (50B+)": [],
+            "Mid (2B-50B)": [],
+            "Small (300M-2B)": []
         }
         
-        # 上位銘柄詳細
+        # Top performers
         top_performers = []
         
-        for i, stock in enumerate(results[:20]):  # 上位20銘柄を詳細分析
-            # セクター情報
+        for i, stock in enumerate(results[:20]):  # Analyze top 20 stocks
+            # Sector info
             sector = getattr(stock, 'sector', 'Unknown')
             industry = getattr(stock, 'industry', 'Unknown')
             
-            # 基本情報
+            # Basic info
             ticker = stock.ticker
             price = getattr(stock, 'price', 0)
             price_change = getattr(stock, 'price_change', 0)
             volume = getattr(stock, 'volume', 0)
             market_cap = getattr(stock, 'market_cap', 0)
             
-            # データ蓄積
+            # Accumulate data
             sector_analysis[sector].append({
                 'ticker': ticker,
                 'price_change': price_change,
@@ -60,23 +60,23 @@ def analyze_volume_surge_stocks():
             
             industry_analysis[industry].append(ticker)
             
-            # 価格変動率分類
+            # Price change classification
             if price_change >= 10:
-                price_change_ranges["10%以上"].append(ticker)
+                price_change_ranges["10%+"].append(ticker)
             elif price_change >= 5:
                 price_change_ranges["5-10%"].append(ticker)
             else:
                 price_change_ranges["2-5%"].append(ticker)
             
-            # 時価総額分類（概算）
+            # Market cap classification (rough)
             if market_cap and market_cap > 50000:  # 50B+
-                market_cap_ranges["大型 (50B+)"].append(ticker)
+                market_cap_ranges["Large (50B+)"].append(ticker)
             elif market_cap and market_cap > 2000:  # 2B-50B
-                market_cap_ranges["中型 (2B-50B)"].append(ticker)
+                market_cap_ranges["Mid (2B-50B)"].append(ticker)
             else:
-                market_cap_ranges["小型 (300M-2B)"].append(ticker)
+                market_cap_ranges["Small (300M-2B)"].append(ticker)
             
-            # 上位パフォーマー
+            # Top performers
             if i < 10:
                 top_performers.append({
                     'rank': i + 1,
@@ -87,8 +87,8 @@ def analyze_volume_surge_stocks():
                     'sector': sector
                 })
         
-        # 結果出力
-        print("\n=== TOP 10 パフォーマー ===")
+        # Output results
+        print("\n=== TOP 10 Performers ===")
         for performer in top_performers:
             print(f"{performer['rank']:2d}. {performer['ticker']:6s} | "
                   f"{performer['price_change']:+6.2f}% | "
@@ -96,25 +96,25 @@ def analyze_volume_surge_stocks():
                   f"{performer['volume']/1000000:6.1f}M vol | "
                   f"{performer['sector']}")
         
-        print("\n=== セクター別分布 ===")
+        print("\n=== Sector Distribution ===")
         sector_summary = {}
         for sector, stocks in sector_analysis.items():
             count = len(stocks)
             avg_change = sum(s['price_change'] for s in stocks) / count if count > 0 else 0
             sector_summary[sector] = {'count': count, 'avg_change': avg_change}
-            print(f"{sector:25s}: {count:3d}銘柄 (平均変動: {avg_change:+5.2f}%)")
+            print(f"{sector:25s}: {count:3d} stocks (avg change: {avg_change:+5.2f}%)")
         
-        print("\n=== 価格変動率分布 ===")
+        print("\n=== Price Change Distribution ===")
         for range_name, tickers in price_change_ranges.items():
-            print(f"{range_name:10s}: {len(tickers):3d}銘柄 ({len(tickers)/len(results)*100:4.1f}%)")
+            print(f"{range_name:10s}: {len(tickers):3d} stocks ({len(tickers)/len(results)*100:4.1f}%)")
             if tickers:
-                print(f"  代表銘柄: {', '.join(tickers[:5])}")
+                print(f"  Example tickers: {', '.join(tickers[:5])}")
         
-        print("\n=== 時価総額別分布 ===")
+        print("\n=== Market Cap Distribution ===")
         for cap_range, tickers in market_cap_ranges.items():
-            print(f"{cap_range:15s}: {len(tickers):3d}銘柄")
+            print(f"{cap_range:15s}: {len(tickers):3d} stocks")
         
-        # 分析結果を辞書で返す
+        # Return analysis results as a dict
         return {
             'total_stocks': len(results),
             'top_performers': top_performers,
@@ -125,7 +125,7 @@ def analyze_volume_surge_stocks():
         }
         
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
+        print(f"An error occurred: {e}")
         import traceback
         traceback.print_exc()
         return None

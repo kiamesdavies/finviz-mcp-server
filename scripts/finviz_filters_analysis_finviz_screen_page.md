@@ -1,14 +1,14 @@
-# Finviz フィルターパラメーター詳細一覧
+# Finviz Filter Parameters Reference
 
-HTMLファイル: `finviz_screen_page.html`
-解析日時: 1751201985.100522
+HTML file: `finviz_screen_page.html`
+Analysis timestamp: 1751201985.100522
 
-このドキュメントは、Finvizのスクリーニング機能で使用できる全パラメーターとその取得可能な値を詳細に記載しています。
+This document lists all parameters available in Finviz screening and their possible values.
 
-## 基本情報系パラメーター
+## Basic Parameters
 
-### Exchange (取引所) - `exch`
-| 値 | 説明 |
+### Exchange - `exch`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `amex` | AMEX |
@@ -19,9 +19,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Country (国) - `geo`
-| 値 | 説明 |
+### Country - `geo`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `usa` | USA |
@@ -90,9 +89,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Index (指数) - `idx`
-| 値 | 説明 |
+### Index - `idx`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `sp500` | S&P 500 |
@@ -103,9 +101,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Industry (業界) - `ind`
-| 値 | 説明 |
+### Industry - `ind`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `stocksonly` | Stocks only (ex-Funds) |
@@ -263,9 +260,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Sector (セクター) - `sec`
-| 値 | 説明 |
+### Sector - `sec`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `basicmaterials` | Basic Materials |
@@ -283,11 +279,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Price & Market Cap Parameters
 
-## 株価・時価総額系パラメーター
-
-### Market Cap (時価総額) - `cap`
-| 値 | 説明 |
+### Market Cap - `cap`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `mega` | Mega ($200bln and more) |
@@ -308,9 +303,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Price (株価) - `sh_price`
-| 値 | 説明 |
+### Price - `sh_price`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `u1` | Under $1 |
@@ -356,9 +350,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Target Price (目標株価) - `targetprice`
-| 値 | 説明 |
+### Target Price - `targetprice`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `a50` | 50% Above Price |
@@ -379,11 +372,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Dividend & Financial Parameters
 
-## 配当・財務系パラメーター
-
-### Dividend Yield (配当利回り) - `fa_div`
-| 値 | 説明 |
+### Dividend Yield - `fa_div`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `none` | None (0%) |
@@ -404,9 +396,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Option/Short (オプション/ショート) - `sh_opt`
-| 値 | 説明 | グループ |
+### Option/Short - `sh_opt`
+| Value | Description | |
 |---|---|---|
 | `` | Any | - |
 | `option` | Optionable | - |
@@ -433,9 +424,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Short Float (ショート比率) - `sh_short`
-| 値 | 説明 |
+### Short Float - `sh_short`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `low` | Low (<5%) |
@@ -456,11 +446,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Analyst & Recommendation Parameters
 
-## アナリスト・推奨系パラメーター
-
-### Analyst Recommendation (アナリスト推奨) - `an_recom`
-| 値 | 説明 |
+### Analyst Recommendation - `an_recom`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `strongbuy` | Strong Buy (1) |
@@ -476,11 +465,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Date Parameters
 
-## 日付系パラメーター
-
-### Earnings Date (決算日) - `earningsdate`
-| 値 | 説明 |
+### Earnings Date - `earningsdate`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `today` | Today |
@@ -502,9 +490,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### IPO Date (IPO日) - `ipodate`
-| 値 | 説明 |
+### IPO Date - `ipodate`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `today` | Today |
@@ -526,11 +513,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Volume & Trading Parameters
 
-## 出来高・取引系パラメーター
-
-### Average Volume (平均出来高) - `sh_avgvol`
-| 値 | 説明 |
+### Average Volume - `sh_avgvol`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `u50` | Under 50K |
@@ -555,9 +541,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Current Volume (当日出来高) - `sh_curvol`
-| 値 | 説明 | グループ |
+### Current Volume - `sh_curvol`
+| Value | Description | |
 |---|---|---|
 | `` | Any | - |
 | `u50` | Under 50K | Shares |
@@ -592,9 +577,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Relative Volume (相対出来高) - `sh_relvol`
-| 値 | 説明 |
+### Relative Volume - `sh_relvol`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `o10` | Over 10 |
@@ -617,9 +601,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Trades (取引回数) - `sh_trades`
-| 値 | 説明 |
+### Trades - `sh_trades`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `u100` | Under 100 |
@@ -641,11 +624,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
+## Share Structure Parameters
 
-## 株式発行系パラメーター
-
-### Float (浮動株数) - `sh_float`
-| 値 | 説明 |
+### Float - `sh_float`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `u1` | Under 1M |
@@ -686,9 +668,8 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-### Shares Outstanding (発行済株式数) - `sh_outstanding`
-| 値 | 説明 |
+### Shares Outstanding - `sh_outstanding`
+| Value | Description |
 |---|---|
 | `` | Any |
 | `u1` | Under 1M |
@@ -711,11 +692,10 @@ HTMLファイル: `finviz_screen_page.html`
 
 **Data URL**: `v=111`
 
-
-## その他パラメーター
+## Other Parameters
 
 ### Orderselect - ``
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `screener.ashx?v=111&o=ticker` | Ticker |
 | `screener.ashx?v=111&o=tickersfilter` | Tickers Input Filter |
@@ -869,20 +849,18 @@ HTMLファイル: `finviz_screen_page.html`
 | `screener.ashx?v=111&o=e.etftype` | ETF - Type |
 | `screener.ashx?v=111&o=e.sectortheme` | ETF - Sector/Theme |
 
-
 ### Orderdirselect - ``
-**現在選択値**: `screener.ashx?v=111`
+****: `screener.ashx?v=111`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `screener.ashx?v=111` | Asc |
 | `screener.ashx?v=111&o=-` | Desc |
 
-
 ### Signalselect - ``
-**現在選択値**: `screener.ashx?v=111`
+****: `screener.ashx?v=111`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `screener.ashx?v=111` | None (all stocks) |
 | `screener.ashx?v=111&s=ta_topgainers` | Top Gainers |
@@ -941,11 +919,10 @@ HTMLファイル: `finviz_screen_page.html`
 | `screener.ashx?v=111&s=f_halted` | Halted |
 | `screener.ashx?v=111&s=f_ssr` | Short Sale Restricted |
 
-
 ### Pageselect - ``
-**現在選択値**: `1`
+****: `1`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `1` | Page 1 / 204 |
 | `51` | Page 2 / 204 |
@@ -1152,18 +1129,16 @@ HTMLファイル: `finviz_screen_page.html`
 | `10101` | Page 203 / 204 |
 | `10151` | Page 204 / 204 |
 
+## Usage
 
-## 使用方法
+FinvizURL
 
-これらのパラメーターは、Finvizのスクリーニング機能でURLのクエリパラメーターとして使用されます。
-
-### 例:
+### Examples:
 ```
 https://finviz.com/screener.ashx?v=111&f=cap_large,sec_technology,ta_perf_1w_o5
 ```
 
-### 複数条件の組み合わせ:
-- パラメーターはカンマ区切りで複数指定可能
-- 異なるカテゴリーのパラメーターは AND 条件で結合
-- 同一カテゴリーの複数値は OR 条件で結合（一部例外あり）
-
+### Combining multiple conditions:
+-
+- AND
+- OR （）

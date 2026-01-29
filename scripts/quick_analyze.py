@@ -1,47 +1,47 @@
 #!/usr/bin/env python3
 """
-Finviz Elite クイック解析スクリプト
+Finviz Elite Quick Analysis Script
 
-簡単にFinviz Eliteのフィルター解析を実行するためのラッパースクリプト
+A wrapper script to quickly run Finviz Elite filter analysis.
 """
 
 import sys
 import os
 from pathlib import Path
 
-# スクリプトのディレクトリをパスに追加
+# Add script directory to the path
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
 try:
     from finviz_elite_analyzer import FinvizEliteAnalyzer
 except ImportError as e:
-    print(f"❌ インポートエラー: {e}")
-    print("必要なパッケージをインストールしてください:")
+    print(f"❌ Import error: {e}")
+    print("Please install the required packages:")
     print("pip install -r requirements.txt")
     sys.exit(1)
 
 def quick_analyze():
-    """クイック解析実行"""
-    print("🔍 Finviz Elite フィルター クイック解析")
+    """Run quick analysis."""
+    print("🔍 Finviz Elite Filter Quick Analysis")
     print("=" * 50)
     
-    # ログイン情報取得
+    # Collect login credentials
     import getpass
     
-    username = input("📧 Elite ユーザー名: ").strip()
+    username = input("📧 Elite username: ").strip()
     if not username:
-        print("❌ ユーザー名が入力されていません")
+        print("❌ Username not provided")
         return False
     
-    password = getpass.getpass("🔐 Elite パスワード: ")
+    password = getpass.getpass("🔐 Elite password: ")
     if not password:
-        print("❌ パスワードが入力されていません")
+        print("❌ Password not provided")
         return False
     
-    # 解析実行
-    print("\n🚀 解析を開始します...")
-    print("📝 ログイン中...")
+    # Run analysis
+    print("\n🚀 Starting analysis...")
+    print("📝 Logging in...")
     
     analyzer = FinvizEliteAnalyzer()
     
@@ -53,10 +53,10 @@ def quick_analyze():
         )
         
         if success:
-            print("\n✅ 解析完了！")
-            print("\n📄 生成されたファイル:")
+            print("\n✅ Analysis complete!")
+            print("\n📄 Generated files:")
             
-            # ファイル存在確認
+            # Check file existence
             md_file = "finviz_elite_filters.md"
             json_file = "finviz_elite_filters.json"
             
@@ -68,69 +68,69 @@ def quick_analyze():
                 file_size = os.path.getsize(json_file) / 1024  # KB
                 print(f"  📊 {json_file} ({file_size:.1f} KB)")
             
-            print("\n🎉 解析が正常に完了しました！")
+            print("\n🎉 Analysis finished successfully!")
             return True
         else:
-            print("\n❌ 解析に失敗しました")
-            print("💡 以下を確認してください:")
-            print("  - ログイン情報が正しいか")
-            print("  - Elite会員が有効か")
-            print("  - インターネット接続が安定しているか")
+            print("\n❌ Analysis failed")
+            print("💡 Please check:")
+            print("  - Login credentials are correct")
+            print("  - Elite subscription is active")
+            print("  - Internet connection is stable")
             return False
             
     except KeyboardInterrupt:
-        print("\n⏹️  ユーザーによって中断されました")
+        print("\n⏹️  Interrupted by user")
         return False
     except Exception as e:
-        print(f"\n❌ 予期しないエラー: {e}")
+        print(f"\n❌ Unexpected error: {e}")
         return False
 
 def main():
-    """メイン実行"""
+    """Main entry point."""
     try:
         success = quick_analyze()
         
         if success:
-            # 結果ファイルの簡単な統計を表示
+            # Show quick stats from the result file
             try:
                 import json
                 
                 with open('finviz_elite_filters.json', 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 
-                print(f"\n📈 統計情報:")
-                print(f"  🔢 検出されたフィルター数: {len(data)}")
+                print("\n📈 Stats:")
+                print(f"  🔢 Filters detected: {len(data)}")
                 
-                # カテゴリー別統計
+                # Category stats
                 categories = {}
                 for item in data:
-                    category = "その他"  # デフォルト
-                    # 簡単なカテゴリー判定
+                    category = "Other"  # Default
+                    # Simple category classification
                     name = item.get('name', '')
                     if 'Exchange' in name or 'Index' in name or 'Sector' in name:
-                        category = "基本情報"
+                        category = "Basic Info"
                     elif 'Price' in name or 'Cap' in name:
-                        category = "株価・時価総額"
+                        category = "Price & Market Cap"
                     elif 'Volume' in name:
-                        category = "出来高・取引"
+                        category = "Volume & Trading"
                     elif 'Performance' in name:
-                        category = "テクニカル分析"
+                        category = "Technical Analysis"
                     
                     categories[category] = categories.get(category, 0) + 1
                 
                 for cat, count in categories.items():
                     if count > 0:
-                        print(f"  📊 {cat}: {count}個")
+                        print(f"  📊 {cat}: {count}")
                         
             except Exception as e:
-                print(f"  📊 統計情報取得エラー: {e}")
+                print(f"  📊 Stats error: {e}")
         
-        print("\n👋 解析完了")
+        print("\n👋 Analysis complete")
         
     except KeyboardInterrupt:
-        print("\n👋 解析を中断しました")
+        print("\n👋 Analysis interrupted")
     except Exception as e:
-        print(f"❌ 実行エラー: {e}")
+        print(f"❌ Execution error: {e}")
 
 if __name__ == "__main__":
     main() 

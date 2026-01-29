@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-実際のMCP呼び出しによる包括的E2Eテスト
-型エラーやカラム名エラーを検出するためのテスト
+Comprehensive E2E tests using real MCP calls.
+Tests aimed at catching type errors and column name errors.
 """
 
 import pytest
@@ -12,7 +12,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from unittest.mock import patch, Mock
 
-# プロジェクトルートをパスに追加
+# Add project root to the path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
@@ -24,17 +24,17 @@ from src.finviz_client.news import FinvizNewsClient
 from src.finviz_client.sector_analysis import FinvizSectorAnalysisClient
 from src.finviz_client.sec_filings import FinvizSECFilingsClient
 
-# ログ設定
+# Logging setup
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class TestComprehensiveE2E:
-    """実際のMCP呼び出しによる包括的E2Eテスト"""
+    """Comprehensive E2E tests using real MCP calls."""
 
     @pytest.fixture(autouse=True)
     def setup_method(self):
-        """各テスト前のセットアップ"""
-        # テスト用の完全なStockDataサンプル
+        """Setup before each test."""
+        # Full StockData sample for tests
         self.sample_stock_data = StockData(
             ticker="AAPL",
             company_name="Apple Inc.",
@@ -84,7 +84,7 @@ class TestComprehensiveE2E:
             week_52_low=124.17
         )
 
-        # 複数銘柄のサンプルデータ
+        # Sample data for multiple tickers
         self.sample_stocks_list = [
             self.sample_stock_data,
             StockData(
@@ -103,12 +103,12 @@ class TestComprehensiveE2E:
         ]
 
     # ===========================================
-    # 決算関連スクリーナーテスト
+    # Earnings-related screener tests
     # ===========================================
 
     @pytest.mark.asyncio
     async def test_earnings_screener_real_call(self):
-        """決算発表予定銘柄スクリーニングの実際の呼び出しテスト"""
+        """Test real call for upcoming earnings screening."""
         with patch.object(FinvizScreener, "earnings_screener") as mock_screener:
             mock_screener.return_value = self.sample_stocks_list
 
@@ -124,7 +124,7 @@ class TestComprehensiveE2E:
 
     @pytest.mark.asyncio
     async def test_volume_surge_screener_real_call(self):
-        """出来高急増スクリーナーのテスト"""
+        """Test volume surge screener."""
         with patch.object(FinvizScreener, "volume_surge_screener") as mock_screener:
             mock_screener.return_value = self.sample_stocks_list
 
@@ -134,12 +134,12 @@ class TestComprehensiveE2E:
 
             assert result is not None
             result_text = str(result[0].text)
-            assert "固定フィルタ条件" in result_text
+            assert "Fixed filter conditions" in result_text
             mock_screener.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_earnings_trading_screener_real_call(self):
-        """決算トレード対象銘柄スクリーナーのテスト"""
+        """Test earnings trading screener."""
         with patch.object(FinvizScreener, "earnings_trading_screener") as mock_screener:
             mock_screener.return_value = self.sample_stocks_list
 
@@ -154,7 +154,7 @@ class TestComprehensiveE2E:
 
     @pytest.mark.asyncio
     async def test_get_stock_fundamentals_real_call(self):
-        """単一銘柄ファンダメンタルデータ取得のテスト"""
+        """Test retrieving fundamentals for a single stock."""
         with patch.object(FinvizClient, "get_stock_fundamentals") as mock_client:
             mock_client.return_value = self.sample_stock_data
 
@@ -170,7 +170,7 @@ class TestComprehensiveE2E:
 
     @pytest.mark.asyncio
     async def test_get_multiple_stocks_fundamentals_real_call(self):
-        """複数銘柄ファンダメンタルデータ取得のテスト"""
+        """Test retrieving fundamentals for multiple stocks."""
         with patch.object(FinvizClient, "get_multiple_stocks_fundamentals") as mock_client:
             mock_client.return_value = self.sample_stocks_list
 
@@ -185,14 +185,14 @@ class TestComprehensiveE2E:
             mock_client.assert_called_once()
 
     # ===========================================
-    # 属性アクセスパターンテスト
+    # Attribute access pattern tests
     # ===========================================
 
     def test_stockdata_attribute_access_comprehensive(self):
-        """StockDataの属性アクセスパターンの包括的テスト"""
+        """Comprehensive tests for StockData attribute access patterns."""
         stock = self.sample_stock_data
 
-        # 基本情報のアクセステスト
+        # Basic attribute access tests
         basic_attrs = [
             'ticker', 'company_name', 'sector', 'industry',
             'price', 'price_change', 'price_change_percent'
@@ -204,7 +204,7 @@ class TestComprehensiveE2E:
             except AttributeError as e:
                 pytest.fail(f"Missing attribute: {attr}")
 
-        # パフォーマンス属性のアクセステスト
+        # Performance attribute access tests
         performance_attrs = [
             'performance_1w', 'performance_1m', 'performance_3m',
             'performance_6m', 'performance_ytd', 'performance_1y'
@@ -216,7 +216,7 @@ class TestComprehensiveE2E:
             except AttributeError as e:
                 pytest.fail(f"Missing performance attribute: {attr}")
 
-        # 決算関連属性のアクセステスト
+        # Earnings-related attribute access tests
         earnings_attrs = [
             'eps_surprise', 'revenue_surprise', 'eps_qoq_growth',
             'sales_qoq_growth', 'earnings_date'
@@ -229,29 +229,29 @@ class TestComprehensiveE2E:
                 pytest.fail(f"Missing earnings attribute: {attr}")
 
     def test_stockdata_formatting_patterns(self):
-        """StockDataのフォーマットパターンテスト"""
+        """Test formatting patterns for StockData."""
         stock = self.sample_stock_data
 
-        # server.pyで使われるフォーマットパターンをシミュレート
+        # Simulate formatting patterns used in server.py
         try:
-            # 基本情報フォーマット
+            # Basic info formatting
             basic_info = f"Ticker: {stock.ticker}"
             basic_info += f", Company: {stock.company_name}"
             basic_info += f", Sector: {stock.sector}"
             
-            # 価格情報フォーマット
+            # Price info formatting
             if stock.price:
                 price_info = f"Price: ${stock.price:.2f}"
             if stock.price_change:
                 price_info += f", Change: {stock.price_change:.2f}%"
 
-            # パフォーマンス情報フォーマット
+            # Performance info formatting
             if stock.performance_1w:
                 perf_info = f"1W Performance: {stock.performance_1w:.2f}%"
             if stock.performance_1m:
                 perf_info += f", 1M Performance: {stock.performance_1m:.2f}%"
 
-            # 決算情報フォーマット
+            # Earnings info formatting
             if stock.eps_surprise:
                 earnings_info = f"EPS Surprise: {stock.eps_surprise:.2f}%"
             if stock.revenue_surprise:
@@ -263,12 +263,12 @@ class TestComprehensiveE2E:
             pytest.fail(f"Formatting pattern failed: {e}")
 
     # ===========================================
-    # エラーハンドリングテスト
+    # Error handling tests
     # ===========================================
 
     @pytest.mark.asyncio
     async def test_invalid_ticker_handling(self):
-        """無効なティッカーのエラーハンドリングテスト"""
+        """Test error handling for invalid tickers."""
         with patch.object(FinvizClient, "get_stock_fundamentals") as mock_client:
             mock_client.side_effect = ValueError("Invalid ticker: INVALID")
 
@@ -278,12 +278,12 @@ class TestComprehensiveE2E:
 
             assert result is not None
             result_text = str(result[0].text)
-            assert "Error" in result_text or "エラー" in result_text
+            assert "Error" in result_text
 
     @pytest.mark.asyncio
     async def test_invalid_parameters_handling(self):
-        """無効なパラメータのエラーハンドリングテスト"""
-        # 無効な決算日でテスト
+        """Test error handling for invalid parameters."""
+        # Test with an invalid earnings date
         result = await server.call_tool("earnings_screener", {
             "earnings_date": "invalid_date"
         })

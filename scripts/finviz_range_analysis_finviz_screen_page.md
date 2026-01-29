@@ -1,117 +1,117 @@
-# Finviz カスタム範囲・レンジ指定 詳細解析
+# Finviz Custom Range Analysis (Detailed)
 
-HTMLファイル: `finviz_screen_page.html`
+HTML file: `finviz_screen_page.html`
 
-このドキュメントは、Finvizでカスタム範囲（手入力レンジ）を指定した際のURLパターンを詳細に解析した結果です。
+This document details URL patterns when specifying custom ranges (manual inputs) in Finviz.
 
-## 🎯 カスタム範囲対応フィルター一覧
+## 🎯 Range-Capable Filters
 
-検出されたカスタム範囲対応フィルター数: **20個**
+Detected range-capable filters: **20**
 
-### Analyst Recommendation (アナリスト推奨) - `an_recom`
+### Analyst Recommendation - `an_recom`
 
-### Market Cap (時価総額) - `cap`
-#### 📊 レンジ指定例
+### Market Cap - `cap`
+#### 📊 Range Examples
 
-| 範囲 | URLパラメーター | 説明 | 完全URL例 |
+| Range | URL Parameter | Description | Full URL Example |
 |---|---|---|---|
 | `1to10` | `cap_1to10` | Market Cap: $1B to $10B | `https://finviz.com/screener.ashx?v=111&f=cap_1to10` |
 | `10to50` | `cap_10to50` | Market Cap: $10B to $50B | `https://finviz.com/screener.ashx?v=111&f=cap_10to50` |
 | `2to20` | `cap_2to20` | Market Cap: $2B to $20B | `https://finviz.com/screener.ashx?v=111&f=cap_2to20` |
 
-- **データ型**: currency
-- **単位**: USD (Billions)
-- **フォーマット**: Market Cap: ${min}B to ${max}B
+- **Data type**: currency
+- **Unit**: USD (Billions)
+- **Format**: Market Cap: ${min}B to ${max}B
 
-### Earnings Date (決算日) - `earningsdate`
+### Earnings Date - `earningsdate`
 
-### Exchange (取引所) - `exch`
+### Exchange - `exch`
 
-### Dividend Yield (配当利回り) - `fa_div`
-#### 📊 レンジ指定例
+### Dividend Yield - `fa_div`
+#### 📊 Range Examples
 
-| 範囲 | URLパラメーター | 説明 | 完全URL例 |
+| Range | URL Parameter | Description | Full URL Example |
 |---|---|---|---|
 | `2to5` | `fa_div_2to5` | Dividend: 2% to 5% | `https://finviz.com/screener.ashx?v=111&f=fa_div_2to5` |
 | `5to10` | `fa_div_5to10` | Dividend: 5% to 10% | `https://finviz.com/screener.ashx?v=111&f=fa_div_5to10` |
 | `1to3` | `fa_div_1to3` | Dividend: 1% to 3% | `https://finviz.com/screener.ashx?v=111&f=fa_div_1to3` |
 
-- **データ型**: percentage
-- **単位**: %
-- **フォーマット**: Dividend: {min}% to {max}%
+- **Data type**: percentage
+- **Unit**: %
+- **Format**: Dividend: {min}% to {max}%
 
-### Country (国) - `geo`
+### Country - `geo`
 
-### Index (指数) - `idx`
+### Index - `idx`
 
-### Industry (業界) - `ind`
+### Industry - `ind`
 
-### IPO Date (IPO日) - `ipodate`
+### IPO Date - `ipodate`
 
-### Sector (セクター) - `sec`
+### Sector - `sec`
 
-### Average Volume (平均出来高) - `sh_avgvol`
-#### 📊 レンジ指定例
+### Average Volume - `sh_avgvol`
+#### 📊 Range Examples
 
-| 範囲 | URLパラメーター | 説明 | 完全URL例 |
+| Range | URL Parameter | Description | Full URL Example |
 |---|---|---|---|
 | `100to500` | `sh_avgvol_100to500` | Volume: 100K to 500K | `https://finviz.com/screener.ashx?v=111&f=sh_avgvol_100to500` |
 | `500to1000` | `sh_avgvol_500to1000` | Volume: 500K to 1000K | `https://finviz.com/screener.ashx?v=111&f=sh_avgvol_500to1000` |
 | `1000to5000` | `sh_avgvol_1000to5000` | Volume: 1000K to 5000K | `https://finviz.com/screener.ashx?v=111&f=sh_avgvol_1000to5000` |
 
-- **データ型**: volume
-- **単位**: K shares
-- **フォーマット**: Volume: {min}K to {max}K
+- **Data type**: volume
+- **Unit**: K shares
+- **Format**: Volume: {min}K to {max}K
 
-### Current Volume (当日出来高) - `sh_curvol`
+### Current Volume - `sh_curvol`
 
-### Float (浮動株数) - `sh_float`
+### Float - `sh_float`
 
-### Option/Short (オプション/ショート) - `sh_opt`
+### Option/Short - `sh_opt`
 
-### Shares Outstanding (発行済株式数) - `sh_outstanding`
+### Shares Outstanding - `sh_outstanding`
 
-### Price (株価) - `sh_price`
-#### 📊 レンジ指定例
+### Price - `sh_price`
+#### 📊 Range Examples
 
-| 範囲 | URLパラメーター | 説明 | 完全URL例 |
+| Range | URL Parameter | Description | Full URL Example |
 |---|---|---|---|
 | `10to50` | `sh_price_10to50` | Price: $10 to $50 | `https://finviz.com/screener.ashx?v=111&f=sh_price_10to50` |
 | `5to20` | `sh_price_5to20` | Price: $5 to $20 | `https://finviz.com/screener.ashx?v=111&f=sh_price_5to20` |
 | `1to10` | `sh_price_1to10` | Price: $1 to $10 | `https://finviz.com/screener.ashx?v=111&f=sh_price_1to10` |
 
-- **データ型**: currency
-- **単位**: USD
-- **フォーマット**: Price: ${min} to ${max}
+- **Data type**: currency
+- **Unit**: USD
+- **Format**: Price: ${min} to ${max}
 
-### Relative Volume (相対出来高) - `sh_relvol`
-#### 📊 レンジ指定例
+### Relative Volume - `sh_relvol`
+#### 📊 Range Examples
 
-| 範囲 | URLパラメーター | 説明 | 完全URL例 |
+| Range | URL Parameter | Description | Full URL Example |
 |---|---|---|---|
 | `1to3` | `sh_relvol_1to3` | Rel Volume: 1x to 3x | `https://finviz.com/screener.ashx?v=111&f=sh_relvol_1to3` |
 | `2to5` | `sh_relvol_2to5` | Rel Volume: 2x to 5x | `https://finviz.com/screener.ashx?v=111&f=sh_relvol_2to5` |
 | `0.5to2` | `sh_relvol_0.5to2` | Rel Volume: 0.5x to 2x | `https://finviz.com/screener.ashx?v=111&f=sh_relvol_0.5to2` |
 
-- **データ型**: numeric
-- **単位**: multiplier
-- **フォーマット**: Rel Volume: {min}x to {max}x
+- **Data type**: numeric
+- **Unit**: multiplier
+- **Format**: Rel Volume: {min}x to {max}x
 
-### Short Float (ショート比率) - `sh_short`
+### Short Float - `sh_short`
 
-### Trades (取引回数) - `sh_trades`
+### Trades - `sh_trades`
 
-### Target Price (目標株価) - `targetprice`
+### Target Price - `targetprice`
 
-## 🔗 URLパターン構造解析
+## 🔗 URL Pattern Structure Analysis
 
-### 基本構造
+### Basic Structure
 ```
 https://finviz.com/screener.ashx?v=111&f=[filter1],[filter2],[filter3]
 ```
 
-### カスタム範囲のパターン
-| フィルター | パターン | 例 |
+### Custom Range Patterns
+| Filter | Pattern | Example |
 |---|---|---|
 | `sh_price` | `sh_price_{min}to{max}` | `sh_price_10to50` |
 | `cap` | `cap_{min}to{max}` | `cap_1to10` |
@@ -135,47 +135,47 @@ https://finviz.com/screener.ashx?v=111&f=[filter1],[filter2],[filter3]
 | `ta_beta` | `ta_beta_{min}to{max}` | `ta_beta_0.5to1.5` |
 | `ta_volatility` | `ta_volatility_{min}to{max}` | `ta_volatility_5to15` |
 
-## 💡 実践的な使用例
+## 💡 Practical Examples
 
-### 1. 価格範囲 $10-$50の銘柄
+### 1. Stocks priced $10-$50
 **URL**: `https://finviz.com/screener.ashx?v=111&f=sh_price_10to50`
 
-**説明**: 株価が$10から$50の範囲にある銘柄
+**Description**: $10$50
 
-### 2. 時価総額 $1B-$10Bの中型株
+### 2. Mid-cap stocks with $1B-$10B market cap
 **URL**: `https://finviz.com/screener.ashx?v=111&f=cap_1to10`
 
-**説明**: 時価総額が$1Bから$10Bの中型株
+**Description**: $1B$10B
 
-### 3. PER 10-20倍の割安株
+### 3. Value stocks with P/E 10-20
 **URL**: `https://finviz.com/screener.ashx?v=111&f=fa_pe_10to20`
 
-**説明**: PERが10倍から20倍の適正評価銘柄
+**Description**: PER1020
 
-### 4. 配当利回り 3-7%の高配当株
+### 4. High-dividend stocks with 3-7% yield
 **URL**: `https://finviz.com/screener.ashx?v=111&f=fa_div_3to7`
 
-**説明**: 配当利回りが3%から7%の高配当銘柄
+**Description**: 3%7%
 
-### 5. 複合条件: テクノロジー × 中型株 × 適正PER
+### 5. Combined: Technology × mid-cap × reasonable P/E
 **URL**: `https://finviz.com/screener.ashx?v=111&f=sec_technology,cap_1to10,fa_pe_10to25`
 
-**説明**: テクノロジーセクターの中型株でPER10-25倍
+**Description**: PER10-25
 
-## 🎯 レンジ指定のベストプラクティス
+## 🎯 Range Input Best Practices
 
-### 📈 数値の指定方法
-- **整数**: `10to50` (10から50)
-- **小数**: `1.5to3.5` (1.5から3.5)
-- **負数**: `-10to10` (-10%から+10%)
+### 📈 Numeric formats
+- **Integers**: `10to50` (10 to 50)
+- **Decimals**: `1.5to3.5` (1.5 to 3.5)
+- **Negative values**: `-10to10` (-10% to +10%)
 
-### 💰 通貨・単位の考慮
-- **株価**: ドル単位 `sh_price_10to50` ($10-$50)
-- **時価総額**: 10億ドル単位 `cap_1to10` ($1B-$10B)
-- **出来高**: 千株単位 `sh_avgvol_100to500` (100K-500K)
+### 💰 Currency and unit considerations
+- **Price**: USD `sh_price_10to50` ($10-$50)
+- **Market cap**: billions USD `cap_1to10` ($1B-$10B)
+- **Volume**: thousands of shares `sh_avgvol_100to500` (100K-500K)
 
-### ⚠️ 注意点
-- 最小値は最大値より小さく設定
-- 極端な値は結果が0件になる可能性
-- 一部のフィルターは特定の範囲のみ有効
+### ⚠️ Notes
+- Ensure min is less than max
+- Extreme values may return zero results
+- Some filters only support specific ranges
 

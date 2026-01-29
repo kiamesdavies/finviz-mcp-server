@@ -1,50 +1,50 @@
 import sys
 import os
 
-# プロジェクトルートをPythonパスに追加
+# Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 def test_volume_surge_screener():
-    """volume_surge_screenerのテスト実行とデバッグ"""
+    """Run and debug the volume_surge_screener test."""
     try:
-        # 直接スクリーナーインスタンスを作成して詳細確認
+        # Instantiate the screener directly for detailed inspection
         from src.finviz_client.screener import FinvizScreener
         screener = FinvizScreener()
         
-        # フィルター条件確認
-        print("\n=== フィルター条件確認 ===")
+        # Check filter conditions
+        print("\n=== Filter Conditions ===")
         filters = screener._build_volume_surge_filters()
-        print(f"フィルター: {filters}")
+        print(f"Filters: {filters}")
         
-        # Finvizパラメーター変換確認
-        print("\n=== Finvizパラメーター変換確認 ===")
+        # Check Finviz parameter conversion
+        print("\n=== Finviz Parameter Conversion ===")
         finviz_params = screener._convert_filters_to_finviz(filters)
-        print(f"Finvizパラメーター: {finviz_params}")
+        print(f"Finviz Parameters: {finviz_params}")
         
-        # 実際のスクリーニング実行
-        print("\n=== スクリーニング実行 ===")
+        # Run the actual screening
+        print("\n=== Screening Run ===")
         results = screener.volume_surge_screener()
-        print(f"結果件数: {len(results)}")
+        print(f"Result count: {len(results)}")
         
-        # 結果の詳細表示（最初の5件）
+        # Show result details (first 5)
         if results:
-            print("\n=== 結果詳細（最初の5件） ===")
+            print("\n=== Result Details (First 5) ===")
             for i, stock in enumerate(results[:5]):
-                # StockDataオブジェクトの正しい属性を使用
+                # Use correct StockData object attributes
                 company_name = getattr(stock, 'company_name', 'N/A')
                 price = getattr(stock, 'price', 'N/A')
                 price_change = getattr(stock, 'price_change', 'N/A')
                 volume = getattr(stock, 'volume', 'N/A')
                 
                 print(f"{i+1}. {stock.ticker} - {company_name}")
-                print(f"   価格: ${price} | 変動: {price_change}% | 出来高: {volume}")
+                print(f"   Price: ${price} | Change: {price_change}% | Volume: {volume}")
                 print()
         else:
-            print("結果が0件です。")
+            print("No results found.")
             
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
+        print(f"An error occurred: {e}")
         import traceback
         traceback.print_exc()
 

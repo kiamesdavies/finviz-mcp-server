@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Debug script for Finviz screener issues
-Finvizスクリーナーの問題をデバッグするためのスクリプト
+Script for debugging Finviz screener issues
 """
 
 import sys
@@ -19,12 +19,12 @@ from src.finviz_client.screener import FinvizScreener
 from src.finviz_client.base import FinvizClient
 
 def test_direct_url_construction():
-    """直接URLを構築してテスト"""
-    print("=== URL構築テスト ===")
+    """Test by constructing the URL directly."""
+    print("=== URL Construction Test ===")
     
     screener = FinvizScreener()
     
-    # 来週決算予定のフィルタを構築
+    # Build filters for next week's earnings
     filters = {
         'earnings_date': 'next_week',
         'market_cap': 'smallover',
@@ -35,90 +35,90 @@ def test_direct_url_construction():
                    'Financial Services', 'Consumer Defensive', 'Basic Materials']
     }
     
-    # Finvizパラメータに変換
+    # Convert to Finviz parameters
     finviz_params = screener._convert_filters_to_finviz(filters)
-    print(f"構築されたパラメータ: {finviz_params}")
+    print(f"Constructed parameters: {finviz_params}")
     
-    # URLを構築
+    # Build URL
     from urllib.parse import urlencode
     base_url = "https://finviz.com/screener.ashx"
     full_url = f"{base_url}?{urlencode(finviz_params)}"
-    print(f"構築されたURL: {full_url}")
+    print(f"Constructed URL: {full_url}")
     
-    # 実際のFinvizサイトのURL（参考）
+    # Actual Finviz URL (reference)
     expected_url = "https://elite.finviz.com/screener.ashx?v=311&p=w&f=cap_smallover,earningsdate_nextweek,sec_technology|industrials|healthcare|communicationservices|consumercyclical|financial|consumerdefensive|basicmaterials,sh_avgvol_o500,sh_price_o10&ft=4&o=ticker&ar=10"
-    print(f"期待されるURL: {expected_url}")
+    print(f"Expected URL: {expected_url}")
 
 def test_basic_request():
-    """基本的なHTTPリクエストテスト"""
-    print("\n=== 基本HTTPリクエストテスト ===")
+    """Basic HTTP request test."""
+    print("\n=== Basic HTTP Request Test ===")
     
     client = FinvizClient()
     
     try:
-        # 基本的なスクリーナーページにアクセス
+        # Access a basic screener page
         response = client._make_request("https://finviz.com/screener.ashx", {'v': '111'})
-        print(f"レスポンスステータス: {response.status_code}")
-        print(f"レスポンスサイズ: {len(response.text)} 文字")
+        print(f"Response status: {response.status_code}")
+        print(f"Response size: {len(response.text)} characters")
         
-        # HTMLの一部をチェック
+        # Check part of the HTML
         if "screener" in response.text.lower():
-            print("✓ スクリーナーページが正常に読み込まれました")
+            print("✓ Screener page loaded successfully")
         else:
-            print("✗ スクリーナーページの読み込みに問題があります")
+            print("✗ Problem loading screener page")
             
     except Exception as e:
-        print(f"✗ HTTPリクエストエラー: {e}")
+        print(f"✗ HTTP request error: {e}")
 
 def test_csv_export():
-    """CSVエクスポートのテスト"""
-    print("\n=== CSVエクスポートテスト ===")
+    """CSV export test."""
+    print("\n=== CSV Export Test ===")
     
     client = FinvizClient()
     
     try:
-        # 最もシンプルなフィルタでCSVエクスポートを試行
+        # Try CSV export with the simplest filter
         params = {'v': '111'}
         response = client._make_request("https://finviz.com/export.ashx", params)
-        print(f"CSVレスポンスステータス: {response.status_code}")
-        print(f"CSVレスポンスサイズ: {len(response.text)} 文字")
-        print(f"CSVレスポンス最初の200文字: {response.text[:200]}")
+        print(f"CSV response status: {response.status_code}")
+        print(f"CSV response size: {len(response.text)} characters")
+        print(f"First 200 CSV characters: {response.text[:200]}")
         
         if "ticker" in response.text.lower() or "symbol" in response.text.lower():
-            print("✓ CSVデータが正常に取得されました")
+            print("✓ CSV data retrieved successfully")
         else:
-            print("✗ CSVデータの取得に問題があります")
+            print("✗ Problem retrieving CSV data")
             
     except Exception as e:
-        print(f"✗ CSVエクスポートエラー: {e}")
+        print(f"✗ CSV export error: {e}")
 
 def test_html_parsing():
-    """HTMLパースのテスト"""
-    print("\n=== HTMLパースのテスト ===")
+    """HTML parsing test."""
+    print("\n=== HTML Parsing Test ===")
     
     client = FinvizClient()
     
     try:
-        # 基本的なスクリーナーのHTMLを取得してパース
+        # Fetch and parse basic screener HTML
         params = {'v': '111', 'f': 'cap_smallover'}
         response = client._make_request("https://finviz.com/screener.ashx", params)
         
-        # HTMLをパース
+        # Parse HTML
         parsed_data = client._parse_finviz_table(response.text)
-        print(f"パースされた行数: {len(parsed_data)}")
+        print(f"Parsed rows: {len(parsed_data)}")
         
         if parsed_data:
-            print("✓ HTMLパースが成功しました")
-            print(f"最初の行のキー: {list(parsed_data[0].keys())}")
+            print("✓ HTML parsing succeeded")
+            print(f"First row keys: {list(parsed_data[0].keys())}")
         else:
-            print("✗ HTMLパースで0行しか取得できませんでした")
+            print("✗ HTML parsing returned 0 rows")
             
     except Exception as e:
-        print(f"✗ HTMLパースエラー: {e}")
+        print(f"✗ HTML parsing error: {e}")
 
 def main():
-    """メイン実行関数"""
-    print("🔍 Finviz スクリーナー デバッグテスト開始")
+    """Main entry point."""
+    print("🔍 Finviz Screener Debug Tests Start")
     print("=" * 60)
     
     test_direct_url_construction()
@@ -127,7 +127,7 @@ def main():
     test_html_parsing()
     
     print("\n" + "=" * 60)
-    print("📊 デバッグテスト完了")
+    print("📊 Debug tests complete")
 
 if __name__ == "__main__":
     main() 

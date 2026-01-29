@@ -10,7 +10,7 @@ from ..models import NewsData
 logger = logging.getLogger(__name__)
 
 class FinvizNewsClient(FinvizClient):
-    """Finvizニュース機能専用クライアント"""
+    """Client dedicated to Finviz news features."""
     
     def __init__(self, api_key: Optional[str] = None):
         super().__init__(api_key)
@@ -18,32 +18,32 @@ class FinvizNewsClient(FinvizClient):
     def get_stock_news(self, tickers: Union[str, List[str]], days_back: int = 7, 
                       news_type: str = "all") -> List[NewsData]:
         """
-        指定銘柄のニュースを取得（CSV export使用）
-        
+        Retrieve news for specified tickers (via CSV export).
+
         Args:
-            tickers: 銘柄ティッカー（単一、カンマ区切り文字列、またはリスト）
-            days_back: 過去何日分のニュース
-            news_type: ニュースタイプ (all, earnings, analyst, insider, general)
-            
+            tickers: Stock tickers (single, comma-delimited string, or list)
+            days_back: How many days of news to include
+            news_type: News type (all, earnings, analyst, insider, general)
+
         Returns:
-            NewsData オブジェクトのリスト
+            List of NewsData objects
         """
         try:
             from ..utils.validators import validate_tickers, parse_tickers
             
-            # ティッカーの妥当性チェック
+            # Validate tickers
             if not validate_tickers(tickers):
                 raise ValueError(f"Invalid tickers: {tickers}")
             
-            # ティッカーを正規化されたリストに変換
+            # Normalize tickers into a list
             ticker_list = parse_tickers(tickers)
             
             params = {
-                'v': '3',  # バージョンパラメータを追加
-                't': ','.join(ticker_list)  # 複数ティッカーをカンマ区切りで指定
+                'v': '3',  # Add version parameter
+                't': ','.join(ticker_list)  # Join multiple tickers with commas
             }
             
-            # ニュースタイプフィルタ
+            # News type filter
             if news_type != "all":
                 type_mapping = {
                     'earnings': 'earnings',
@@ -54,20 +54,20 @@ class FinvizNewsClient(FinvizClient):
                 if news_type in type_mapping:
                     params['filter'] = type_mapping[news_type]
             
-            # CSVからニュースデータを取得
+            # Fetch news data from CSV
             df = self._fetch_csv_from_url(self.NEWS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No news data returned for {ticker_list}")
                 return []
             
-            # CSVデータからNewsDataオブジェクトのリストに変換
+            # Convert CSV data to a list of NewsData objects
             news_list = []
             cutoff_date = datetime.now() - timedelta(days=days_back)
             
             for _, row in df.iterrows():
                 try:
-                    # 複数ティッカーの場合はリスト全体を渡す
+                    # For multiple tickers, pass the full list
                     primary_ticker = ticker_list[0] if len(ticker_list) == 1 else ','.join(ticker_list)
                     news_data = self._parse_news_from_csv(row, primary_ticker, cutoff_date)
                     if news_data:
@@ -85,28 +85,28 @@ class FinvizNewsClient(FinvizClient):
     
     def get_market_news(self, days_back: int = 3, max_items: int = 50) -> List[NewsData]:
         """
-        市場全体のニュースを取得（CSV export使用）
-        
+        Retrieve market-wide news (via CSV export).
+
         Args:
-            days_back: 過去何日分のニュース
-            max_items: 最大取得件数
-            
+            days_back: How many days of news to include
+            max_items: Maximum number of items
+
         Returns:
-            NewsData オブジェクトのリスト
+            List of NewsData objects
         """
         try:
             params = {
-                'v': '3'  # バージョンパラメータを追加
+                'v': '3'  # Add version parameter
             }
             
-            # CSVから市場ニュースデータを取得
+            # Fetch market news data from CSV
             df = self._fetch_csv_from_url(self.NEWS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning("No market news data returned")
                 return []
             
-            # CSVデータからNewsDataオブジェクトのリストに変換
+            # Convert CSV data to a list of NewsData objects
             news_list = []
             cutoff_date = datetime.now() - timedelta(days=days_back)
             
@@ -131,30 +131,30 @@ class FinvizNewsClient(FinvizClient):
     def get_sector_news(self, sector: str, days_back: int = 5, 
                        max_items: int = 30) -> List[NewsData]:
         """
-        特定セクターのニュースを取得（CSV export使用）
-        
+        Retrieve news for a specific sector (via CSV export).
+
         Args:
-            sector: セクター名
-            days_back: 過去何日分のニュース
-            max_items: 最大取得件数
-            
+            sector: Sector name
+            days_back: How many days of news to include
+            max_items: Maximum number of items
+
         Returns:
-            NewsData オブジェクトのリスト
+            List of NewsData objects
         """
         try:
             params = {
-                'v': '3',  # バージョンパラメータを追加
+                'v': '3',  # Add version parameter
                 'sec': sector.lower().replace(' ', '_')
             }
             
-            # CSVからセクターニュースデータを取得
+            # Fetch sector news data from CSV
             df = self._fetch_csv_from_url(self.NEWS_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No news data returned for {sector} sector")
                 return []
             
-            # CSVデータからNewsDataオブジェクトのリストに変換
+            # Convert CSV data to a list of NewsData objects
             news_list = []
             cutoff_date = datetime.now() - timedelta(days=days_back)
             
@@ -180,43 +180,43 @@ class FinvizNewsClient(FinvizClient):
     
     def _parse_news_date(self, date_text: str) -> Optional[datetime]:
         """
-        ニュースの日付文字列を解析
-        
+        Parse a news date string.
+
         Args:
-            date_text: 日付文字列
-            
+            date_text: Date string
+
         Returns:
-            datetime オブジェクトまたはNone
+            datetime object or None
         """
         try:
-            # Finvizの日付形式に対応
-            # "Dec-29-23 08:00AM" のような形式
+            # Support Finviz date formats
+            # Format like "Dec-29-23 08:00AM"
             date_text = date_text.strip()
             
             if not date_text:
                 return None
             
-            # 今日・昨日の表記
+            # Handle Today/Yesterday labels
             if 'Today' in date_text or 'today' in date_text:
                 return datetime.now()
             elif 'Yesterday' in date_text or 'yesterday' in date_text:
                 return datetime.now() - timedelta(days=1)
             
-            # 時刻のみの場合（今日の記事）
+            # Time-only case (today's article)
             if ':' in date_text and len(date_text) < 10:
                 return datetime.now()
             
-            # 標準的な日付形式の処理
+            # Handle standard date formats
             # "Dec-29-23" -> "2023-12-29"
             parts = date_text.split()
             if len(parts) >= 1:
                 date_part = parts[0]
                 if '-' in date_part:
                     try:
-                        # "Dec-29-23" 形式
+                        # "Dec-29-23" format
                         month_str, day_str, year_str = date_part.split('-')
                         
-                        # 月名を数値に変換
+                        # Convert month name to number
                         month_mapping = {
                             'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
                             'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8,
@@ -232,7 +232,7 @@ class FinvizNewsClient(FinvizClient):
                     except ValueError:
                         pass
             
-            # その他の形式（デフォルトで現在時刻）
+            # Other formats (default to now)
             return datetime.now()
             
         except Exception as e:
@@ -241,24 +241,24 @@ class FinvizNewsClient(FinvizClient):
     
     def _extract_news_source(self, element) -> str:
         """
-        ニュースソースを抽出
-        
+        Extract the news source.
+
         Args:
             element: BeautifulSoup element
-            
+
         Returns:
-            ソース名
+            Source name
         """
         try:
-            # ソースの検索パターン
+            # Source lookup pattern
             source_span = element.find('span', {'class': 'news-source'})
             if source_span:
                 return source_span.get_text(strip=True)
             
-            # 括弧内のソース情報
+            # Source info in parentheses
             text = element.get_text()
             if '(' in text and ')' in text:
-                # 最後の括弧内の文字列をソースとして取得
+                # Use the last parenthetical as source
                 parts = text.split('(')
                 if len(parts) > 1:
                     source_part = parts[-1].split(')')[0]
@@ -271,17 +271,17 @@ class FinvizNewsClient(FinvizClient):
     
     def _categorize_news(self, title: str) -> str:
         """
-        ニュースタイトルからカテゴリを推定
-        
+        Infer a category from the news title.
+
         Args:
-            title: ニュースタイトル
-            
+            title: News title
+
         Returns:
-            カテゴリ名
+            Category name
         """
         title_lower = title.lower()
         
-        # キーワードベースの分類
+        # Keyword-based classification
         if any(word in title_lower for word in ['earnings', 'revenue', 'profit', 'eps', 'guidance']):
             return 'earnings'
         elif any(word in title_lower for word in ['upgrade', 'downgrade', 'rating', 'analyst', 'target']):
@@ -299,32 +299,32 @@ class FinvizNewsClient(FinvizClient):
     
     def _parse_news_from_csv(self, row: 'pd.Series', ticker: str, cutoff_date: datetime) -> Optional[NewsData]:
         """
-        CSV行からNewsDataオブジェクトを作成
-        
+        Build a NewsData object from a CSV row.
+
         Args:
-            row: pandasのSeries（CSV行データ）
-            ticker: 対象ティッカー
-            cutoff_date: カットオフ日時
-            
+            row: pandas Series (CSV row data)
+            ticker: Target ticker
+            cutoff_date: Cutoff datetime
+
         Returns:
-            NewsData オブジェクトまたはNone
+            NewsData object or None
         """
         try:
             import pandas as pd
             
-            # 必要なフィールドを抽出
+            # Extract required fields
             title = str(row.get('Title', ''))
             source = str(row.get('Source', ''))
             url = str(row.get('URL', ''))
             
-            # 日時の解析
+            # Parse date/time
             date_str = str(row.get('Date', ''))
             news_date = self._parse_news_date_from_csv(date_str)
             
             if not news_date or news_date < cutoff_date:
                 return None
             
-            # カテゴリの推定
+            # Estimate category
             category = self._categorize_news(title)
             
             return NewsData(
@@ -342,23 +342,23 @@ class FinvizNewsClient(FinvizClient):
     
     def _parse_news_date_from_csv(self, date_str: str) -> Optional[datetime]:
         """
-        CSV日時文字列をdatetimeオブジェクトに変換
-        
+        Convert a CSV datetime string to a datetime object.
+
         Args:
-            date_str: 日時文字列
-            
+            date_str: Datetime string
+
         Returns:
-            datetime オブジェクトまたはNone
+            datetime object or None
         """
         if not date_str or date_str == '-':
             return None
         
         try:
-            # ISO形式の日時をパース
+            # Parse ISO datetime
             if 'T' in date_str:
                 return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
             
-            # その他の形式をパース
+            # Parse other formats
             for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%m/%d/%Y', '%m-%d-%Y']:
                 try:
                     return datetime.strptime(date_str, fmt)

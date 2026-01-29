@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Release Test Runner
-リリース前に実行すべき全ての検証テストを包括的に実行
+Run all validation tests that should be executed before release.
 """
 
 import sys
@@ -12,86 +12,86 @@ import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 
-# .envファイルを読み込み
+# Load .env file
 load_dotenv()
 
-# プロジェクトルートをパスに追加
+# Add project root to path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-# テストインポート
+# Test imports
 from tests.test_mcp_system_validation import MCPSystemValidationTest
 
 class ReleaseTestRunner:
-    """リリーステスト実行管理クラス"""
+    """Release test runner class."""
     
     def __init__(self):
         self.test_results = {}
         self.total_duration = 0
-        self.skip_mcp_server_test = True  # デフォルトでMCPサーバーテストをスキップ
+        self.skip_mcp_server_test = True  # Skip MCP server test by default
     
     def print_header(self):
-        """ヘッダー出力"""
+        """Print header."""
         print("=" * 100)
         print("🚀 FINVIZ MCP SERVER - RELEASE VALIDATION TESTS")
         print("=" * 100)
-        print("本テストはリリース前の品質検証を実行します")
-        print("- 環境チェック")
-        print("- ユニットテスト実行") 
-        print("- システム検証テスト実行")
+        print("This test suite runs pre-release quality validation.")
+        print("- Environment checks")
+        print("- Unit tests")
+        print("- System validation tests")
         if not self.skip_mcp_server_test:
-            print("- MCPサーバー起動テスト")
+            print("- MCP server startup test")
         print("-" * 100)
     
     def check_environment(self):
-        """環境チェック"""
-        print("🔍 環境チェック実行中...")
+        """Environment checks."""
+        print("🔍 Running environment checks...")
         
         checks = []
         
-        # Python バージョン確認
+        # Check Python version
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         if sys.version_info >= (3, 8):
-            print(f"✅ Python バージョン: {python_version}")
+            print(f"✅ Python version: {python_version}")
             checks.append(True)
         else:
-            print(f"❌ Python バージョン不適合: {python_version} (3.8以上必要)")
+            print(f"❌ Unsupported Python version: {python_version} (3.8+ required)")
             checks.append(False)
         
-        # 必要ファイル確認
+        # Check required files
         required_files = ['src/server.py', 'pyproject.toml', 'requirements.txt']
         for file_path in required_files:
             if os.path.exists(file_path):
-                print(f"✅ 必要ファイル存在: {file_path}")
+                print(f"✅ Required file present: {file_path}")
                 checks.append(True)
             else:
-                print(f"❌ 必要ファイル不存在: {file_path}")
+                print(f"❌ Required file missing: {file_path}")
                 checks.append(False)
         
-        # 環境変数確認
+        # Check environment variables
         finviz_key = os.getenv('FINVIZ_API_KEY')
         if finviz_key:
-            print(f"✅ FINVIZ_API_KEY設定済み")
+            print("✅ FINVIZ_API_KEY is set")
             checks.append(True)
         else:
-            print(f"⚠️  FINVIZ_API_KEY未設定（一部機能に制限あり）")
-            checks.append(True)  # 警告だが、テスト続行可能
+            print("⚠️  FINVIZ_API_KEY not set (some features limited)")
+            checks.append(True)  # Warning, but tests can continue
         
-        # 依存パッケージ確認
+        # Check dependencies
         try:
             import pandas, requests, bs4
-            print("✅ 依存パッケージ利用可能")
+            print("✅ Dependencies available")
             checks.append(True)
         except ImportError as e:
-            print(f"❌ 依存パッケージ不足: {e}")
+            print(f"❌ Missing dependencies: {e}")
             checks.append(False)
         
         return all(checks)
     
     def run_mcp_server_startup_test(self):
-        """MCPサーバー起動テスト（オプション）"""
-        print("\n🔌 MCPサーバー起動テスト実行中...")
-        print("⚠️  注意: RuntimeWarningは技術的警告で機能には影響しません")
+        """MCP server startup test (optional)."""
+        print("\n🔌 Running MCP server startup test...")
+        print("⚠️  Note: RuntimeWarning is a technical warning and does not affect functionality")
         
         try:
             result = subprocess.run([
@@ -102,17 +102,17 @@ import subprocess
 import time
 import signal
 
-# MCPサーバーを起動
+# Start MCP server
 proc = subprocess.Popen([sys.executable, '-m', 'mcp.server.stdio', 'src.server'], 
                        stdout=subprocess.PIPE, 
                        stderr=subprocess.PIPE)
 
-# 3秒待機
+# Wait 3 seconds
 time.sleep(3)
 
-# プロセスが実行中かチェック
+# Check if process is running
 if proc.poll() is None:
-    print('SUCCESS: MCPサーバーが正常に起動')
+    print('SUCCESS: MCP server started successfully')
     proc.terminate()
     proc.wait()
     exit(0)
@@ -125,22 +125,22 @@ else:
             ], capture_output=True, text=True, timeout=10)
             
             if result.returncode == 0:
-                print("✅ MCPサーバー起動テスト成功")
+                print("✅ MCP server startup test passed")
                 return True
             else:
-                print(f"❌ MCPサーバー起動失敗: {result.stderr}")
+                print(f"❌ MCP server startup test failed: {result.stderr}")
                 return False
                 
         except subprocess.TimeoutExpired:
-            print("❌ MCPサーバー起動テストタイムアウト")
+            print("❌ MCP server startup test timed out")
             return False
         except Exception as e:
-            print(f"❌ MCPサーバー起動テストエラー: {e}")
+            print(f"❌ MCP server startup test error: {e}")
             return False
     
     def run_system_validation_tests(self):
-        """システム検証テスト実行"""
-        print("\n🧪 システム検証テスト実行...")
+        """Run system validation tests."""
+        print("\n🧪 Running system validation tests...")
         
         start_time = time.time()
         validator = MCPSystemValidationTest()
@@ -156,24 +156,24 @@ else:
         return success
     
     def run_unit_tests(self):
-        """ユニットテスト実行"""
-        print("\n🔬 ユニットテスト実行...")
+        """Run unit tests."""
+        print("\n🔬 Running unit tests...")
         
-        # テストファイル一覧
+        # Test file list
         unit_test_files = [
-            "tests/test_basic.py",           # 基本機能ユニットテスト
-            # "tests/test_error_handling.py", # 開発中: 一時的に無効化
+            "tests/test_basic.py",           # Basic unit tests
+            # "tests/test_error_handling.py", # In progress: temporarily disabled
         ]
         
         integration_test_files = [
-            # "tests/test_mcp_integration.py", # 開発中: 一時的に無効化
+            # "tests/test_mcp_integration.py", # In progress: temporarily disabled
         ]
         
         all_tests_passed = True
         test_summary = {"passed": 0, "failed": 0, "total": 0}
         
-        # ユニットテスト実行
-        print("  📋 基本ユニットテスト:")
+        # Run unit tests
+        print("  📋 Basic unit tests:")
         for test_file in unit_test_files:
             if os.path.exists(test_file):
                 try:
@@ -186,26 +186,26 @@ else:
                         test_summary["passed"] += 1
                     else:
                         print(f"    ❌ {test_file}")
-                        print(f"       エラー: {result.stderr[:200]}...")
+                        print(f"       Error: {result.stderr[:200]}...")
                         test_summary["failed"] += 1
                         all_tests_passed = False
                     test_summary["total"] += 1
                     
                 except subprocess.TimeoutExpired:
-                    print(f"    ⏰ {test_file} (タイムアウト)")
+                    print(f"    ⏰ {test_file} (Timeout)")
                     test_summary["failed"] += 1
                     test_summary["total"] += 1
                     all_tests_passed = False
                 except Exception as e:
-                    print(f"    ❌ {test_file} (実行エラー: {e})")
+                    print(f"    ❌ {test_file} (Execution error: {e})")
                     test_summary["failed"] += 1
                     test_summary["total"] += 1
                     all_tests_passed = False
             else:
-                print(f"    ⚠️  {test_file} (ファイル不存在)")
+                print(f"    ⚠️  {test_file} (File missing)")
         
-        # 統合テスト実行（pytest使用）
-        print("  🔗 統合テスト:")
+        # Run integration tests (pytest)
+        print("  🔗 Integration tests:")
         if integration_test_files:
             for test_file in integration_test_files:
                 if os.path.exists(test_file):
@@ -220,8 +220,8 @@ else:
                             test_summary["passed"] += 1
                         else:
                             print(f"    ❌ {test_file}")
-                            # より詳細なエラー出力
-                            error_lines = result.stdout.split('\n')[-10:]  # 最後の10行
+                            # More detailed error output
+                            error_lines = result.stdout.split('\n')[-10:]  # Last 10 lines
                             for line in error_lines:
                                 if line.strip():
                                     print(f"       {line}")
@@ -230,37 +230,37 @@ else:
                         test_summary["total"] += 1
                         
                     except subprocess.TimeoutExpired:
-                        print(f"    ⏰ {test_file} (タイムアウト)")
+                        print(f"    ⏰ {test_file} (Timeout)")
                         test_summary["failed"] += 1
                         test_summary["total"] += 1
                         all_tests_passed = False
                     except Exception as e:
-                        print(f"    ❌ {test_file} (実行エラー: {e})")
+                        print(f"    ❌ {test_file} (Execution error: {e})")
                         test_summary["failed"] += 1
                         test_summary["total"] += 1
                         all_tests_passed = False
                 else:
-                    print(f"    ⚠️  {test_file} (ファイル不存在)")
+                    print(f"    ⚠️  {test_file} (File missing)")
         else:
-            print("    ℹ️  統合テスト: 現在開発中のため無効化（リリースには影響なし）")
+            print("    ℹ️  Integration tests: currently disabled (in development, not required for release)")
         
-        # サマリー出力
-        print(f"  📊 ユニットテスト結果: {test_summary['passed']}/{test_summary['total']} 成功")
+        # Summary output
+        print(f"  📊 Unit test results: {test_summary['passed']}/{test_summary['total']} passed")
         
         if all_tests_passed:
-            print("✅ ユニットテスト成功")
+            print("✅ Unit tests passed")
         else:
-            print("❌ ユニットテスト失敗")
+            print("❌ Unit tests failed")
         
         return all_tests_passed
     
     def generate_release_report(self):
-        """リリースレポート生成"""
+        """Generate release report."""
         print("\n" + "=" * 100)
         print("📊 RELEASE VALIDATION REPORT")
         print("=" * 100)
         
-        # 全体サマリー
+        # Overall summary
         all_tests_passed = all(
             result.get('success', False) 
             for result in self.test_results.values()
@@ -276,56 +276,56 @@ else:
             for result in self.test_results.values()
         )
         
-        print(f"📈 総合結果:")
-        print(f"   全体判定: {'🟢 PASS' if all_tests_passed else '🔴 FAIL'}")
-        print(f"   テスト成功率: {total_passed}/{total_tests} ({(total_passed/total_tests*100):.1f}%)" if total_tests > 0 else "   テスト成功率: N/A")
-        print(f"   総実行時間: {self.total_duration:.2f}秒")
+        print("📈 Overall results:")
+        print(f"   Overall: {'🟢 PASS' if all_tests_passed else '🔴 FAIL'}")
+        print(f"   Pass rate: {total_passed}/{total_tests} ({(total_passed/total_tests*100):.1f}%)" if total_tests > 0 else "   Pass rate: N/A")
+        print(f"   Total duration: {self.total_duration:.2f}s")
         
-        # カテゴリ別結果
-        print(f"\n📋 カテゴリ別結果:")
+        # Results by category
+        print("\n📋 Results by category:")
         for category, result in self.test_results.items():
             status = "✅" if result['success'] else "❌"
             duration = result['duration']
-            print(f"   {status} {category}: {duration:.2f}秒")
+            print(f"   {status} {category}: {duration:.2f}s")
         
-        # 品質メトリクス（システム検証テストから）
+        # Quality metrics (from system validation tests)
         if 'system_validation' in self.test_results:
             system_details = self.test_results['system_validation']['details']
             if system_details:
                 total_stocks = sum(detail.stocks_found for detail in system_details)
                 avg_quality = sum(detail.data_quality_score for detail in system_details) / len(system_details)
-                print(f"\n📊 品質メトリクス:")
-                print(f"   検出銘柄総数: {total_stocks}")
-                print(f"   平均品質スコア: {avg_quality:.1f}/100")
+                print("\n📊 Quality metrics:")
+                print(f"   Total stocks found: {total_stocks}")
+                print(f"   Average quality score: {avg_quality:.1f}/100")
         
-        # リリース判定
-        print(f"\n🎯 リリース判定:")
+        # Release decision
+        print("\n🎯 Release decision:")
         if all_tests_passed:
-            print("   🟢 リリース承認 - 全テスト成功")
-            print("   本バージョンは本格運用可能です")
+            print("   🟢 Release approved - all tests passed")
+            print("   This version is ready for production use.")
         else:
             failed_categories = [cat for cat, result in self.test_results.items() if not result['success']]
-            print("   🔴 リリース保留 - 修正が必要です")
-            print(f"   失敗カテゴリ: {', '.join(failed_categories)}")
-            print("   上記の失敗項目を修正後、再テストしてください")
+            print("   🔴 Release blocked - fixes required")
+            print(f"   Failed categories: {', '.join(failed_categories)}")
+            print("   Fix the failed items above and re-run tests.")
         
         print("=" * 100)
         
         return all_tests_passed
     
     def run_all_release_tests(self, include_mcp_server_test=False):
-        """全リリーステストを実行"""
+        """Run all release tests."""
         self.skip_mcp_server_test = not include_mcp_server_test
         start_time = time.time()
         
         self.print_header()
         
-        # 1. 環境チェック
+        # 1. Environment check
         if not self.check_environment():
-            print("❌ 環境チェック失敗 - テストを中止します")
+            print("❌ Environment check failed - aborting tests")
             return False
         
-        # 2. ユニットテスト（優先実行）
+        # 2. Unit tests (run first)
         unit_test_start = time.time()
         unit_success = self.run_unit_tests()
         unit_duration = time.time() - unit_test_start
@@ -335,10 +335,10 @@ else:
             'details': []
         }
         
-        # 3. システム検証テスト（メインテスト）
+        # 3. System validation tests (main)
         system_success = self.run_system_validation_tests()
         
-        # 4. MCPサーバー起動テスト（オプション）
+        # 4. MCP server startup test (optional)
         if include_mcp_server_test:
             server_test_start = time.time()
             server_success = self.run_mcp_server_startup_test()
@@ -349,35 +349,35 @@ else:
                 'details': []
             }
         
-        # 総実行時間
+        # Total duration
         self.total_duration = time.time() - start_time
         
-        # 5. レポート生成
+        # 5. Generate report
         overall_success = self.generate_release_report()
         
         return overall_success
 
-# メイン実行
+# Main entry
 def main():
-    """メイン実行関数"""
-    # コマンドライン引数でMCPサーバーテストを制御
+    """Main entry function."""
+    # Control MCP server test via CLI args
     include_mcp_test = "--include-mcp-test" in sys.argv
     
     if include_mcp_test:
-        print("🔌 MCPサーバー起動テストを含めて実行します")
+        print("🔌 Including MCP server startup test")
     else:
-        print("⚠️  MCPサーバー起動テストはスキップします（--include-mcp-test で有効化）")
+        print("⚠️  Skipping MCP server startup test (enable with --include-mcp-test)")
     
     runner = ReleaseTestRunner()
     success = runner.run_all_release_tests(include_mcp_server_test=include_mcp_test)
     
     if success:
-        print("\n🎉 リリーステスト完了 - 全て成功!")
-        print("本バージョンはリリース可能です。")
+        print("\n🎉 Release tests complete - all passed!")
+        print("This version is ready to release.")
         return True
     else:
-        print("\n⚠️  リリーステスト完了 - 修正が必要です")
-        print("失敗した項目を修正後、再度テストしてください。")
+        print("\n⚠️  Release tests complete - fixes required")
+        print("Fix the failed items and re-run tests.")
         return False
 
 if __name__ == "__main__":
@@ -385,8 +385,8 @@ if __name__ == "__main__":
         result = main()
         sys.exit(0 if result else 1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  テストが中断されました")
+        print("\n\n⚠️  Tests interrupted")
         sys.exit(2)
     except Exception as e:
-        print(f"\n\n❌ 予期しないエラー: {e}")
-        sys.exit(3) 
+        print(f"\n\n❌ Unexpected error: {e}")
+        sys.exit(3)

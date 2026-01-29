@@ -10,13 +10,13 @@ from dotenv import load_dotenv
 
 from ..models import StockData, FINVIZ_FIELD_MAPPING
 
-# 環境変数の読み込み
+# Load environment variables
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 class FinvizClient:
-    """Finviz APIクライアントの基本クラス"""
+    """Base Finviz API client."""
     
     BASE_URL = "https://elite.finviz.com"
     EXPORT_URL = f"{BASE_URL}/export.ashx"
@@ -26,16 +26,16 @@ class FinvizClient:
     
     def __init__(self, api_key: Optional[str] = None):
         """
-        初期化
-        
+        Initialize client.
+
         Args:
-            api_key: Finviz Elite API キー（環境変数FINVIZ_API_KEYからも取得可能）
+            api_key: Finviz Elite API key (can also be read from FINVIZ_API_KEY env var)
         """
         self.api_key = api_key or os.getenv('FINVIZ_API_KEY')
         self.session = requests.Session()
-        self.rate_limit_delay = 1.0  # 1秒のデフォルト遅延
+        self.rate_limit_delay = 1.0  # Default 1-second delay
         
-        # ヘッダーの設定
+        # Set headers
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -46,19 +46,19 @@ class FinvizClient:
     def _make_request(self, url: str, params: Optional[Dict[str, Any]] = None, 
                      retries: int = 3) -> requests.Response:
         """
-        HTTPリクエストを実行
-        
+        Perform an HTTP request.
+
         Args:
-            url: リクエストURL
-            params: パラメータ
-            retries: リトライ回数
-            
+            url: Request URL
+            params: Parameters
+            retries: Retry count
+
         Returns:
-            Response オブジェクト
+            Response object
         """
         for attempt in range(retries):
             try:
-                # レート制限対応
+                # Rate limiting
                 time.sleep(self.rate_limit_delay)
                 
                 response = self.session.get(url, params=params, timeout=30)
@@ -71,7 +71,7 @@ class FinvizClient:
                 logger.warning(f"Request failed (attempt {attempt + 1}/{retries}): {e}")
                 if attempt == retries - 1:
                     raise
-                time.sleep(2 ** attempt)  # 指数バックオフ
+                time.sleep(2 ** attempt)  # Exponential backoff
         
         raise Exception("Max retries exceeded")
     
@@ -81,27 +81,27 @@ class FinvizClient:
     
     def _safe_price_conversion(self, value: Any) -> str:
         """
-        価格値をFinviz形式に安全に変換
-        
+        Safely convert a price value to Finviz format.
+
         Args:
-            value: 価格値（int, float, str）
-            
+            value: Price value (int, float, str)
+
         Returns:
-            Finviz価格フィルター用の文字列値
+            String value for Finviz price filters
         """
         try:
             if isinstance(value, str):
-                # 既にFinviz形式の場合（例：'o5', 'u10'）
+                # Already in Finviz format (e.g., 'o5', 'u10')
                 if value.startswith(('o', 'u')) and value[1:].replace('.', '').isdigit():
-                    return value  # Finviz形式はそのまま返す
-                # 数値文字列の場合
+                    return value  # Return Finviz format as-is
+                # Numeric string
                 try:
                     float_val = float(value)
                     return str(int(float_val)) if float_val == int(float_val) else str(float_val)
                 except ValueError:
                     return str(value)
             elif isinstance(value, (int, float)):
-                # 整数の場合は整数で返す、小数の場合は小数で返す
+                # Preserve integer vs float representation
                 return str(int(value)) if float(value) == int(value) else str(value)
             else:
                 return str(value)
@@ -110,27 +110,27 @@ class FinvizClient:
     
     def _convert_volume_to_finviz_format(self, volume_value: Any) -> str:
         """
-        平均出来高の値をFinviz形式に変換
-        
+        Convert average volume to Finviz format.
+
         Args:
-            volume_value: 出来高値（数値またはFinviz形式文字列）
-            
+            volume_value: Volume value (number or Finviz-formatted string)
+
         Returns:
-            Finviz sh_avgvol形式の文字列（例：'o500', 'u100'）
+            Finviz sh_avgvol string (e.g., 'o500', 'u100')
         """
         try:
-            # 既にFinviz形式の場合
+            # Already in Finviz format
             if isinstance(volume_value, str):
                 if volume_value.startswith(('o', 'u', 'e')) or volume_value in ['', 'frange']:
                     return volume_value
                 elif volume_value.endswith('to') or 'to' in volume_value:
                     return volume_value
             
-            # 数値の場合はFinviz形式に変換
+            # Convert numeric values to Finviz format
             if isinstance(volume_value, (int, float)):
-                volume_k = int(volume_value / 1000)  # 千株単位に変換
+                volume_k = int(volume_value / 1000)  # Convert to thousands
                 
-                # 一般的な閾値をo（over）形式に変換
+                # Map common thresholds to "o" (over) format
                 if volume_k >= 2000:
                     return 'o2000'
                 elif volume_k >= 1000:
@@ -150,37 +150,37 @@ class FinvizClient:
                 elif volume_k >= 50:
                     return 'o50'
                 else:
-                    return 'o0'  # 0以上
+                    return 'o0'  # 0 or more
             
-            # 文字列数値の場合
+            # Numeric string
             if isinstance(volume_value, str):
                 try:
                     num_value = float(volume_value)
                     return self._convert_volume_to_finviz_format(num_value)
                 except ValueError:
-                    return 'o100'  # デフォルト
+                    return 'o100'  # Default
             
-            return 'o100'  # デフォルト値
+            return 'o100'  # Default value
             
         except Exception:
-            return 'o100'  # デフォルト値
+            return 'o100'  # Default value
     
     def _safe_numeric_conversion(self, value: Any) -> str:
         """
-        数値をFinvizフィルター用に安全に変換
-        
+        Safely convert a numeric value for Finviz filters.
+
         Args:
-            value: 数値（int, float, str）
-            
+            value: Numeric value (int, float, str)
+
         Returns:
-            Finvizフィルター用の文字列値
+            String value for Finviz filters
         """
         try:
             if isinstance(value, str):
-                # フィルター文字列の場合（例：'o10', 'u5'）
+                # Filter string (e.g., 'o10', 'u5')
                 if value.startswith(('o', 'u', 'e')):
-                    return value[1:]  # プレフィックスを除去
-                # 数値文字列の場合
+                    return value[1:]  # Strip prefix
+                # Numeric string
                 try:
                     return str(int(float(value)))
                 except ValueError:
@@ -194,32 +194,32 @@ class FinvizClient:
 
     def _clean_numeric_value(self, value: str) -> Optional[Union[float, int]]:
         """
-        数値文字列をクリーンアップして数値に変換
-        
+        Clean up a numeric string and convert to number.
+
         Args:
-            value: 文字列値
-            
+            value: String value
+
         Returns:
-            数値またはNone
+            Number or None
         """
         if not value or value == '-' or value == 'N/A':
             return None
         
-        # パーセント記号を削除
+        # Remove percent sign
         if value.endswith('%'):
             try:
                 return float(value[:-1])
             except ValueError:
                 return None
         
-        # 通貨記号を削除
+        # Remove currency symbol
         if value.startswith('$'):
             value = value[1:]
         
-        # カンマを削除
+        # Remove commas
         value = value.replace(',', '')
         
-        # 単位を処理 (B = billion, M = million, K = thousand)
+        # Handle units (B = billion, M = million, K = thousand)
         multipliers = {'B': 1e9, 'M': 1e6, 'K': 1e3}
         for suffix, multiplier in multipliers.items():
             if value.endswith(suffix):
@@ -228,7 +228,7 @@ class FinvizClient:
                 except ValueError:
                     return None
         
-        # 普通の数値として処理
+        # Treat as a plain number
         try:
             if '.' in value:
                 return float(value)
@@ -241,26 +241,26 @@ class FinvizClient:
     
     def get_stock_data(self, ticker: str, fields: Optional[List[str]] = None) -> Optional[StockData]:
         """
-        個別銘柄のデータを取得（CSV export使用）
-        
+        Get data for a single stock (via CSV export).
+
         Args:
-            ticker: 銘柄ティッカー
-            fields: 取得するフィールドのリスト（Noneの場合は全フィールド）
-            
+            ticker: Stock ticker
+            fields: List of fields to retrieve (all fields if None)
+
         Returns:
-            StockData オブジェクトまたはNone
+            StockData object or None
         """
         try:
             params = {'t': ticker}
             
-            # CSVから銘柄データを取得
+            # Fetch stock data from CSV
             df = self._fetch_csv_from_url(self.QUOTE_EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No data returned for ticker: {ticker}")
                 return None
             
-            # CSVの最初の行からStockDataオブジェクトを作成
+            # Build StockData from the first CSV row
             first_row = df.iloc[0]
             stock_data = self._parse_stock_data_from_csv(first_row)
             
@@ -273,27 +273,27 @@ class FinvizClient:
     
     def screen_stocks(self, filters: Dict[str, Any]) -> List[StockData]:
         """
-        株式スクリーニングを実行（CSV export使用）
-        
+        Run stock screening (via CSV export).
+
         Args:
-            filters: スクリーニングフィルタ
-            
+            filters: Screening filters
+
         Returns:
-            StockData オブジェクトのリスト
+            List of StockData objects
         """
         try:
-            # CSVデータを取得
+            # Fetch CSV data
             df = self._fetch_csv_data(filters)
             
             if df.empty:
                 logger.warning("No data returned from CSV export")
                 return []
             
-            # CSVデータからStockDataオブジェクトのリストに変換
+            # Convert CSV data to StockData objects
             stocks = []
             total_rows = len(df)
             
-            # 大量データの場合は進捗をログ出力
+            # Log progress for large datasets
             log_interval = max(1, total_rows // 10) if total_rows > 100 else total_rows
             
             for idx, (_, row) in enumerate(df.iterrows()):
@@ -301,7 +301,7 @@ class FinvizClient:
                     stock_data = self._parse_stock_data_from_csv(row)
                     stocks.append(stock_data)
                     
-                    # 進捗ログ（大量データの場合のみ）
+                    # Progress log (only for large datasets)
                     if total_rows > 100 and (idx + 1) % log_interval == 0:
                         logger.info(f"Processing stocks: {idx + 1}/{total_rows} ({((idx + 1)/total_rows*100):.1f}%)")
                         
@@ -318,28 +318,28 @@ class FinvizClient:
     
     def _convert_filters_to_finviz(self, filters: Dict[str, Any]) -> Dict[str, str]:
         """
-        内部フィルタ形式をFinviz URLパラメータに変換（強化版）
-        
+        Convert internal filters to Finviz URL parameters (enhanced).
+
         Args:
-            filters: 内部フィルタ形式
-            
+            filters: Internal filter format
+
         Returns:
-            Finviz URLパラメータ
+            Finviz URL parameters
         """
         
         params = {
-            'v': '151',  # 決算情報を含むビュー
-            'o': '-ticker',  # デフォルトソート（後で上書きされる可能性あり）
-            # 決算日を含む全カラムを指定
+            'v': '151',  # View that includes earnings info
+            'o': '-ticker',  # Default sort (may be overwritten)
+            # Include all columns (including earnings date)
             'c': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128'
         }
         
-        # ソート条件の処理
+        # Sort handling
         if 'sort_by' in filters:
             sort_field = filters['sort_by']
             sort_order = filters.get('sort_order', 'desc')
             
-            # ソートフィールドのマッピング
+            # Sort field mapping
             sort_mapping = {
                 'eps_growth_yoy': 'epsyoy1',
                 'eps_growth_this_y': 'epsthisy',
@@ -349,7 +349,7 @@ class FinvizClient:
                 'performance_1w': 'perf1w',
                 'market_cap': 'marketcap',
                 'ticker': 'ticker',
-                'eps_surprise': 'epssurprise'  # 決算トレード用ソート
+                'eps_surprise': 'epssurprise'  # Earnings trade sort
             }
             
             if sort_field in sort_mapping:
@@ -359,41 +359,41 @@ class FinvizClient:
                 else:
                     params['o'] = finviz_sort_field
         
-        # volume_surge_screenerの場合の特別処理（正しい順序で生成）
+        # Special handling for volume_surge_screener (fixed order)
         if 'market_cap' in filters and filters['market_cap'] == 'smallover' and 'relative_volume_min' in filters and filters.get('stocks_only') == True and filters.get('price_change_min') == 2.0:
-            # volume_surge_screener専用の固定順序制御
+            # Fixed order for volume_surge_screener
             filter_parts = []
             
-            # 1. 時価総額フィルタ: cap_smallover
+            # 1. Market cap filter: cap_smallover
             filter_parts.append('cap_smallover')
             
-            # 2. 株式のみフィルタ: ind_stocksonly
+            # 2. Stocks-only filter: ind_stocksonly
             filter_parts.append('ind_stocksonly')
             
-            # 3. 平均出来高フィルタ: sh_avgvol_o100
+            # 3. Average volume filter: sh_avgvol_o100
             filter_parts.append('sh_avgvol_o100')
             
-            # 4. 価格フィルタ: sh_price_o10
+            # 4. Price filter: sh_price_o10
             filter_parts.append('sh_price_o10')
             
-            # 5. 相対出来高フィルタ: sh_relvol_o1.5
+            # 5. Relative volume filter: sh_relvol_o1.5
             filter_parts.append('sh_relvol_o1.5')
             
-            # 6. 価格変動フィルタ: ta_change_u2
+            # 6. Price change filter: ta_change_u2
             filter_parts.append('ta_change_u2')
             
-            # 7. 200日移動平均フィルタ: ta_sma200_pa
+            # 7. 200-day moving average filter: ta_sma200_pa
             filter_parts.append('ta_sma200_pa')
             
-            # 順序通りに結合
+            # Join in order
             params['f'] = ','.join(filter_parts)
                 
-        # earnings_afterhours_screenerの場合の特別処理（正しい順序で生成）
+        # Special handling for earnings_afterhours_screener (fixed order)
         elif 'earnings_date' in filters and filters['earnings_date'] in ['today_after', 'thisweek'] and ('afterhours_change_min' in filters or 'price_change_min' in filters):
-            # earnings_afterhours_screener専用の固定順序制御
+            # Fixed order for earnings_afterhours_screener
             filter_parts = []
             
-            # 1. 時間外変動フィルタ: ah_change_u2 または 価格変動フィルタ: ta_change_u2
+            # 1. After-hours change filter: ah_change_u2 or price change filter: ta_change_u2
             if 'afterhours_change_min' in filters and filters['afterhours_change_min'] is not None:
                 ah_change_value = self._safe_numeric_conversion(filters["afterhours_change_min"])
                 filter_parts.append(f'ah_change_u{ah_change_value}')
@@ -401,7 +401,7 @@ class FinvizClient:
                 price_change_value = self._safe_numeric_conversion(filters["price_change_min"])
                 filter_parts.append(f'ta_change_u{price_change_value}')
             
-            # 2. 時価総額フィルタ: cap_smallover
+            # 2. Market cap filter: cap_smallover
             if 'market_cap' in filters and filters['market_cap']:
                 cap_mapping = {
                     'mega': 'mega', 'large': 'large', 'mid': 'mid', 'small': 'small',
@@ -411,96 +411,96 @@ class FinvizClient:
                 if filters['market_cap'] in cap_mapping:
                     filter_parts.append(f'cap_{cap_mapping[filters["market_cap"]]}')
             
-            # 3. 決算発表フィルタ: earningsdate_todayafter or earningsdate_thisweek
+            # 3. Earnings date filter: earningsdate_todayafter or earningsdate_thisweek
             if 'earnings_date' in filters:
                 if filters['earnings_date'] == 'today_after':
                     filter_parts.append('earningsdate_todayafter')
                 elif filters['earnings_date'] == 'thisweek':
                     filter_parts.append('earningsdate_thisweek')
             
-            # 4. 平均出来高フィルタ: sh_avgvol_o100
+            # 4. Average volume filter: sh_avgvol_o100
             if 'avg_volume_min' in filters and filters['avg_volume_min'] is not None:
                 volume_value = self._convert_volume_to_finviz_format(filters["avg_volume_min"])
                 filter_parts.append(f'sh_avgvol_{volume_value}')
             
-            # 5. 株価フィルタ: sh_price_o10
+            # 5. Price filter: sh_price_o10
             if 'price_min' in filters and filters['price_min'] is not None:
                 price_value = self._safe_price_conversion(filters["price_min"])
                 filter_parts.append(f'sh_price_o{price_value}')
             
-            # 順序通りに結合
+            # Join in order
             params['f'] = ','.join(filter_parts)
             
-            # 株式のみフィルタ
+            # Stocks-only filter
             if 'stocks_only' in filters and filters['stocks_only']:
                 params['ft'] = '4'
             
-            # 時間外変動降順ソート
+            # Sort by after-hours change descending
             if 'sort_by' in filters and filters['sort_by'] == 'afterhours_change':
                 params['o'] = '-afterchange'
             
-            # 最大結果件数
+            # Max results
             if 'max_results' in filters and filters['max_results']:
                 params['ar'] = str(filters['max_results'])
                 
-        # earnings_trading_screenerの場合の特別処理（正しい順序で生成）
+        # Special handling for earnings_trading_screener (fixed order)
         elif filters.get('screener_type') == 'earnings_trading':
-            # earnings_trading_screener専用の正確な順序制御
+            # Exact order for earnings_trading_screener
             filter_parts = []
             
-            # 1. 時価総額フィルタ: cap_smallover
+            # 1. Market cap filter: cap_smallover
             if 'market_cap' in filters and filters['market_cap'] == 'smallover':
                 filter_parts.append('cap_smallover')
             
-            # 2. 決算発表期間フィルタ: earningsdate_yesterdayafter|todaybefore
+            # 2. Earnings window filter: earningsdate_yesterdayafter|todaybefore
             if 'earnings_recent' in filters and filters['earnings_recent']:
                 filter_parts.append('earningsdate_yesterdayafter|todaybefore')
             
-            # 3. EPS予想改訂フィルタ: fa_epsrev_ep
+            # 3. EPS revision filter: fa_epsrev_ep
             if 'earnings_revision_positive' in filters and filters['earnings_revision_positive']:
                 filter_parts.append('fa_epsrev_ep')
             
-            # 4. 平均出来高フィルタ: sh_avgvol_o200
+            # 4. Average volume filter: sh_avgvol_o200
             if 'avg_volume_min' in filters and filters['avg_volume_min'] == 200000:
                 filter_parts.append('sh_avgvol_o200')
             
-            # 5. 株価フィルタ: sh_price_o10
+            # 5. Price filter: sh_price_o10
             if 'price_min' in filters and filters['price_min'] == 10.0:
                 filter_parts.append('sh_price_o10')
             
-            # 6. 価格変動上昇フィルタ: ta_change_u
+            # 6. Price change up filter: ta_change_u
             if 'price_change_positive' in filters and filters['price_change_positive']:
                 filter_parts.append('ta_change_u')
             
-            # 7. 4週パフォーマンスフィルタ: ta_perf_0to-4w
+            # 7. 4-week performance filter: ta_perf_0to-4w
             if 'performance_4w_range' in filters and filters['performance_4w_range'] == '0_to_negative_4w':
                 filter_parts.append('ta_perf_0to-4w')
             
-            # 8. ボラティリティフィルタ: ta_volatility_1tox
+            # 8. Volatility filter: ta_volatility_1tox
             if 'volatility_min' in filters and filters['volatility_min'] == 1.0:
                 filter_parts.append('ta_volatility_1tox')
             
-            # 順序通りに結合
+            # Join in order
             params['f'] = ','.join(filter_parts)
             
-            # 株式のみフィルタ
+            # Stocks-only filter
             if 'stocks_only' in filters and filters['stocks_only']:
                 params['ft'] = '4'
             
-            # EPSサプライズ降順ソート
+            # Sort by EPS surprise descending
             if 'sort_by' in filters and filters['sort_by'] == 'eps_surprise':
                 params['o'] = '-epssurprise'
             
-            # 最大結果件数
+            # Max results
             if 'max_results' in filters and filters['max_results']:
                 params['ar'] = str(filters['max_results'])
                 
-        # uptrend_screenerの場合の特別処理（正しい順序で生成）
+        # Special handling for uptrend_screener (fixed order)
         elif 'market_cap' in filters and filters['market_cap'] == 'microover' and 'near_52w_high' in filters:
-            # uptrend_screener専用の順序制御
+            # Order control for uptrend_screener
             filter_parts = []
             
-            # 1. 時価総額フィルタ
+            # 1. Market cap filter
             if 'market_cap' in filters and filters['market_cap']:
                 cap_mapping = {
                     'mega': 'mega', 'large': 'large', 'mid': 'mid', 'small': 'small',
@@ -510,57 +510,57 @@ class FinvizClient:
                 if filters['market_cap'] in cap_mapping:
                     filter_parts.append(f'cap_{cap_mapping[filters["market_cap"]]}')
             
-            # 2. 平均出来高フィルタ
+            # 2. Average volume filter
             if 'avg_volume_min' in filters and filters['avg_volume_min'] is not None:
                 volume_value = self._safe_numeric_conversion(filters["avg_volume_min"])
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if volume_value.startswith(('o', 'u')):
                     filter_parts.append(f'sh_avgvol_{volume_value}')
                 else:
                     filter_parts.append(f'sh_avgvol_{volume_value}to')
             
-            # 3. 価格フィルタ
+            # 3. Price filter
             if 'price_min' in filters and filters['price_min'] is not None:
                 price_value = self._safe_price_conversion(filters["price_min"])
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if price_value.startswith(('o', 'u')):
                     filter_parts.append(f'sh_price_{price_value}')
                 else:
                     filter_parts.append(f'sh_price_{price_value}to')
             
-            # 4. 52週高値フィルタ
+            # 4. 52-week high filter
             if 'near_52w_high' in filters and filters['near_52w_high'] is not None:
                 high_value = self._safe_numeric_conversion(filters["near_52w_high"])
                 filter_parts.append(f'ta_highlow52w_a{high_value}h')
             
-            # 5. 4週パフォーマンスフィルタ
+            # 5. 4-week performance filter
             if 'performance_4w_positive' in filters and filters['performance_4w_positive']:
                 filter_parts.append('ta_perf2_4wup')
             
-            # 6. 20日移動平均フィルタ
+            # 6. 20-day moving average filter
             if 'sma20_above' in filters and filters['sma20_above']:
                 filter_parts.append('ta_sma20_pa')
             
-            # 7. 200日移動平均フィルタ
+            # 7. 200-day moving average filter
             if 'sma200_above' in filters and filters['sma200_above']:
                 filter_parts.append('ta_sma200_pa')
             
-            # 8. 50日移動平均線が200日移動平均線上フィルタ
+            # 8. 50-day SMA above 200-day SMA filter
             if 'sma50_above_sma200' in filters and filters['sma50_above_sma200']:
                 filter_parts.append('ta_sma50_sa200')
             
-            # 順序通りに結合
+            # Join in order
             if filter_parts:
                 params['f'] = params.get('f', '') + ','.join(filter_parts) + ','
                 
         else:
-            # 従来の処理（その他のスクリーナー用）
+            # Legacy handling (other screeners)
             
-            # 時価総額フィルタ（プリセット + 数値レンジ対応）
+            # Market cap filter (preset + numeric range)
             if 'market_cap' in filters and filters['market_cap']:
                 market_cap_val = filters['market_cap']
                 
-                # プリセット値の場合
+                # Preset values
                 cap_mapping = {
                     'mega': 'mega',      # $200B+
                     'large': 'large',    # $10B to $200B
@@ -576,22 +576,22 @@ class FinvizClient:
                 if market_cap_val in cap_mapping:
                     params['f'] = params.get('f', '') + f'cap_{cap_mapping[market_cap_val]},'
                 else:
-                    # 数値レンジの場合 (例: "10to20" -> cap_10to20)
+                    # Numeric range (e.g., "10to20" -> cap_10to20)
                     params['f'] = params.get('f', '') + f'cap_{market_cap_val},'
             
-            # 時価総額レンジフィルタ（min/max指定）
+            # Market cap range filter (min/max)
             market_cap_min = filters.get('market_cap_min')
             market_cap_max = filters.get('market_cap_max')
             
             if market_cap_min is not None or market_cap_max is not None:
                 if market_cap_min and market_cap_max:
-                    # レンジ指定: cap_10to20 (単位: B)
+                    # Range: cap_10to20 (unit: B)
                     params['f'] = params.get('f', '') + f'cap_{market_cap_min}to{market_cap_max},'
                 elif market_cap_min:
-                    # 下限のみ: cap_10to
+                    # Min only: cap_10to
                     params['f'] = params.get('f', '') + f'cap_{market_cap_min}to,'
             
-            # 価格フィルタ - Finviz形式完全対応 (sh_price_o5, sh_price_10.5to, sh_price_10.5to20.11)
+            # Price filter - full Finviz format support (sh_price_o5, sh_price_10.5to, sh_price_10.5to20.11)
             price_min = filters.get('price_min')
             price_max = filters.get('price_max')
             
@@ -599,24 +599,24 @@ class FinvizClient:
                 price_min_val = self._safe_price_conversion(price_min) if price_min is not None else None
                 price_max_val = self._safe_price_conversion(price_max) if price_max is not None else None
                 
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if price_min_val and price_min_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o5, u10)
+                    # Finviz preset format (o5, u10)
                     params['f'] = params.get('f', '') + f'sh_price_{price_min_val},'
                 elif price_max_val and price_max_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o5, u10)
+                    # Finviz preset format (o5, u10)
                     params['f'] = params.get('f', '') + f'sh_price_{price_max_val},'
                 elif price_min_val and price_max_val:
-                    # レンジ指定: sh_price_10.5to20.11
+                    # Range: sh_price_10.5to20.11
                     params['f'] = params.get('f', '') + f'sh_price_{price_min_val}to{price_max_val},'
                 elif price_min_val:
-                    # 下限のみ: sh_price_o{value} (Finvizでは o<value> が "Over <value>")
+                    # Min only: sh_price_o{value} (Finviz uses o<value> = "Over <value>")
                     params['f'] = params.get('f', '') + f'sh_price_o{price_min_val},'
                 elif price_max_val:
-                    # 上限のみ: sh_price_u{value} (Finvizでは u<value> が "Under <value>")
+                    # Max only: sh_price_u{value} (Finviz uses u<value> = "Under <value>")
                     params['f'] = params.get('f', '') + f'sh_price_u{price_max_val},'
             
-            # 出来高フィルタ - Finviz形式完全対応
+            # Volume filter - full Finviz format support
             volume_min = filters.get('volume_min')
             volume_max = filters.get('volume_max')
             
@@ -624,48 +624,48 @@ class FinvizClient:
                 volume_min_val = self._safe_numeric_conversion(volume_min) if volume_min is not None else None
                 volume_max_val = self._safe_numeric_conversion(volume_max) if volume_max is not None else None
                 
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if volume_min_val and volume_min_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o100, u500)
+                    # Finviz preset format (o100, u500)
                     params['f'] = params.get('f', '') + f'sh_volume_{volume_min_val},'
                 elif volume_max_val and volume_max_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o100, u500)
+                    # Finviz preset format (o100, u500)
                     params['f'] = params.get('f', '') + f'sh_volume_{volume_max_val},'
                 elif volume_min_val and volume_max_val:
-                    # レンジ指定: sh_volume_100to500
+                    # Range: sh_volume_100to500
                     params['f'] = params.get('f', '') + f'sh_volume_{volume_min_val}to{volume_max_val},'
                 elif volume_min_val:
-                    # 下限のみ: sh_volume_100to
+                    # Min only: sh_volume_100to
                     params['f'] = params.get('f', '') + f'sh_volume_{volume_min_val}to,'
                 elif volume_max_val:
-                    # 上限のみ: sh_volume_to500
+                    # Max only: sh_volume_to500
                     params['f'] = params.get('f', '') + f'sh_volume_to{volume_max_val},'
-            # 平均出来高フィルタ - Finviz形式完全対応
+            # Average volume filter - full Finviz format support
             avg_volume_min = filters.get('avg_volume_min')
             avg_volume_max = filters.get('avg_volume_max')
             
             if avg_volume_min is not None or avg_volume_max is not None:
-                # Finviz形式のプリセット (o100, o500 など) に正しく変換する
+                # Convert presets (o100, o500, etc.) to Finviz format
                 avg_vol_min_val = self._convert_volume_to_finviz_format(avg_volume_min) if avg_volume_min is not None else None
                 avg_vol_max_val = self._convert_volume_to_finviz_format(avg_volume_max) if avg_volume_max is not None else None
                 
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if avg_vol_min_val and avg_vol_min_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o100, u500)
+                    # Finviz preset format (o100, u500)
                     params['f'] = params.get('f', '') + f'sh_avgvol_{avg_vol_min_val},'
                 elif avg_vol_max_val and avg_vol_max_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o100, u500)
+                    # Finviz preset format (o100, u500)
                     params['f'] = params.get('f', '') + f'sh_avgvol_{avg_vol_max_val},'
                 elif avg_vol_min_val and avg_vol_max_val:
-                    # レンジ指定: sh_avgvol_100to500
+                    # Range: sh_avgvol_100to500
                     params['f'] = params.get('f', '') + f'sh_avgvol_{avg_vol_min_val}to{avg_vol_max_val},'
                 elif avg_vol_min_val:
-                    # 下限のみ: sh_avgvol_100to
+                    # Min only: sh_avgvol_100to
                     params['f'] = params.get('f', '') + f'sh_avgvol_{avg_vol_min_val}to,'
                 elif avg_vol_max_val:
-                    # 上限のみ: sh_avgvol_to500
+                    # Max only: sh_avgvol_to500
                     params['f'] = params.get('f', '') + f'sh_avgvol_to{avg_vol_max_val},'
-            # 相対出来高フィルタ - Finviz形式完全対応
+            # Relative volume filter - full Finviz format support
             relative_volume_min = filters.get('relative_volume_min')
             relative_volume_max = filters.get('relative_volume_max')
             
@@ -673,24 +673,24 @@ class FinvizClient:
                 rel_vol_min_val = self._safe_numeric_conversion(relative_volume_min) if relative_volume_min is not None else None
                 rel_vol_max_val = self._safe_numeric_conversion(relative_volume_max) if relative_volume_max is not None else None
                 
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if rel_vol_min_val and rel_vol_min_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o2, u1.5)
+                    # Finviz preset format (o2, u1.5)
                     params['f'] = params.get('f', '') + f'sh_relvol_{rel_vol_min_val},'
                 elif rel_vol_max_val and rel_vol_max_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o2, u1.5)
+                    # Finviz preset format (o2, u1.5)
                     params['f'] = params.get('f', '') + f'sh_relvol_{rel_vol_max_val},'
                 elif rel_vol_min_val and rel_vol_max_val:
-                    # レンジ指定: sh_relvol_1.5to3.0
+                    # Range: sh_relvol_1.5to3.0
                     params['f'] = params.get('f', '') + f'sh_relvol_{rel_vol_min_val}to{rel_vol_max_val},'
                 elif rel_vol_min_val:
-                    # 下限のみ: sh_relvol_1.5to
+                    # Min only: sh_relvol_1.5to
                     params['f'] = params.get('f', '') + f'sh_relvol_{rel_vol_min_val}to,'
                 elif rel_vol_max_val:
-                    # 上限のみ: sh_relvol_to2.0
+                    # Max only: sh_relvol_to2.0
                     params['f'] = params.get('f', '') + f'sh_relvol_to{rel_vol_max_val},'
             
-            # 価格変動フィルタ - Finviz形式完全対応
+            # Price change filter - full Finviz format support
             price_change_min = filters.get('price_change_min')
             price_change_max = filters.get('price_change_max')
             
@@ -698,33 +698,33 @@ class FinvizClient:
                 change_min_val = self._safe_numeric_conversion(price_change_min) if price_change_min is not None else None
                 change_max_val = self._safe_numeric_conversion(price_change_max) if price_change_max is not None else None
                 
-                # Finviz形式での処理分け
+                # Finviz format handling
                 if change_min_val and change_min_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o5, u-5)
+                    # Finviz preset format (o5, u-5)
                     params['f'] = params.get('f', '') + f'ta_change_{change_min_val},'
                 elif change_max_val and change_max_val.startswith(('o', 'u')):
-                    # Finvizプリセット形式 (o5, u-5)
+                    # Finviz preset format (o5, u-5)
                     params['f'] = params.get('f', '') + f'ta_change_{change_max_val},'
                 elif change_min_val and change_max_val:
-                    # レンジ指定: ta_change_2to10
+                    # Range: ta_change_2to10
                     params['f'] = params.get('f', '') + f'ta_change_{change_min_val}to{change_max_val},'
                 elif change_min_val:
-                    # 下限のみ: ta_change_2to
+                    # Min only: ta_change_2to
                     params['f'] = params.get('f', '') + f'ta_change_{change_min_val}to,'
                 elif change_max_val:
-                    # 上限のみ: ta_change_to10
+                    # Max only: ta_change_to10
                     params['f'] = params.get('f', '') + f'ta_change_to{change_max_val},'
             
-            # 52週高値からの距離フィルタ
+            # Distance from 52-week high filter
             if 'near_52w_high' in filters and filters['near_52w_high'] is not None:
                 high_value = self._safe_numeric_conversion(filters["near_52w_high"])
                 params['f'] = params.get('f', '') + f'ta_highlow52w_a{high_value}h,'
             
-            # 4週パフォーマンスフィルタ
+            # 4-week performance filter
             if 'performance_4w_positive' in filters and filters['performance_4w_positive']:
                 params['f'] = params.get('f', '') + 'ta_perf2_4wup,'
         
-        # RSIフィルタ - Finviz形式完全対応
+        # RSI filter - full Finviz format support
         rsi_min = filters.get('rsi_min')
         rsi_max = filters.get('rsi_max')
         
@@ -732,24 +732,24 @@ class FinvizClient:
             rsi_min_val = self._safe_numeric_conversion(rsi_min) if rsi_min is not None else None
             rsi_max_val = self._safe_numeric_conversion(rsi_max) if rsi_max is not None else None
             
-            # Finviz形式での処理分け
+            # Finviz format handling
             if rsi_min_val and rsi_min_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o30, u70)
+                # Finviz preset format (o30, u70)
                 params['f'] = params.get('f', '') + f'ta_rsi_{rsi_min_val},'
             elif rsi_max_val and rsi_max_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o30, u70)
+                # Finviz preset format (o30, u70)
                 params['f'] = params.get('f', '') + f'ta_rsi_{rsi_max_val},'
             elif rsi_min_val and rsi_max_val:
-                # レンジ指定: ta_rsi_30to70
+                # Range: ta_rsi_30to70
                 params['f'] = params.get('f', '') + f'ta_rsi_{rsi_min_val}to{rsi_max_val},'
             elif rsi_min_val:
-                # 下限のみ: ta_rsi_30to
+                # Min only: ta_rsi_30to
                 params['f'] = params.get('f', '') + f'ta_rsi_{rsi_min_val}to,'
             elif rsi_max_val:
-                # 上限のみ: ta_rsi_to70
+                # Max only: ta_rsi_to70
                 params['f'] = params.get('f', '') + f'ta_rsi_to{rsi_max_val},'
         
-        # 移動平均フィルタ（特別処理スクリーナー以外の場合のみ処理）
+        # Moving average filters (skip special screeners)
         if not (('market_cap' in filters and filters['market_cap'] == 'microover' and 'near_52w_high' in filters) or 
                 ('market_cap' in filters and filters['market_cap'] == 'smallover' and 'relative_volume_min' in filters and filters.get('stocks_only') == True and filters.get('price_change_min') == 2.0)):
             if 'sma20_above' in filters and filters['sma20_above']:
@@ -761,7 +761,7 @@ class FinvizClient:
             if 'sma50_above_sma200' in filters and filters['sma50_above_sma200']:
                 params['f'] = params.get('f', '') + 'ta_sma50_sa200,'
         
-        # PEフィルタ - Finviz形式完全対応 (正しいプレフィックス: fa_pe_)
+        # PE filter - full Finviz format support (prefix: fa_pe_)
         pe_min = filters.get('pe_min')
         pe_max = filters.get('pe_max')
         
@@ -769,24 +769,24 @@ class FinvizClient:
             pe_min_val = self._safe_numeric_conversion(pe_min) if pe_min is not None else None
             pe_max_val = self._safe_numeric_conversion(pe_max) if pe_max is not None else None
             
-            # Finviz形式での処理分け
+            # Finviz format handling
             if pe_min_val and pe_min_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o15, u30)
+                # Finviz preset format (o15, u30)
                 params['f'] = params.get('f', '') + f'fa_pe_{pe_min_val},'
             elif pe_max_val and pe_max_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o15, u30)
+                # Finviz preset format (o15, u30)
                 params['f'] = params.get('f', '') + f'fa_pe_{pe_max_val},'
             elif pe_min_val and pe_max_val:
-                # レンジ指定: fa_pe_5to30
+                # Range: fa_pe_5to30
                 params['f'] = params.get('f', '') + f'fa_pe_{pe_min_val}to{pe_max_val},'
             elif pe_min_val:
-                # 下限のみ: fa_pe_5to
+                # Min only: fa_pe_5to
                 params['f'] = params.get('f', '') + f'fa_pe_{pe_min_val}to,'
             elif pe_max_val:
-                # 上限のみ: fa_pe_to30
+                # Max only: fa_pe_to30
                 params['f'] = params.get('f', '') + f'fa_pe_to{pe_max_val},'
         
-        # 配当利回りフィルタ - Finviz形式完全対応
+        # Dividend yield filter - full Finviz format support
         dividend_yield_min = filters.get('dividend_yield_min')
         dividend_yield_max = filters.get('dividend_yield_max')
         
@@ -794,24 +794,24 @@ class FinvizClient:
             div_yield_min_val = self._safe_numeric_conversion(dividend_yield_min) if dividend_yield_min is not None else None
             div_yield_max_val = self._safe_numeric_conversion(dividend_yield_max) if dividend_yield_max is not None else None
             
-            # Finviz形式での処理分け
+            # Finviz format handling
             if div_yield_min_val and div_yield_min_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o2, u10)
+                # Finviz preset format (o2, u10)
                 params['f'] = params.get('f', '') + f'fa_div_{div_yield_min_val},'
             elif div_yield_max_val and div_yield_max_val.startswith(('o', 'u')):
-                # Finvizプリセット形式 (o2, u10)
+                # Finviz preset format (o2, u10)
                 params['f'] = params.get('f', '') + f'fa_div_{div_yield_max_val},'
             elif div_yield_min_val and div_yield_max_val:
-                # レンジ指定: fa_div_2to5
+                # Range: fa_div_2to5
                 params['f'] = params.get('f', '') + f'fa_div_{div_yield_min_val}to{div_yield_max_val},'
             elif div_yield_min_val:
-                # 下限のみ: fa_div_2to
+                # Min only: fa_div_2to
                 params['f'] = params.get('f', '') + f'fa_div_{div_yield_min_val}to,'
             elif div_yield_max_val:
-                # 上限のみ: fa_div_to5
+                # Max only: fa_div_to5
                 params['f'] = params.get('f', '') + f'fa_div_to{div_yield_max_val},'
         
-        # セクターフィルタ  
+        # Sector filter
         if 'sectors' in filters and filters['sectors']:
             sector_codes = []
             for sector in filters['sectors']:
@@ -821,30 +821,30 @@ class FinvizClient:
             if sector_codes:
                 params['f'] = params.get('f', '') + f'sec_{"|".join(sector_codes)},'
         
-        # 決算関連フィルタ
+        # Earnings-related filters
         if 'earnings_date' in filters and filters['earnings_date']:
             earnings_date_value = filters['earnings_date']
             
-            # 日付範囲指定の場合（例：{"start": "2025-06-30", "end": "2025-07-04"}）
+            # Date range as dict (e.g., {"start": "2025-06-30", "end": "2025-07-04"})
             if isinstance(earnings_date_value, dict) and 'start' in earnings_date_value and 'end' in earnings_date_value:
                 start_date = earnings_date_value['start']
                 end_date = earnings_date_value['end']
-                # Finviz形式: MM-DD-YYYYxMM-DD-YYYY
+                # Finviz format: MM-DD-YYYYxMM-DD-YYYY
                 start_formatted = self._format_date_for_finviz(start_date)
                 end_formatted = self._format_date_for_finviz(end_date)
                 if start_formatted and end_formatted:
                     params['f'] = params.get('f', '') + f'earningsdate_{start_formatted}x{end_formatted},'
             
-            # 直接の日付範囲文字列の場合（例：「06-30-2025x07-04-2025」）
+            # Date range as string (e.g., "06-30-2025x07-04-2025")
             elif isinstance(earnings_date_value, str) and 'x' in earnings_date_value:
                 params['f'] = params.get('f', '') + f'earningsdate_{earnings_date_value},'
             
-            # 従来の固定期間指定の場合
+            # Fixed period values
             else:
-                # Finvizの特殊な仕様: 複数のearnings_date値を|で結合する場合、
-                # 最初の値だけearningsdate_プレフィックスが付き、残りは値のみ
+                # Finviz quirk: when joining multiple earnings_date values with |,
+                # only the first gets the earningsdate_ prefix.
                 earnings_values = {
-                    # 内部形式 -> Finviz形式（プレフィックスなし）
+                    # Internal -> Finviz (no prefix)
                     'today': 'today',
                     'today_before': 'todaybefore',
                     'today_after': 'todayafter',
@@ -859,10 +859,10 @@ class FinvizClient:
                     'next_week': 'nextweek',
                     'prev_week': 'prevweek',
                     'this_month': 'thismonth',
-                    # サーバーから渡される値との互換性
+                    # Compatibility with server-provided values
                     'nextweek': 'nextweek',
                     'within_2_weeks': 'nextdays5',
-                    # 直接Finviz形式の値もサポート
+                    # Also accept direct Finviz values
                     'todaybefore': 'todaybefore',
                     'todayafter': 'todayafter',
                     'tomorrowbefore': 'tomorrowbefore',
@@ -875,76 +875,82 @@ class FinvizClient:
                     'thismonth': 'thismonth'
                 }
                 
-                # 単一の値の場合
+                # Single value
                 if isinstance(earnings_date_value, str) and earnings_date_value in earnings_values:
                     params['f'] = params.get('f', '') + f'earningsdate_{earnings_values[earnings_date_value]},'
-                # リストの場合（複数条件のOR）
+                # List of values (OR)
                 elif isinstance(earnings_date_value, list):
                     valid_values = [earnings_values[v] for v in earnings_date_value if v in earnings_values]
                     if valid_values:
-                        # 最初の値だけearningsdate_プレフィックスを付ける
+                        # Prefix only the first value
                         earnings_filter = f'earningsdate_{valid_values[0]}'
                         if len(valid_values) > 1:
-                            # 残りの値は|で結合（プレフィックスなし）
+                            # Join the rest with | (no prefix)
                             earnings_filter += '|' + '|'.join(valid_values[1:])
                         params['f'] = params.get('f', '') + f'{earnings_filter},'
         
-        # EPS前四半期比成長率フィルタ
+        # EPS growth QoQ filter
         if 'eps_growth_qoq_min' in filters and filters['eps_growth_qoq_min'] is not None:
             eps_value = self._safe_numeric_conversion(filters["eps_growth_qoq_min"])
             params['f'] = params.get('f', '') + f'fa_epsqoq_o{eps_value},'
         
-        # EPS予想改訂フィルタ
+        # EPS revision filter
         if 'eps_revision_min' in filters and filters['eps_revision_min'] is not None:
             eps_rev_value = self._safe_numeric_conversion(filters["eps_revision_min"])
             params['f'] = params.get('f', '') + f'fa_epsrev_eo{eps_rev_value},'
         
-        # 売上前四半期比成長率フィルタ
+        # Sales growth QoQ filter
         if 'sales_growth_qoq_min' in filters and filters['sales_growth_qoq_min'] is not None:
             sales_value = self._safe_numeric_conversion(filters["sales_growth_qoq_min"])
             params['f'] = params.get('f', '') + f'fa_salesqoq_o{sales_value},'
         
-        # earnings_recentフィルタ（決算トレード用）
+        # earnings_recent filter (earnings trading)
         if 'earnings_recent' in filters and filters['earnings_recent']:
             # earnings_recent: True → earningsdate_yesterdayafter|todaybefore
             params['f'] = params.get('f', '') + 'earningsdate_yesterdayafter|todaybefore,'
         
-        # EPS予想改訂フィルタ（EPS Revision Positive）
+        # EPS revision filter (positive)
         if 'earnings_revision_positive' in filters and filters['earnings_revision_positive']:
             params['f'] = params.get('f', '') + 'fa_epsrev_ep,'
         
-        # 価格変動上昇フィルタ
+        # Price change up filter
         if 'price_change_positive' in filters and filters['price_change_positive']:
             params['f'] = params.get('f', '') + 'ta_change_u,'
         
-        # 価格変動最小値フィルタ
+        # Minimum price change filter
         if 'price_change_min' in filters and filters['price_change_min'] is not None:
             change_value = self._safe_numeric_conversion(filters["price_change_min"])
             params['f'] = params.get('f', '') + f'ta_change_u{change_value},'
         
-        # 4週パフォーマンス範囲フィルタ
+        # 4-week performance range filter
         if 'performance_4w_range' in filters and filters['performance_4w_range'] == '0_to_negative_4w':
             params['f'] = params.get('f', '') + 'ta_perf_0to-4w,'
         
-        # ボラティリティフィルタ
+        # Volatility filter
         if 'volatility_min' in filters and filters['volatility_min'] is not None:
             volatility_value = self._safe_numeric_conversion(filters["volatility_min"])
             params['f'] = params.get('f', '') + f'ta_volatility_{volatility_value}tox,'
         
-        # 週次パフォーマンスフィルタ
+        # Weekly performance filter
         if 'weekly_performance' in filters and filters['weekly_performance']:
             params['f'] = params.get('f', '') + f'ta_perf_{filters["weekly_performance"]},'
         
-        # 時間外変動フィルタ (afterhours_change_min)
+        # After-hours change filter (afterhours_change_min)
         if 'afterhours_change_min' in filters and filters['afterhours_change_min'] is not None:
             ah_change_value = self._safe_numeric_conversion(filters["afterhours_change_min"])
             params['f'] = params.get('f', '') + f'ah_change_u{ah_change_value},'
         
-        # ETFフィルタ
+        # ETF filter
         if 'exclude_etfs' in filters and filters['exclude_etfs']:
-            params['f'] = params.get('f', '') + 'geo_usa,'  # 米国株のみ
-        
-        # フィルタ文字列の末尾のカンマを除去
+            params['f'] = params.get('f', '') + 'geo_usa,'  # US-only
+
+        # Subtheme filter (Finviz Elite thematic screening)
+        # Format: subtheme_{themename} e.g., subtheme_aicloud, subtheme_semismemory
+        if 'subtheme' in filters and filters['subtheme']:
+            subtheme_value = filters['subtheme'].lower()
+            params['f'] = params.get('f', '') + f'subtheme_{subtheme_value},'
+
+        # Remove trailing comma in filter string
         if 'f' in params:
             params['f'] = params['f'].rstrip(',')
         
@@ -952,13 +958,13 @@ class FinvizClient:
     
     def _get_sector_code(self, sector: str) -> Optional[str]:
         """
-        セクター名をFinvizコードに変換
-        
+        Convert a sector name to a Finviz code.
+
         Args:
-            sector: セクター名
-            
+            sector: Sector name
+
         Returns:
-            Finvizセクターコード
+            Finviz sector code
         """
         sector_mapping = {
             'Basic Materials': 'basicmaterials',
@@ -977,33 +983,33 @@ class FinvizClient:
     
     def _format_date_for_finviz(self, date_str: str) -> Optional[str]:
         """
-        日付文字列をFinviz形式（MM-DD-YYYY）に変換
-        
+        Convert a date string to Finviz format (MM-DD-YYYY).
+
         Args:
-            date_str: 日付文字列（YYYY-MM-DD、MM-DD-YYYY、MM/DD/YYYY等）
-            
+            date_str: Date string (YYYY-MM-DD, MM-DD-YYYY, MM/DD/YYYY, etc.)
+
         Returns:
-            Finviz形式の日付文字列（MM-DD-YYYY）またはNone
+            Finviz date string (MM-DD-YYYY) or None
         """
         import re
         from datetime import datetime
         
         try:
-            # 既にFinviz形式（MM-DD-YYYY）の場合
+            # Already in Finviz format (MM-DD-YYYY)
             if re.match(r'^\d{2}-\d{2}-\d{4}$', date_str):
                 return date_str
             
-            # ISO形式（YYYY-MM-DD）の場合
+            # ISO format (YYYY-MM-DD)
             if re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
                 date_obj = datetime.strptime(date_str, '%Y-%m-%d')
                 return date_obj.strftime('%m-%d-%Y')
             
-            # スラッシュ区切り（MM/DD/YYYY）の場合
+            # Slash-separated (MM/DD/YYYY)
             if re.match(r'^\d{1,2}/\d{1,2}/\d{4}$', date_str):
                 date_obj = datetime.strptime(date_str, '%m/%d/%Y')
                 return date_obj.strftime('%m-%d-%Y')
             
-            # その他の形式もサポート
+            # Support other formats
             for fmt in ['%Y/%m/%d', '%d-%m-%Y', '%d/%m/%Y']:
                 try:
                     date_obj = datetime.strptime(date_str, fmt)
@@ -1022,32 +1028,31 @@ class FinvizClient:
     
     def _fetch_csv_data(self, filters: Dict[str, Any]) -> pd.DataFrame:
         """
-        FinvizからCSVデータを取得
-        
+        Fetch CSV data from Finviz.
+
         Args:
-            filters: スクリーニングフィルタ
-            
+            filters: Screening filters
+
         Returns:
             pandas DataFrame
         """
         try:
-            # フィルタをFinviz形式に変換
+            # Convert filters to Finviz format
             finviz_params = self._convert_filters_to_finviz(filters)
             
-            # CSV export用のパラメータを追加
-            finviz_params['ft'] = '4'  # CSV形式を指定
+            # Add CSV export parameters
+            finviz_params['ft'] = '4'  # CSV format
             
-            # 結果数制限（max_resultsに基づく）
+            # Result limit (based on max_results)
             if 'max_results' in filters:
-                finviz_params['ar'] = str(min(filters['max_results'], 1000))  # 最大1000に制限
+                finviz_params['ar'] = str(min(filters['max_results'], 1000))  # Cap at 1000
             
-            # CSV export用のAPIキーパラメータを追加
+            # Add API key for CSV export
             if self.api_key:
                 finviz_params['auth'] = self.api_key
             else:
                 logger.warning("No API key provided. CSV export may not work without Elite subscription.")
-                # テスト用のAPIキーを使用（提供されたもの）
-                # 環境変数からAPIキーを取得
+                # Try API key from environment
                 import os
                 env_api_key = os.getenv('FINVIZ_API_KEY')
                 if env_api_key:
@@ -1056,30 +1061,30 @@ class FinvizClient:
                     logger.error("No Finviz API key provided. Please set FINVIZ_API_KEY environment variable.")
                     raise ValueError("Finviz API key is required")
             
-            # CSV データを取得
+            # Fetch CSV data
             logger.info(f"Finviz CSV export URL: {self.EXPORT_URL}")
             logger.info(f"Finviz CSV export params: {finviz_params}")
             response = self._make_request(self.EXPORT_URL, finviz_params)
             
-            # レスポンスがCSVかHTMLかをチェック
+            # Check whether response is CSV or HTML
             if response.text.startswith('<!DOCTYPE html>'):
                 logger.error("Received HTML instead of CSV. API key may be invalid or not authorized.")
                 return pd.DataFrame()
             
-            # CSVをDataFrameに変換
+            # Convert CSV to DataFrame
             from io import StringIO
             csv_data = StringIO(response.text)
             df = pd.read_csv(csv_data)
             
-            # 強制的に結果数を制限（Finvizのarパラメータが機能しない場合の対策）
+            # Force result limit (fallback if Finviz ar param fails)
             if 'max_results' in filters and filters['max_results'] is not None:
-                max_results = min(filters['max_results'], 1000)  # 最大1000に制限
+                max_results = min(filters['max_results'], 1000)  # Cap at 1000
                 if len(df) > max_results:
                     df = df.head(max_results)
                     logger.info(f"Results truncated from {len(pd.read_csv(StringIO(response.text)))} to {max_results} rows")
             
             logger.info(f"Successfully fetched CSV data with {len(df)} rows")
-            # デバッグ: CSVのカラムを確認（大量データの場合は省略）
+            # Debug: CSV columns (skip for large datasets)
             if len(df) <= 100:
                 logger.debug(f"CSV columns: {list(df.columns)}")
                 if len(df) > 0:
@@ -1095,21 +1100,21 @@ class FinvizClient:
     
     def _parse_stock_data_from_csv(self, row: pd.Series) -> StockData:
         """
-        CSV行からStockDataオブジェクトを作成
-        
+        Create a StockData object from a CSV row.
+
         Args:
-            row: pandasのSeries（CSV行データ）
-            
+            row: pandas Series (CSV row data)
+
         Returns:
-            StockData オブジェクト
+            StockData object
         """
-        # 基本情報
+        # Basic info
         ticker = str(row.get('Ticker', ''))
         company = str(row.get('Company', ''))
         sector = str(row.get('Sector', ''))
         industry = str(row.get('Industry', ''))
         
-        # StockDataオブジェクトを作成
+        # Create StockData object
         stock_data = StockData(
             ticker=ticker,
             company_name=company,
@@ -1117,16 +1122,16 @@ class FinvizClient:
             industry=industry
         )
         
-        # 数値フィールドのマッピング（完全版 - 128カラム対応）
+        # Numeric field mapping (full - 128 columns)
         numeric_fields = {
-            # 基本価格・出来高
+            # Basic price/volume
             'price': 'Price',
             'market_cap': 'Market Cap',
             'volume': 'Volume',
             'avg_volume': 'Average Volume',
             'relative_volume': 'Relative Volume',
             'price_change': 'Change',
-            'price_change_percent': 'Change',  # パーセント値として処理
+            'price_change_percent': 'Change',  # Process as percentage
             'prev_close': 'Prev Close',
             'open_price': 'Open',
             'high_price': 'High',
@@ -1134,7 +1139,7 @@ class FinvizClient:
             'change_from_open': 'Change from Open',
             'trades_count': 'Trades',
             
-            # 時間外取引データ
+            # After-hours trading data
             'premarket_price': 'After-Hours Close',  # Note: Finviz doesn't separate pre/after
             'premarket_change': 'After-Hours Change',
             'premarket_change_percent': 'After-Hours Change',  # Same column, processed as %
@@ -1142,7 +1147,7 @@ class FinvizClient:
             'afterhours_change': 'After-Hours Change',
             'afterhours_change_percent': 'After-Hours Change',  # Same column, processed as %
             
-            # 市場データ
+            # Market data
             'income': 'Income',
             'sales': 'Sales',
             'book_value_per_share': 'Book/sh',
@@ -1151,7 +1156,7 @@ class FinvizClient:
             'dividend_yield': 'Dividend Yield',
             'employees': 'Employees',
             
-            # バリュエーション指標
+            # Valuation metrics
             'pe_ratio': 'P/E',
             'forward_pe': 'Forward P/E',
             'peg': 'PEG',
@@ -1160,7 +1165,7 @@ class FinvizClient:
             'price_to_cash': 'P/Cash',
             'price_to_free_cash_flow': 'P/Free Cash Flow',
             
-            # 収益性指標
+            # Profitability metrics
             'eps': 'EPS (ttm)',
             'eps_this_y': 'EPS this Y',
             'eps_next_y': 'EPS next Y',
@@ -1173,13 +1178,13 @@ class FinvizClient:
             'eps_growth_past_5y': 'EPS growth past 5Y',
             'eps_growth_next_5y': 'EPS growth next 5Y',
             
-            # 決算関連（重要）
+            # Earnings-related (important)
             'eps_surprise': 'EPS Surprise',
             'revenue_surprise': 'Revenue Surprise',
             'eps_growth_qtr': 'EPS Q/Q',
             'sales_growth_qtr': 'Sales Q/Q',
-            'sales_qoq_growth': 'Sales Q/Q',  # 別名
-            'eps_qoq_growth': 'EPS Q/Q',     # 別名
+            'sales_qoq_growth': 'Sales Q/Q',  # Alias
+            'eps_qoq_growth': 'EPS Q/Q',     # Alias
             'eps_estimate': 'EPS Estimate',
             'revenue_estimate': 'Revenue Estimate',
             'eps_actual': 'EPS Actual',
@@ -1187,7 +1192,7 @@ class FinvizClient:
             'eps_revision': 'EPS Revision',
             'revenue_revision': 'Revenue Revision',
             
-            # パフォーマンス指標（完全版）
+            # Performance metrics (full)
             'performance_1min': 'Performance (1 Minute)',
             'performance_2min': 'Performance (2 Minutes)',
             'performance_3min': 'Performance (3 Minutes)',
@@ -1210,27 +1215,27 @@ class FinvizClient:
             'performance_10y': 'Return 10 Year',
             'performance_since_inception': 'Return Since Inception',
             
-            # 財務健全性指標
+            # Financial health metrics
             'debt_to_equity': 'Total Debt/Equity',
             'current_ratio': 'Current Ratio',
             'quick_ratio': 'Quick Ratio',
             'lt_debt_to_equity': 'LT Debt/Equity',
             
-            # 収益性マージン
+            # Profitability margins
             'gross_margin': 'Gross Margin',
             'operating_margin': 'Operating Margin',
             'profit_margin': 'Profit Margin',
             
-            # ROE・ROA・ROI
+            # ROE/ROA/ROI
             'roe': 'Return on Equity',
             'roa': 'Return on Assets',
             'roi': 'Return on Invested Capital',  # Note: ROI maps to ROIC in Finviz
             'roic': 'Return on Invested Capital',
             
-            # 配当関連
+            # Dividend-related
             'payout_ratio': 'Payout Ratio',
             
-            # 持株構造
+            # Ownership structure
             'insider_ownership': 'Insider Ownership',
             'insider_transactions': 'Insider Transactions',
             'institutional_ownership': 'Institutional Ownership',
@@ -1242,7 +1247,7 @@ class FinvizClient:
             'shares_float': 'Shares Float',
             'float_percentage': 'Float %',
             
-            # テクニカル・ボラティリティ指標
+            # Technical/volatility indicators
             'volatility': 'Volatility',
             'volatility_week': 'Volatility (Week)',
             'volatility_month': 'Volatility (Month)',
@@ -1253,7 +1258,7 @@ class FinvizClient:
             'rel_volume': 'Relative Volume',
             'avg_true_range': 'Average True Range',
             
-            # 移動平均線
+            # Moving averages
             'sma_20': '20-Day Simple Moving Average',
             'sma_50': '50-Day Simple Moving Average',
             'sma_200': '200-Day Simple Moving Average',
@@ -1261,7 +1266,7 @@ class FinvizClient:
             'sma_50_relative': 'from SMA50',
             'sma_200_relative': 'from SMA200',
             
-            # 高値・安値
+            # Highs/lows
             'week_52_high': '52-Week High',
             'week_52_low': '52-Week Low',
             'day_50_high': '50-Day High',
@@ -1271,10 +1276,10 @@ class FinvizClient:
             'high_52w_relative': '52-Week High',  # Relative calculation needed
             'low_52w_relative': '52-Week Low',   # Relative calculation needed
             
-            # アナリスト関連
+            # Analyst-related
             'target_price': 'Target Price',
             
-            # ETF関連
+            # ETF-related
             'total_holdings': 'Total Holdings',
             'aum': 'Assets Under Management',
             'nav': 'Net Asset Value',
@@ -1288,24 +1293,24 @@ class FinvizClient:
             'net_flows_1y': 'Net Flows (1 Year)',
             'net_flows_1y_percent': 'Net Flows % (1 Year)',
             
-            # その他指標
+            # Other metrics
             'gap': 'Gap',
             'average_volume': 'Average Volume'
         }
         
-        # 数値フィールドを設定
+        # Set numeric fields
         for field, csv_column in numeric_fields.items():
             if csv_column in row.index:
                 value = row[csv_column]
                 if pd.notna(value):
-                    # 数値変換
+                    # Numeric conversion
                     if isinstance(value, str):
                         cleaned_value = self._clean_numeric_value(value)
                         setattr(stock_data, field, cleaned_value)
                     else:
                         setattr(stock_data, field, float(value) if value != 0 else None)
         
-        # 文字列フィールドを設定（拡張版）
+        # Set string fields (extended)
         string_fields = {
             'country': 'Country',
             'index': 'Index',
@@ -1321,7 +1326,7 @@ class FinvizClient:
             'tags': 'Tags'
         }
         
-        # 決算日フィールドの代替名も確認（拡張版）
+        # Also check alternative earnings date fields (extended)
         earnings_columns = [
             'Earnings Date', 'Earnings', 'earnings_date', 'Earnings_Date',
             'Next Earnings Date', 'Earnings Time'
@@ -1329,7 +1334,7 @@ class FinvizClient:
         
         for field, csv_column in string_fields.items():
             if field == 'earnings_date':
-                # 複数の可能なカラム名をチェック
+                # Check multiple possible column names
                 for col in earnings_columns:
                     if col in row.index:
                         value = row[col]
@@ -1341,7 +1346,7 @@ class FinvizClient:
                 if pd.notna(value) and str(value) != '-':
                     setattr(stock_data, field, str(value))
         
-        # 決算日の処理（特別処理）
+        # Earnings date handling (special)
         for col in earnings_columns:
             if col in row.index:
                 value = row[col]
@@ -1349,7 +1354,7 @@ class FinvizClient:
                     stock_data.earnings_date = str(value)
                     break
         
-        # Boolean フィールドの設定（拡張版）
+        # Boolean fields (extended)
         boolean_fields = {
             'optionable': 'Optionable',
             'shortable': 'Shortable',
@@ -1363,7 +1368,7 @@ class FinvizClient:
                 value = row[csv_column]
                 if pd.notna(value):
                     if field.startswith('above_sma'):
-                        # 移動平均線の上下判定は数値比較で決定
+                        # Compare numeric values to determine above/below SMA
                         try:
                             price = stock_data.price
                             sma_value = getattr(stock_data, csv_column.lower().replace('sma', 'sma_'))
@@ -1378,27 +1383,27 @@ class FinvizClient:
     
     def _fetch_csv_from_url(self, export_url: str, params: Dict[str, Any] = None) -> pd.DataFrame:
         """
-        指定されたエクスポートURLからCSVデータを取得
-        
+        Fetch CSV data from a specific export URL.
+
         Args:
-            export_url: エクスポートURL
-            params: パラメータ（オプション）
-            
+            export_url: Export URL
+            params: Parameters (optional)
+
         Returns:
             pandas DataFrame
         """
         try:
-            # パラメータを準備
+            # Prepare parameters
             export_params = params.copy() if params else {}
             
-            # CSV形式を指定
+            # Specify CSV format
             export_params['ft'] = '4'
             
-            # APIキーを追加
+            # Add API key
             if self.api_key:
                 export_params['auth'] = self.api_key
             else:
-                # 環境変数からAPIキーを取得を試行
+                # Try API key from environment
                 import os
                 env_api_key = os.getenv('FINVIZ_API_KEY')
                 if env_api_key:
@@ -1406,21 +1411,21 @@ class FinvizClient:
                 else:
                     logger.warning("No Finviz API key found - may receive limited data")
             
-            # CSV データを取得
+            # Fetch CSV data
             response = self._make_request(export_url, export_params)
             
-            # レスポンスがCSVかHTMLかをチェック
+            # Check if response is CSV or HTML
             if response.text.startswith('<!DOCTYPE html>') or '<html' in response.text.lower():
                 logger.error(f"Received HTML instead of CSV from {export_url}")
                 logger.error("This may indicate authentication or parameter issues")
                 return pd.DataFrame()
             
-            # CSV形式かどうかを確認
+            # Verify CSV content
             if not response.text.strip():
                 logger.error(f"Empty response from {export_url}")
                 return pd.DataFrame()
             
-            # CSVをDataFrameに変換
+            # Convert CSV to DataFrame
             from io import StringIO
             csv_data = StringIO(response.text)
             df = pd.read_csv(csv_data)
@@ -1433,56 +1438,56 @@ class FinvizClient:
     
     def get_stock_fundamentals(self, ticker: str, data_fields: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
         """
-        個別銘柄のファンダメンタルデータを取得（全128フィールド対応）
-        
+        Get fundamentals for a single ticker (128 fields supported).
+
         Args:
-            ticker: 銘柄ティッカー
-            data_fields: 取得するデータフィールド（指定しない場合は全フィールド）
-            
+            ticker: Stock ticker
+            data_fields: Fields to retrieve (all if None)
+
         Returns:
-            ファンダメンタルデータ辞書またはNone
+            Fundamentals dict or None
         """
         try:
-            # 全フィールドを取得するためのコラムインデックス（ユーザー提供のURL参考）
+            # Column indices to retrieve all fields (based on user-provided URL)
             all_columns_param = "0,1,2,79,3,4,5,129,6,7,8,9,10,11,12,13,73,74,75,14,130,131,147,148,149,15,16,77,17,18,142,19,20,143,21,23,22,132,133,82,78,127,128,144,145,146,24,25,85,26,27,28,29,30,31,84,32,33,34,35,36,37,38,39,40,41,90,91,92,93,94,95,96,97,98,99,42,43,44,45,47,46,138,139,140,48,49,50,51,52,53,54,55,56,57,58,134,125,126,59,68,70,80,83,76,60,61,62,63,64,67,89,69,81,86,87,88,65,66,71,72,141,135,136,137,103,100,101,104,102,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,105"
             
-            # 正しいFinviz形式で特定ティッカーを指定（ユーザー提供URLと同じ形式）
+            # Specify a single ticker in Finviz format (same as user-provided URL)
             params = {
-                'v': '152',  # 最新バージョン指定（ユーザー提供URLと同じ）
-                't': ticker.upper(),  # 特定ティッカーを直接指定
-                'c': all_columns_param,  # 全カラム指定
-                'ft': '4'  # CSV形式
+                'v': '152',  # Latest version (same as user-provided URL)
+                't': ticker.upper(),  # Direct ticker
+                'c': all_columns_param,  # All columns
+                'ft': '4'  # CSV format
             }
             
-            # APIキーがある場合は追加
+            # Add API key if available
             if self.api_key:
                 params['auth'] = self.api_key
             
-            # export.ashx（スクリーニング用）を使用
+            # Use export.ashx (screening)
             df = self._fetch_csv_from_url(self.EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No data returned for ticker: {ticker}")
                 return None
             
-            # 特定ティッカーを指定しているので、最初の行を使用
+            # Specific ticker: use the first row
             first_row = df.iloc[0]
             logger.info(f"Retrieved data for {ticker} with {len(df.columns)} columns")
             
-            # 利用可能なフィールドを直接CSVから取得
+            # Pull available fields directly from CSV
             result = {}
             
-            # 実際にCSVに存在するカラムのみ処理
+            # Process only columns that exist in CSV
             available_columns = df.columns.tolist()
             
-            # データ抽出（実際の列名をそのまま使用）
+            # Extract data (use actual column names)
             for col in available_columns:
                 value = first_row[col]
                 if pd.notna(value) and value != '-' and value != '':
-                    # 列名を小文字・アンダースコア形式に変換
+                    # Normalize column name to lowercase/underscore
                     field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                     
-                    # 数値フィールドの変換処理
+                    # Numeric field conversion
                     numeric_keywords = ['price', 'volume', 'ratio', 'margin', 'growth', 'return', 'debt', 'shares', 'cash', 'income', 'sales', 'eps', 'dividend', 'beta', 'avg', 'high', 'low', 'change', 'float', 'cap', 'pe', 'pb', 'ps']
                     
                     is_numeric = any(keyword in field_name for keyword in numeric_keywords) or any(keyword in col.lower() for keyword in numeric_keywords)
@@ -1493,16 +1498,16 @@ class FinvizClient:
                     else:
                         result[field_name] = str(value)
                 else:
-                    # 空の値も列名として保持（構造の一貫性のため）
+                    # Preserve empty values to keep structure consistent
                     field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                     result[field_name] = None
             
-            # 常に基本情報は含める
+            # Always include basic info
             result['ticker'] = ticker
             
-            # 指定されたフィールドのみ返す
+            # Return only requested fields
             if data_fields:
-                # フィールド名の代替マッピング
+                # Field alias mapping
                 field_aliases = {
                     'roi': 'roic',  # Return on Invested Capital
                     'debt_equity': 'debt_to_equity',  # Total Debt/Equity
@@ -1514,10 +1519,10 @@ class FinvizClient:
                 
                 filtered_result = {}
                 for field in data_fields:
-                    # エイリアスがあるか確認
+                    # Resolve alias
                     actual_field = field_aliases.get(field, field)
                     
-                    # フィールド名の正規化
+                    # Normalize field name
                     normalized_field = actual_field.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                     
                     if normalized_field in result:
@@ -1525,7 +1530,7 @@ class FinvizClient:
                     elif actual_field in result:
                         filtered_result[field] = result[actual_field]
                     else:
-                        # 部分一致で検索
+                        # Partial match search
                         found = False
                         for key in result.keys():
                             if actual_field.lower() in key.lower() or key.lower() in actual_field.lower():
@@ -1538,7 +1543,7 @@ class FinvizClient:
                 
                 return filtered_result
             
-            # すべての利用可能フィールドを返す
+            # Return all available fields
             return result
             
         except Exception as e:
@@ -1547,51 +1552,51 @@ class FinvizClient:
     
     def get_multiple_stocks_fundamentals(self, tickers: List[str], data_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
-        複数銘柄のファンダメンタルデータ一括取得（全128フィールド対応）
-        
+        Bulk fetch fundamentals for multiple tickers (128 fields supported).
+
         Args:
-            tickers: 銘柄ティッカーリスト
-            data_fields: 取得するデータフィールド（指定しない場合は全フィールド）
-            
+            tickers: List of stock tickers
+            data_fields: Fields to retrieve (all if None)
+
         Returns:
-            ファンダメンタルデータのリスト
+            List of fundamentals dicts
         """
         results = []
         
         logger.info(f"Getting fundamentals for {len(tickers)} stocks with full field support")
         
         try:
-            # ユーザー提供の一括取得URLと同じ形式で実装
-            # 全フィールドを取得するためのコラムインデックス（ユーザー提供のURL参考）
+            # Use the same format as the user-provided bulk URL
+            # Column indices to retrieve all fields
             all_columns_param = "0,1,2,79,3,4,5,129,6,7,8,9,10,11,12,13,73,74,75,14,130,131,147,148,149,15,16,77,17,18,142,19,20,143,21,23,22,132,133,82,78,127,128,144,145,146,24,25,85,26,27,28,29,30,31,84,32,33,34,35,36,37,38,39,40,41,90,91,92,93,94,95,96,97,98,99,42,43,44,45,47,46,138,139,140,48,49,50,51,52,53,54,55,56,57,58,134,125,126,59,68,70,80,83,76,60,61,62,63,64,67,89,69,81,86,87,88,65,66,71,72,141,135,136,137,103,100,101,104,102,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,105"
             
-            # 複数ティッカーをカンマ区切りで指定（ユーザー提供URLと同じ形式）
+            # Comma-separated tickers (same format as user-provided URL)
             tickers_str = ','.join([t.upper() for t in tickers])
             
             params = {
-                'v': '152',  # 最新バージョン指定（ユーザー提供URLと同じ）
-                't': tickers_str,  # 複数ティッカーをカンマ区切りで指定
-                'c': all_columns_param,  # 全カラム指定
-                'ft': '4'  # CSV形式
+                'v': '152',  # Latest version (same as user-provided URL)
+                't': tickers_str,  # Comma-separated tickers
+                'c': all_columns_param,  # All columns
+                'ft': '4'  # CSV format
             }
             
-            # APIキーがある場合は追加
+            # Add API key if available
             if self.api_key:
                 params['auth'] = self.api_key
             
-            # 一括取得を実行
+            # Execute bulk fetch
             df = self._fetch_csv_from_url(self.EXPORT_URL, params)
             
             if df.empty:
                 logger.warning(f"No data returned for tickers: {tickers}")
-                # 空データの場合は個別取得にフォールバック
+                # Fallback to individual fetch on empty data
                 logger.info("Falling back to individual ticker fetching...")
                 for ticker in tickers:
                     individual_data = self.get_stock_fundamentals(ticker, data_fields)
                     if individual_data:
                         results.append(individual_data)
                     else:
-                        # 空の結果を追加
+                        # Add empty result
                         empty_result = {'ticker': ticker}
                         if data_fields:
                             for field in data_fields:
@@ -1601,22 +1606,22 @@ class FinvizClient:
             
             logger.info(f"Successfully retrieved bulk data with {len(df)} rows and {len(df.columns)} columns")
             
-            # DataFrameの各行を処理してデータを抽出
+            # Process each DataFrame row to extract data
             for idx, row in df.iterrows():
                 try:
                     result = {}
                     
-                    # 実際にCSVに存在するカラムのみ処理
+                    # Process only columns that exist in CSV
                     available_columns = df.columns.tolist()
                     
-                    # データ抽出（実際の列名をそのまま使用）
+                    # Extract data (use actual column names)
                     for col in available_columns:
                         value = row[col]
                         if pd.notna(value) and value != '-' and value != '':
-                            # 列名を小文字・アンダースコア形式に変換
+                            # Normalize column name to lowercase/underscore
                             field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                             
-                            # 数値フィールドの変換処理
+                            # Numeric field conversion
                             numeric_keywords = ['price', 'volume', 'ratio', 'margin', 'growth', 'return', 'debt', 'shares', 'cash', 'income', 'sales', 'eps', 'dividend', 'beta', 'avg', 'high', 'low', 'change', 'float', 'cap', 'pe', 'pb', 'ps']
                             
                             is_numeric = any(keyword in field_name for keyword in numeric_keywords) or any(keyword in col.lower() for keyword in numeric_keywords)
@@ -1627,15 +1632,15 @@ class FinvizClient:
                             else:
                                 result[field_name] = str(value)
                         else:
-                            # 空の値も列名として保持（構造の一貫性のため）
+                            # Preserve empty values to keep structure consistent
                             field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                             result[field_name] = None
                     
-                    # ティッカー情報を確実に含める
+                    # Ensure ticker info is included
                     if 'ticker' in result and result['ticker']:
                         logger.info(f"Processed ticker: {result['ticker']}")
                     else:
-                        # ティッカーがない場合は順番で推定
+                        # Infer ticker by position if missing
                         if idx < len(tickers):
                             result['ticker'] = tickers[idx]
                             logger.warning(f"No ticker in data, using position-based ticker: {tickers[idx]}")
@@ -1643,9 +1648,9 @@ class FinvizClient:
                             logger.warning(f"No ticker information for row {idx}")
                             continue
                     
-                    # 指定されたフィールドのみ返す
+                    # Return only requested fields
                     if data_fields:
-                        # フィールド名の代替マッピング
+                        # Field alias mapping
                         field_aliases = {
                             'roi': 'roic',  # Return on Invested Capital
                             'debt_equity': 'debt_to_equity',  # Total Debt/Equity
@@ -1655,12 +1660,12 @@ class FinvizClient:
                             'short_float': 'float_short',  # Short Float
                         }
                         
-                        filtered_result = {'ticker': result['ticker']}  # 常にtickerは含める
+                        filtered_result = {'ticker': result['ticker']}  # Always include ticker
                         for field in data_fields:
-                            # エイリアスがあるか確認
+                            # Resolve alias
                             actual_field = field_aliases.get(field, field)
                             
-                            # フィールド名の正規化
+                            # Normalize field name
                             normalized_field = actual_field.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                             
                             if normalized_field in result:
@@ -1668,7 +1673,7 @@ class FinvizClient:
                             elif actual_field in result:
                                 filtered_result[field] = result[actual_field]
                             else:
-                                # 部分一致で検索
+                                # Partial match search
                                 found = False
                                 for key in result.keys():
                                     if actual_field.lower() in key.lower() or key.lower() in actual_field.lower():
@@ -1681,12 +1686,12 @@ class FinvizClient:
                         
                         results.append(filtered_result)
                     else:
-                        # すべての利用可能フィールドを返す
+                        # Return all available fields
                         results.append(result)
                     
                 except Exception as e:
                     logger.warning(f"Error processing row {idx}: {e}")
-                    # エラーの場合でも基本情報は返す
+                    # Return basic info even on error
                     ticker = tickers[idx] if idx < len(tickers) else f"Unknown_{idx}"
                     error_result = {
                         'ticker': ticker,
@@ -1705,26 +1710,26 @@ class FinvizClient:
             logger.error(f"Error in bulk fundamentals retrieval: {e}")
             logger.info("Falling back to individual ticker fetching...")
             
-            # エラーが発生した場合は個別取得にフォールバック
+            # Fallback to individual fetch on error
             for ticker in tickers:
                 try:
                     individual_data = self.get_stock_fundamentals(ticker, data_fields)
                     if individual_data:
                         results.append(individual_data)
                     else:
-                        # 空の結果を追加
+                        # Add empty result
                         empty_result = {'ticker': ticker}
                         if data_fields:
                             for field in data_fields:
                                 empty_result[field] = None
                         results.append(empty_result)
                     
-                    # レート制限対応
+                    # Rate limiting
                     time.sleep(0.2)
                     
                 except Exception as individual_error:
                     logger.warning(f"Failed to get fundamentals for {ticker}: {individual_error}")
-                    # エラーの場合でも基本情報は返す
+                    # Return basic info even on error
                     error_result = {
                         'ticker': ticker,
                         'error': str(individual_error)
@@ -1739,13 +1744,13 @@ class FinvizClient:
     
     def get_market_overview(self) -> Dict[str, Any]:
         """
-        市場全体の概要を取得
-        
+        Get a market overview.
+
         Returns:
-            市場概要データ
+            Market overview data
         """
         try:
-            # シンプルな市場概要を返す（実際のFinvizからのデータ取得が困難な場合）
+            # Return a simple overview when live Finviz data is unavailable
             overview = {
                 'market_status': 'Active',
                 'timestamp': pd.Timestamp.now().isoformat(),

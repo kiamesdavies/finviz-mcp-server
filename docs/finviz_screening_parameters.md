@@ -1,42 +1,37 @@
-# Finviz スクリーニングパラメーター一覧
+# Finviz Screening Parameters
 
-このドキュメントは、Finvizのスクリーニング機能で使用できる全パラメーターとその取得可能な値を詳細に記載しています。
+This document lists Finviz screener fields and supported parameter values.
 
-## Finviz取得可能なフィールド(APIで取得できるCSVの項目名)
-No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	P/S	P/B	P/Cash	P/Free Cash Flow	Book/sh	Cash/sh	Dividend	Dividend Yield	Payout Ratio	EPS (ttm)	EPS Next Q	EPS Growth This Year	EPS Growth Next Year	EPS Growth Past 5 Years	EPS Growth Next 5 Years	Sales Growth Past 5 Years	Sales Growth Quarter Over Quarter	EPS Growth Quarter Over Quarter	Sales	Income	EPS Surprise	Revenue Surprise	Shares Outstanding	Shares Float	Float %	Insider Ownership	Insider Transactions	Institutional Ownership	Institutional Transactions	Short Float	Short Ratio	Short Interest	Return on Assets	Return on Equity	Return on Invested Capital	Current Ratio	Quick Ratio	LT Debt/Equity	Total Debt/Equity	Gross Margin	Operating Margin	Profit Margin	Performance (1 Minute)	Performance (2 Minutes)	Performance (3 Minutes)	Performance (5 Minutes)	Performance (10 Minutes)	Performance (15 Minutes)	Performance (30 Minutes)	Performance (1 Hour)	Performance (2 Hours)	Performance (4 Hours)	Performance (Week)	Performance (Month)	Performance (Quarter)	Performance (Half Year)	Performance (Year)	Performance (YTD)	Beta	Average True Range	Volatility (Week)	Volatility (Month)	20-Day Simple Moving Average	50-Day Simple Moving Average	200-Day Simple Moving Average	50-Day High	50-Day Low	52-Week High	52-Week Low	Optionable	Shortable	Employees	Change from Open	Gap	Analyst Recom	Average Volume	Relative Volume	Volume	Trades	Target Price	Prev Close	Open	High	Low	Price	Change	After-Hours Close	After-Hours Change	Single Category	Asset Type	ETF Type	Sector/Theme	Region	Active/Passive	Net Expense Ratio	Total Holdings	Assets Under Management	Net Asset Value	All-Time High	All-Time Low	Relative Strength Index (14)	Earnings Date	IPO Date	Net Asset Value %	Net Flows (1 Month)	Net Flows % (1 Month)	Net Flows (3 Month)	Net Flows % (3 Month)	Net Flows (YTD)	Net Flows % (YTD)	Net Flows (1 Year)	Net Flows % (1 Year)	Return 1 Year	Return 3 Year	Return 5 Year	Return 10 Year	Return Since Inception	Tags
+## Field List
+No. Ticker Company Index Sector Industry Country Market Cap P/E Forward P/E PEG P/S P/B P/Cash P/Free Cash Flow Book/sh Cash/sh Dividend Dividend Yield Payout Ratio EPS (ttm) EPS Next Q EPS Growth This Year EPS Growth Next Year EPS Growth Past 5 Years EPS Growth Next 5 Years Sales Growth Past 5 Years Sales Growth Quarter Over Quarter EPS Growth Quarter Over Quarter Sales Income EPS Surprise Revenue Surprise Shares Outstanding Shares Float Float % Insider Ownership Insider Transactions Institutional Ownership Institutional Transactions Short Float Short Ratio Short Interest Return on Assets Return on Equity Return on Invested Capital Current Ratio Quick Ratio LT Debt/Equity Total Debt/Equity Gross Margin Operating Margin Profit Margin Performance (1 Minute) Performance (2 Minutes) Performance (3 Minutes) Performance (5 Minutes) Performance (10 Minutes) Performance (15 Minutes) Performance (30 Minutes) Performance (1 Hour) Performance (2 Hours) Performance (4 Hours) Performance (Week) Performance (Month) Performance (Quarter) Performance (Half Year) Performance (Year) Performance (YTD) Beta Average True Range Volatility (Week) Volatility (Month) 20-Day Simple Moving Average 50-Day Simple Moving Average 200-Day Simple Moving Average 50-Day High 50-Day Low 52-Week High 52-Week Low Optionable Shortable Employees Change from Open Gap Analyst Recom Average Volume Relative Volume Volume Trades Target Price Prev Close Open High Low Price Change After-Hours Close After-Hours Change Single Category Asset Type ETF Type Sector/Theme Region Active/Passive Net Expense Ratio Total Holdings Assets Under Management Net Asset Value All-Time High All-Time Low Relative Strength Index (14) Earnings Date IPO Date Net Asset Value % Net Flows (1 Month) Net Flows % (1 Month) Net Flows (3 Month) Net Flows % (3 Month) Net Flows (YTD) Net Flows % (YTD) Net Flows (1 Year) Net Flows % (1 Year) Return 1 Year Return 3 Year Return 5 Year Return 10 Year Return Since Inception Tags
 
-## 基本情報系パラメーター
+### Exchange - `exch`
 
-### Exchange (取引所) - `exch`
-株式が上場されている取引所を指定します。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `amex` | AMEX |
 | `cboe` | CBOE |
 | `nasd` | NASDAQ |
 | `nyse` | NYSE |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Index (指数) - `idx`
-主要指数のメンバーシップを指定します。
+### Index - `idx`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `sp500` | S&P 500 |
 | `ndx` | NASDAQ 100 |
 | `dji` | DJIA |
 | `rut` | RUSSELL 2000 |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Sector (セクター) - `sec`
-株式が属するセクターを指定します。
+### Sector - `sec`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `basicmaterials` | Basic Materials |
 | `communicationservices` | Communication Services |
 | `consumercyclical` | Consumer Cyclical |
@@ -48,20 +43,17 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `realestate` | Real Estate |
 | `technology` | Technology |
 | `utilities` | Utilities |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Industry (業界) - `ind`
-株式が属する業界を詳細に指定します。
+### Industry - `ind`
 
-#### 特別カテゴリー
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `stocksonly` | Stocks only (ex-Funds) |
 | `exchangetradedfund` | Exchange Traded Fund |
 
-#### 主要業界一覧
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `advertisingagencies` | Advertising Agencies |
 | `aerospacedefense` | Aerospace & Defense |
@@ -211,14 +203,13 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `utilitiesregulatedwater` | Utilities - Regulated Water |
 | `utilitiesrenewable` | Utilities - Renewable |
 | `wastemanagement` | Waste Management |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Country (国) - `geo`
-会社の本拠地の国を指定します。
+### Country - `geo`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `usa` | USA |
 | `notusa` | Foreign (ex-USA) |
 | `asia` | Asia |
@@ -281,16 +272,14 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `unitedkingdom` | United Kingdom |
 | `uruguay` | Uruguay |
 | `vietnam` | Vietnam |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-## 株価・時価総額系パラメーター
+### Market Capitalization - `cap`
+（：B）
 
-### Market Capitalization (時価総額) - `cap`
-会社の発行済み株式の総ドル価値です。カスタム範囲は数値範囲で指定可能（単位：B）。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `mega` | Mega ($200bln and more) |
 | `large` | Large ($10bln to $200bln) |
 | `mid` | Mid ($2bln to $10bln) |
@@ -305,14 +294,13 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `midunder` | -Mid (under $10bln) |
 | `smallunder` | -Small (under $2bln) |
 | `microunder` | -Micro (under $300mln) |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Price (株価) - `sh_price`
-現在の株価です。カスタム範囲で指定可能です。
+### Price - `sh_price`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u1` | Under $1 |
 | `u2` | Under $2 |
 | `u3` | Under $3 |
@@ -352,14 +340,13 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `10to50` | $10 to $50 |
 | `20to50` | $20 to $50 |
 | `50to100` | $50 to $100 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Target Price (目標株価) - `targetprice`
-アナリストの平均目標株価です。
+### Target Price - `targetprice`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `a50` | 50% Above Price |
 | `a40` | 40% Above Price |
 | `a30` | 30% Above Price |
@@ -374,16 +361,13 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `b30` | 30% Below Price |
 | `b40` | 40% Below Price |
 | `b50` | 50% Below Price |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-## 配当・財務系パラメーター
+### Dividend Yield - `fa_div`
 
-### Dividend Yield (配当利回り) - `fa_div`
-配当利回りは、年間配当金を株価で割った値です。カスタム範囲で指定可能（単位：%）。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `none` | None (0%) |
 | `pos` | Positive (>0%) |
 | `high` | High (>5%) |
@@ -398,78 +382,76 @@ No.	Ticker	Company	Index	Sector	Industry	Country	Market Cap	P/E	Forward P/E	PEG	
 | `o8` | Over 8% |
 | `o9` | Over 9% |
 | `o10` | Over 10% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### EPS・Revenue Revision (EPS・売上改訂) - `fa_epsrev`
-EPSおよび売上の改訂予想に基づくフィルターです。
+### EPSRevenue Revision - `fa_epsrev`
+EPS
 
-#### 組み合わせ条件
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `bp` | Both positive (両方とも正、>0%) |
-| `bm` | Both met (両方とも満たす、0%) |
-| `bn` | Both negative (両方とも負、<0%) |
+| `""` | Any |
+| `bp` | Both positive |
+| `bm` | Both met |
+| `bn` | Both negative |
 
-#### EPS改訂条件
-| 値 | 説明 |
+#### EPS
+| Value | Description |
 |---|---|
-| `ep` | Positive (正、>0%) |
-| `em` | Met (満たす、0%) |
-| `en` | Negative (負、<0%) |
-| `eu100` | Under -100% (-100%以下) |
-| `eu50` | Under -50% (-50%以下) |
-| `eu40` | Under -40% (-40%以下) |
-| `eu30` | Under -30% (-30%以下) |
-| `eu20` | Under -20% (-20%以下) |
-| `eu10` | Under -10% (-10%以下) |
-| `eu5` | Under -5% (-5%以下) |
-| `eo5` | Over 5% (5%以上) |
-| `eo10` | Over 10% (10%以上) |
-| `eo20` | Over 20% (20%以上) |
-| `eo30` | Over 30% (30%以上) |
-| `eo40` | Over 40% (40%以上) |
-| `eo50` | Over 50% (50%以上) |
-| `eo60` | Over 60% (60%以上) |
-| `eo70` | Over 70% (70%以上) |
-| `eo80` | Over 80% (80%以上) |
-| `eo90` | Over 90% (90%以上) |
-| `eo100` | Over 100% (100%以上) |
-| `eo200` | Over 200% (200%以上) |
+| `ep` | Positive |
+| `em` | Met |
+| `en` | Negative |
+| `eu100` | Under -100% |
+| `eu50` | Under -50% |
+| `eu40` | Under -40% |
+| `eu30` | Under -30% |
+| `eu20` | Under -20% |
+| `eu10` | Under -10% |
+| `eu5` | Under -5% |
+| `eo5` | Over 5% |
+| `eo10` | Over 10% |
+| `eo20` | Over 20% |
+| `eo30` | Over 30% |
+| `eo40` | Over 40% |
+| `eo50` | Over 50% |
+| `eo60` | Over 60% |
+| `eo70` | Over 70% |
+| `eo80` | Over 80% |
+| `eo90` | Over 90% |
+| `eo100` | Over 100% |
+| `eo200` | Over 200% |
 
-#### Revenue改訂条件
-| 値 | 説明 |
+#### Revenue
+| Value | Description |
 |---|---|
-| `rp` | Positive (正、>0%) |
-| `rm` | Met (満たす、0%) |
-| `rn` | Negative (負、<0%) |
-| `ru100` | Under -100% (-100%以下) |
-| `ru50` | Under -50% (-50%以下) |
-| `ru40` | Under -40% (-40%以下) |
-| `ru30` | Under -30% (-30%以下) |
-| `ru20` | Under -20% (-20%以下) |
-| `ru10` | Under -10% (-10%以下) |
-| `ru5` | Under -5% (-5%以下) |
-| `ro5` | Over 5% (5%以上) |
-| `ro10` | Over 10% (10%以上) |
-| `ro20` | Over 20% (20%以上) |
-| `ro30` | Over 30% (30%以上) |
-| `ro40` | Over 40% (40%以上) |
-| `ro50` | Over 50% (50%以上) |
-| `ro60` | Over 60% (60%以上) |
-| `ro70` | Over 70% (70%以上) |
-| `ro80` | Over 80% (80%以上) |
-| `ro90` | Over 90% (90%以上) |
-| `ro100` | Over 100% (100%以上) |
-| `ro200` | Over 200% (200%以上) |
-| `modal` | Custom (カスタム) |
+| `rp` | Positive |
+| `rm` | Met |
+| `rn` | Negative |
+| `ru100` | Under -100% |
+| `ru50` | Under -50% |
+| `ru40` | Under -40% |
+| `ru30` | Under -30% |
+| `ru20` | Under -20% |
+| `ru10` | Under -10% |
+| `ru5` | Under -5% |
+| `ro5` | Over 5% |
+| `ro10` | Over 10% |
+| `ro20` | Over 20% |
+| `ro30` | Over 30% |
+| `ro40` | Over 40% |
+| `ro50` | Over 50% |
+| `ro60` | Over 60% |
+| `ro70` | Over 70% |
+| `ro80` | Over 80% |
+| `ro90` | Over 90% |
+| `ro100` | Over 100% |
+| `ro200` | Over 200% |
+| `modal` | Custom |
 
-### Short Float (ショート比率) - `sh_short`
-ショートセリング取引の量です。カスタム範囲で指定可能（単位：%）。
+### Short Float - `sh_short`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<5%) |
 | `high` | High (>20%) |
 | `u5` | Under 5% |
@@ -484,16 +466,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o20` | Over 20% |
 | `o25` | Over 25% |
 | `o30` | Over 30% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-## アナリスト・推奨系パラメーター
+### Analyst Recommendation - `an_recom`
 
-### Analyst Recommendation (アナリスト推奨) - `an_recom`
-株式に対するアナリストの推奨です。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `strongbuy` | Strong Buy (1) |
 | `buybetter` | Buy or better |
 | `buy` | Buy |
@@ -503,14 +482,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `sell` | Sell |
 | `sellworse` | Sell or worse |
 | `strongsell` | Strong Sell (5) |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Option/Short (オプション/ショート) - `sh_opt`
-オプション取引可能性と空売り可能性です。
+### Option/Short - `sh_opt`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `option` | Optionable |
 | `short` | Shortable |
 | `notoption` | Not optionable |
@@ -524,30 +502,26 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `halted` | Halted |
 | `nothalted` | Not halted |
 
-#### 空売り可能株数（株数ベース）
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `so10k` | Over 10K available to short |
 | `so100k` | Over 100K available to short |
 | `so1m` | Over 1M available to short |
 | `so10m` | Over 10M available to short |
 
-#### 空売り可能額（USD ベース）
-| 値 | 説明 |
+#### （USD ）
+| Value | Description |
 |---|---|
 | `uo1m` | Over $1M available to short |
 | `uo10m` | Over $10M available to short |
 | `uo100m` | Over $100M available to short |
 | `uo1b` | Over $1B available to short |
 
-## 日付系パラメーター
+### Earnings Date - `earningsdate`
 
-### Earnings Date (決算日) - `earningsdate`
-会社が決算を発表する日です。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `today` | Today |
 | `todaybefore` | Today Before Market Open |
 | `todayafter` | Today After Market Close |
@@ -563,14 +537,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `nextweek` | Next Week |
 | `prevweek` | Previous Week |
 | `thismonth` | This Month |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### IPO Date (IPO日) - `ipodate`
-会社がIPOを行った日です。
+### IPO Date - `ipodate`
+IPO
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `today` | Today |
 | `yesterday` | Yesterday |
 | `prevweek` | In the last week |
@@ -586,16 +560,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `more15` | More than 15 years ago |
 | `more20` | More than 20 years ago |
 | `more25` | More than 25 years ago |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-## 出来高・取引系パラメーター
+### Average Volume - `sh_avgvol`
+1（：K）
 
-### Average Volume (平均出来高) - `sh_avgvol`
-1日あたりの平均取引株数です。カスタム範囲で指定可能（単位：K）。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u50` | Under 50K |
 | `u100` | Under 100K |
 | `u500` | Under 500K |
@@ -614,14 +586,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `100to1000` | 100K to 1M |
 | `500to1000` | 500K to 1M |
 | `500to10000` | 500K to 10M |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Relative Volume (相対出来高) - `sh_relvol`
-現在出来高と3ヶ月平均の比率です。カスタム範囲で指定可能。
+### Relative Volume - `sh_relvol`
+3
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `o10` | Over 10 |
 | `o5` | Over 5 |
 | `o3` | Over 3 |
@@ -638,15 +610,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `u0.5` | Under 0.5 |
 | `u0.25` | Under 0.25 |
 | `u0.1` | Under 0.1 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Current Volume (当日出来高) - `sh_curvol`
-今日取引された株数です。
+### Current Volume - `sh_curvol`
 
-#### 株数ベース
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u50` | Under 50K |
 | `u100` | Under 100K |
 | `u500` | Under 500K |
@@ -668,8 +638,8 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o50sf` | Over 50% shares float |
 | `o100sf` | Over 100% shares float |
 
-#### USD ベース
-| 値 | 説明 |
+#### USD
+| Value | Description |
 |---|---|
 | `uusd1000` | Under $1M |
 | `uusd10000` | Under $10M |
@@ -679,14 +649,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `ousd10000` | Over $10M |
 | `ousd100000` | Over $100M |
 | `ousd1000000` | Over $1B |
-| `modal` | Custom (カスタム) |
+| `modal` | Custom |
 
-### Trades (取引回数) - `sh_trades`
-今日の取引回数です。カスタム範囲で指定可能（単位：K）。
+### Trades - `sh_trades`
+（：K）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u100` | Under 100 |
 | `u500` | Under 500 |
 | `u1000` | Under 1K |
@@ -702,16 +672,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o20000` | Over 20K |
 | `o50000` | Over 50K |
 | `o100000` | Over 100K |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-## 株式発行系パラメーター
+### Shares Outstanding - `sh_outstanding`
+（：M）
 
-### Shares Outstanding (発行済株式数) - `sh_outstanding`
-発行済み株式の総数です。カスタム範囲で指定可能（単位：M）。
-
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u1` | Under 1M |
 | `u5` | Under 5M |
 | `u10` | Under 10M |
@@ -728,15 +696,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o200` | Over 200M |
 | `o500` | Over 500M |
 | `o1000` | Over 1000M |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Float (浮動株数) - `sh_float`
-一般投資家が取引可能な株式数です。インサイダーが保有する株式は含まれません。
+### Float - `sh_float`
 
-#### 株数ベース
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u1` | Under 1M |
 | `u5` | Under 5M |
 | `u10` | Under 10M |
@@ -754,8 +720,7 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o500` | Over 500M |
 | `o1000` | Over 1000M |
 
-#### 比率ベース
-| 値 | 説明 |
+| Value | Description |
 |---|---|
 | `u10p` | Under 10% |
 | `u20p` | Under 20% |
@@ -775,16 +740,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o70p` | Over 70% |
 | `o80p` | Over 80% |
 | `o90p` | Over 90% |
-| `modal` | Custom (カスタム) |
-
-## 財務比率系パラメーター
+| `modal` | Custom |
 
 ### P/E Ratio (PER) - `fa_pe`
-株価収益率です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<15) |
 | `profitable` | Profitable (>0) |
 | `high` | High (>50) |
@@ -809,14 +771,13 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `5to15` | 5 to 15 |
 | `10to20` | 10 to 20 |
 | `15to25` | 15 to 25 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Forward P/E Ratio (予想PER) - `fa_fpe`
-予想株価収益率です。カスタム範囲で指定可能。
+### Forward P/E Ratio - `fa_fpe`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<15) |
 | `profitable` | Profitable (>0) |
 | `high` | High (>50) |
@@ -838,14 +799,14 @@ EPSおよび売上の改訂予想に基づくフィルターです。
 | `o35` | Over 35 |
 | `o40` | Over 40 |
 | `o50` | Over 50 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### PEG Ratio (PEG) - `fa_peg`
-PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可能。
+PEG（Price/Earnings to Growth）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<1) |
 | `high` | High (>2) |
 | `u1` | Under 1 |
@@ -856,14 +817,13 @@ PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可�
 | `o1.5` | Over 1.5 |
 | `o2` | Over 2 |
 | `o3` | Over 3 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### P/S Ratio (PSR) - `fa_ps`
-株価売上高倍率です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<2) |
 | `high` | High (>10) |
 | `u1` | Under 1 |
@@ -878,14 +838,13 @@ PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可�
 | `o4` | Over 4 |
 | `o5` | Over 5 |
 | `o10` | Over 10 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### P/B Ratio (PBR) - `fa_pb`
-株価純資産倍率です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<1) |
 | `high` | High (>5) |
 | `u1` | Under 1 |
@@ -904,14 +863,13 @@ PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可�
 | `o5` | Over 5 |
 | `o7` | Over 7 |
 | `o10` | Over 10 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### P/C Ratio (PCR) - `fa_pc`
-株価キャッシュ倍率です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<3) |
 | `high` | High (>50) |
 | `u1` | Under 1 |
@@ -926,14 +884,13 @@ PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可�
 | `o5` | Over 5 |
 | `o10` | Over 10 |
 | `o50` | Over 50 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### P/FCF Ratio (PFCF) - `fa_pfcf`
-株価フリーキャッシュフロー倍率です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `low` | Low (<15) |
 | `high` | High (>50) |
 | `u5` | Under 5 |
@@ -948,14 +905,14 @@ PEG（Price/Earnings to Growth）比率です。カスタム範囲で指定可�
 | `o20` | Over 20 |
 | `o25` | Over 25 |
 | `o50` | Over 50 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### ROE (自己資本利益率) - `fa_roe`
-Return on Equity - 自己資本利益率です。カスタム範囲で指定可能（単位：%）。
+### ROE - `fa_roe`
+Return on Equity - （：%）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>25%) |
@@ -978,14 +935,14 @@ Return on Equity - 自己資本利益率です。カスタム範囲で指定可�
 | `o20` | Over 20% |
 | `o25` | Over 25% |
 | `o30` | Over 30% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### ROA (総資産利益率) - `fa_roa`
-Return on Assets - 総資産利益率です。カスタム範囲で指定可能（単位：%）。
+### ROA - `fa_roa`
+Return on Assets - （：%）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>15%) |
@@ -1008,14 +965,14 @@ Return on Assets - 総資産利益率です。カスタム範囲で指定可能�
 | `o15` | Over 15% |
 | `o20` | Over 20% |
 | `o25` | Over 25% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### ROI (投下資本利益率) - `fa_roi`
-Return on Investment - 投下資本利益率です。カスタム範囲で指定可能（単位：%）。
+### ROI - `fa_roi`
+Return on Investment - （：%）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>25%) |
@@ -1038,14 +995,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o20` | Over 20% |
 | `o25` | Over 25% |
 | `o30` | Over 30% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Current Ratio (流動比率) - `fa_curratio`
-流動比率です。カスタム範囲で指定可能。
+### Current Ratio - `fa_curratio`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `high` | High (>3) |
 | `low` | Low (<1) |
 | `u0.5` | Under 0.5 |
@@ -1062,14 +1018,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o3` | Over 3 |
 | `o5` | Over 5 |
 | `o10` | Over 10 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Quick Ratio (当座比率) - `fa_quickratio`
-当座比率です。カスタム範囲で指定可能。
+### Quick Ratio - `fa_quickratio`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `high` | High (>3) |
 | `low` | Low (<0.5) |
 | `u0.1` | Under 0.1 |
@@ -1086,14 +1041,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o2` | Over 2 |
 | `o3` | Over 3 |
 | `o5` | Over 5 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### LT Debt/Equity (長期負債比率) - `fa_ltdebteq`
-長期負債自己資本比率です。カスタム範囲で指定可能。
+### LT Debt/Equity - `fa_ltdebteq`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `high` | High (>0.5) |
 | `low` | Low (<0.1) |
 | `u0.1` | Under 0.1 |
@@ -1108,14 +1062,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o0.4` | Over 0.4 |
 | `o0.5` | Over 0.5 |
 | `o1` | Over 1 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Total Debt/Equity (総負債比率) - `fa_debteq`
-総負債自己資本比率です。カスタム範囲で指定可能。
+### Total Debt/Equity - `fa_debteq`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `high` | High (>0.5) |
 | `low` | Low (<0.1) |
 | `u0.1` | Under 0.1 |
@@ -1130,14 +1083,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o0.4` | Over 0.4 |
 | `o0.5` | Over 0.5 |
 | `o1` | Over 1 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Gross Margin (売上総利益率) - `fa_grossmargin`
-売上総利益率です。カスタム範囲で指定可能（単位：%）。
+### Gross Margin - `fa_grossmargin`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>50%) |
@@ -1162,14 +1114,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o70` | Over 70% |
 | `o80` | Over 80% |
 | `o90` | Over 90% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Operating Margin (営業利益率) - `fa_opermargin`
-営業利益率です。カスタム範囲で指定可能（単位：%）。
+### Operating Margin - `fa_opermargin`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>25%) |
@@ -1192,14 +1143,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o20` | Over 20% |
 | `o25` | Over 25% |
 | `o30` | Over 30% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Net Profit Margin (純利益率) - `fa_netmargin`
-純利益率です。カスタム範囲で指定可能（単位：%）。
+### Net Profit Margin - `fa_netmargin`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `pos` | Positive (>0%) |
 | `neg` | Negative (<0%) |
 | `high` | High (>20%) |
@@ -1226,14 +1176,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o20` | Over 20% |
 | `o25` | Over 25% |
 | `o30` | Over 30% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Payout Ratio (配当性向) - `fa_payoutratio`
-配当性向です。カスタム範囲で指定可能（単位：%）。
+### Payout Ratio - `fa_payoutratio`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `none` | None (0%) |
 | `low` | Low (<20%) |
 | `high` | High (>50%) |
@@ -1257,16 +1206,14 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o80` | Over 80% |
 | `o90` | Over 90% |
 | `o100` | Over 100% |
-| `frange` | Custom (カスタム範囲) |
-
-## テクニカル分析系パラメーター
+| `frange` | Custom |
 
 ### RSI (14) - `ta_rsi`
-相対力指数（14日）です。カスタム範囲で指定可能。
+（14）
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `ob90` | Overbought (>90) |
 | `ob80` | Overbought (>80) |
 | `ob70` | Overbought (>70) |
@@ -1293,14 +1240,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o70` | Over 70 |
 | `o80` | Over 80 |
 | `o90` | Over 90 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### Beta - `ta_beta`
-ベータ値です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u0` | Under 0 |
 | `u0.5` | Under 0.5 |
 | `u1` | Under 1 |
@@ -1317,14 +1263,13 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `0.5to1.5` | 0.5 to 1.5 |
 | `1to1.5` | 1 to 1.5 |
 | `1to2` | 1 to 2 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
 ### Average True Range - `ta_averagetruerange`
-平均真の値幅です。カスタム範囲で指定可能。
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `o1` | Over 1 |
 | `o2` | Over 2 |
 | `o3` | Over 3 |
@@ -1337,15 +1282,14 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `u4` | Under 4 |
 | `u5` | Under 5 |
 | `u10` | Under 10 |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Volatility (ボラティリティ) - `ta_volatility`
-株価のボラティリティです。カスタム範囲で指定可能（単位：%）。
+### Volatility - `ta_volatility`
 
-#### 週間ボラティリティ - `ta_volatility_w`
-| 値 | 説明 |
+#### - `ta_volatility_w`
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u1` | Under 1% |
 | `u2` | Under 2% |
 | `u3` | Under 3% |
@@ -1360,12 +1304,12 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o5` | Over 5% |
 | `o10` | Over 10% |
 | `o15` | Over 15% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-#### 月間ボラティリティ - `ta_volatility_m`
-| 値 | 説明 |
+#### - `ta_volatility_m`
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
+| `""` | Any |
 | `u2` | Under 2% |
 | `u4` | Under 4% |
 | `u6` | Under 6% |
@@ -1380,95 +1324,93 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o10` | Over 10% |
 | `o15` | Over 15% |
 | `o20` | Over 20% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### 52週高値からの距離 - `ta_highlow52w`
-52週高値からの相対的な位置です。
+### 52 - `ta_highlow52w`
+52
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `nh` | New High (新高値) |
-| `a0h` | 0% from High (高値更新) |
-| `a5h` | 5% from High (高値から5%以内) |
-| `a10h` | 10% from High (高値から10%以内) |
-| `a15h` | 15% from High (高値から15%以内) |
-| `a20h` | 20% from High (高値から20%以内) |
-| `a30h` | 30% from High (高値から30%以内) |
-| `a40h` | 40% from High (高値から40%以内) |
-| `a50h` | 50% from High (高値から50%以内) |
-| `b90h` | 90% from High (高値から90%以下) |
-| `b80h` | 80% from High (高値から80%以下) |
-| `b70h` | 70% from High (高値から70%以下) |
-| `b60h` | 60% from High (高値から60%以下) |
-| `b50h` | 50% from High (高値から50%以下) |
-| `b40h` | 40% from High (高値から40%以下) |
-| `b30h` | 30% from High (高値から30%以下) |
-| `b20h` | 20% from High (高値から20%以下) |
-| `b10h` | 10% from High (高値から10%以下) |
-| `b5h` | 5% from High (高値から5%以下) |
-| `nl` | New Low (新安値) |
-| `a0l` | 0% from Low (安値更新) |
-| `a5l` | 5% from Low (安値から5%以上) |
-| `a10l` | 10% from Low (安値から10%以上) |
-| `a15l` | 15% from Low (安値から15%以上) |
-| `a20l` | 20% from Low (安値から20%以上) |
-| `a30l` | 30% from Low (安値から30%以上) |
-| `a40l` | 40% from Low (安値から40%以上) |
-| `a50l` | 50% from Low (安値から50%以上) |
+| `""` | Any |
+| `nh` | New High |
+| `a0h` | 0% from High |
+| `a5h` | 5% from High |
+| `a10h` | 10% from High |
+| `a15h` | 15% from High |
+| `a20h` | 20% from High |
+| `a30h` | 30% from High |
+| `a40h` | 40% from High |
+| `a50h` | 50% from High |
+| `b90h` | 90% from High |
+| `b80h` | 80% from High |
+| `b70h` | 70% from High |
+| `b60h` | 60% from High |
+| `b50h` | 50% from High |
+| `b40h` | 40% from High |
+| `b30h` | 30% from High |
+| `b20h` | 20% from High |
+| `b10h` | 10% from High |
+| `b5h` | 5% from High |
+| `nl` | New Low |
+| `a0l` | 0% from Low |
+| `a5l` | 5% from Low |
+| `a10l` | 10% from Low |
+| `a15l` | 15% from Low |
+| `a20l` | 20% from Low |
+| `a30l` | 30% from Low |
+| `a40l` | 40% from Low |
+| `a50l` | 50% from Low |
 
-### Simple Moving Average (単純移動平均) - `ta_sma`
-株価と移動平均線の関係です。
+### Simple Moving Average - `ta_sma`
 
-#### 20日移動平均 - `ta_sma20`
-| 値 | 説明 |
+#### 20 - `ta_sma20`
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `pa` | Price above SMA20 (株価が20日移動平均上) |
-| `pb` | Price below SMA20 (株価が20日移動平均下) |
-| `p5a` | Price 5% above SMA20 (株価が20日移動平均より5%上) |
-| `p10a` | Price 10% above SMA20 (株価が20日移動平均より10%上) |
-| `p5b` | Price 5% below SMA20 (株価が20日移動平均より5%下) |
-| `p10b` | Price 10% below SMA20 (株価が20日移動平均より10%下) |
-| `cross_above` | SMA20 cross above (20日移動平均を上抜け) |
-| `cross_below` | SMA20 cross below (20日移動平均を下抜け) |
+| `""` | Any |
+| `pa` | Price above SMA20 |
+| `pb` | Price below SMA20 |
+| `p5a` | Price 5% above SMA20 |
+| `p10a` | Price 10% above SMA20 |
+| `p5b` | Price 5% below SMA20 |
+| `p10b` | Price 10% below SMA20 |
+| `cross_above` | SMA20 cross above |
+| `cross_below` | SMA20 cross below |
 
-#### 50日移動平均 - `ta_sma50`
-| 値 | 説明 |
+#### 50 - `ta_sma50`
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `pa` | Price above SMA50 (株価が50日移動平均上) |
-| `pb` | Price below SMA50 (株価が50日移動平均下) |
-| `p5a` | Price 5% above SMA50 (株価が50日移動平均より5%上) |
-| `p10a` | Price 10% above SMA50 (株価が50日移動平均より10%上) |
-| `p5b` | Price 5% below SMA50 (株価が50日移動平均より5%下) |
-| `p10b` | Price 10% below SMA50 (株価が50日移動平均より10%下) |
-| `sa200` | SMA50 above SMA200 (50日移動平均が200日移動平均上) |
-| `sb200` | SMA50 below SMA200 (50日移動平均が200日移動平均下) |
-| `cross_above` | SMA50 cross above (50日移動平均を上抜け) |
-| `cross_below` | SMA50 cross below (50日移動平均を下抜け) |
+| `""` | Any |
+| `pa` | Price above SMA50 |
+| `pb` | Price below SMA50 |
+| `p5a` | Price 5% above SMA50 |
+| `p10a` | Price 10% above SMA50 |
+| `p5b` | Price 5% below SMA50 |
+| `p10b` | Price 10% below SMA50 |
+| `sa200` | SMA50 above SMA200 |
+| `sb200` | SMA50 below SMA200 |
+| `cross_above` | SMA50 cross above |
+| `cross_below` | SMA50 cross below |
 
-#### 200日移動平均 - `ta_sma200`
-| 値 | 説明 |
+#### 200 - `ta_sma200`
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `pa` | Price above SMA200 (株価が200日移動平均上) |
-| `pb` | Price below SMA200 (株価が200日移動平均下) |
-| `p5a` | Price 5% above SMA200 (株価が200日移動平均より5%上) |
-| `p10a` | Price 10% above SMA200 (株価が200日移動平均より10%上) |
-| `p5b` | Price 5% below SMA200 (株価が200日移動平均より5%下) |
-| `p10b` | Price 10% below SMA200 (株価が200日移動平均より10%下) |
-| `cross_above` | SMA200 cross above (200日移動平均を上抜け) |
-| `cross_below` | SMA200 cross below (200日移動平均を下抜け) |
+| `""` | Any |
+| `pa` | Price above SMA200 |
+| `pb` | Price below SMA200 |
+| `p5a` | Price 5% above SMA200 |
+| `p10a` | Price 10% above SMA200 |
+| `p5b` | Price 5% below SMA200 |
+| `p10b` | Price 10% below SMA200 |
+| `cross_above` | SMA200 cross above |
+| `cross_below` | SMA200 cross below |
 
-### Change (価格変動) - `ta_change`
-当日の価格変動です。カスタム範囲で指定可能（単位：%）。
+### Change - `ta_change`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `up` | Up (上昇) |
-| `down` | Down (下落) |
+| `""` | Any |
+| `up` | Up |
+| `down` | Down |
 | `u-20` | Under -20% |
 | `u-15` | Under -15% |
 | `u-10` | Under -10% |
@@ -1487,16 +1429,15 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o20` | Over 20% |
 | `-10to10` | -10% to +10% |
 | `-5to5` | -5% to +5% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Gap (ギャップ) - `ta_gap`
-前日終値との価格ギャップです。カスタム範囲で指定可能（単位：%）。
+### Gap - `ta_gap`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `up` | Gap Up (ギャップアップ) |
-| `down` | Gap Down (ギャップダウン) |
+| `""` | Any |
+| `up` | Gap Up |
+| `down` | Gap Down |
 | `u-10` | Under -10% |
 | `u-5` | Under -5% |
 | `u-4` | Under -4% |
@@ -1511,292 +1452,264 @@ Return on Investment - 投下資本利益率です。カスタム範囲で指定
 | `o4` | Over 4% |
 | `o5` | Over 5% |
 | `o10` | Over 10% |
-| `frange` | Custom (カスタム範囲) |
+| `frange` | Custom |
 
-### Performance 2 (パフォーマンス 2) - `ta_perf2`
-株価の期間別パフォーマンスを指定します。カスタム範囲で指定可能。
+### Performance 2 - `ta_perf2`
 
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `""` | Any (すべて) |
-| `modal_intraday` | Intraday (当日中) |
+| `""` | Any |
+| `modal_intraday` | Intraday |
 
-#### 当日パフォーマンス
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `dup` | Today Up (当日上昇) |
-| `ddown` | Today Down (当日下落) |
-| `d15u` | Today -15% (当日-15%) |
-| `d10u` | Today -10% (当日-10%) |
-| `d5u` | Today -5% (当日-5%) |
-| `d5o` | Today +5% (当日+5%) |
-| `d10o` | Today +10% (当日+10%) |
-| `d15o` | Today +15% (当日+15%) |
+| `dup` | Today Up |
+| `ddown` | Today Down |
+| `d15u` | Today -15% |
+| `d10u` | Today -10% |
+| `d5u` | Today -5% |
+| `d5o` | Today +5% |
+| `d10o` | Today +10% |
+| `d15o` | Today +15% |
 
-#### 週間パフォーマンス
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `1w30u` | Week -30% (週間-30%) |
-| `1w20u` | Week -20% (週間-20%) |
-| `1w10u` | Week -10% (週間-10%) |
-| `1wdown` | Week Down (週間下落) |
-| `1wup` | Week Up (週間上昇) |
-| `1w10o` | Week +10% (週間+10%) |
-| `1w20o` | Week +20% (週間+20%) |
-| `1w30o` | Week +30% (週間+30%) |
-| `10to-1w` | Week Above 10% (週間10%以上上昇) |
+| `1w30u` | Week -30% |
+| `1w20u` | Week -20% |
+| `1w10u` | Week -10% |
+| `1wdown` | Week Down |
+| `1wup` | Week Up |
+| `1w10o` | Week +10% |
+| `1w20o` | Week +20% |
+| `1w30o` | Week +30% |
+| `10to-1w` | Week Above 10% |
 
-#### 月間パフォーマンス
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `4w50u` | Month -50% (月間-50%) |
-| `4w30u` | Month -30% (月間-30%) |
-| `4w20u` | Month -20% (月間-20%) |
-| `4w10u` | Month -10% (月間-10%) |
-| `4wdown` | Month Down (月間下落) |
-| `4wup` | Month Up (月間上昇) |
-| `4w10o` | Month +10% (月間+10%) |
-| `4w20o` | Month +20% (月間+20%) |
-| `4w30o` | Month +30% (月間+30%) |
-| `4w50o` | Month +50% (月間+50%) |
+| `4w50u` | Month -50% |
+| `4w30u` | Month -30% |
+| `4w20u` | Month -20% |
+| `4w10u` | Month -10% |
+| `4wdown` | Month Down |
+| `4wup` | Month Up |
+| `4w10o` | Month +10% |
+| `4w20o` | Month +20% |
+| `4w30o` | Month +30% |
+| `4w50o` | Month +50% |
 
-#### 四半期パフォーマンス
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `13w50u` | Quarter -50% (四半期-50%) |
-| `13w30u` | Quarter -30% (四半期-30%) |
-| `13w20u` | Quarter -20% (四半期-20%) |
-| `13w10u` | Quarter -10% (四半期-10%) |
-| `13wdown` | Quarter Down (四半期下落) |
-| `13wup` | Quarter Up (四半期上昇) |
-| `13w10o` | Quarter +10% (四半期+10%) |
-| `13w20o` | Quarter +20% (四半期+20%) |
-| `13w30o` | Quarter +30% (四半期+30%) |
-| `13w50o` | Quarter +50% (四半期+50%) |
+| `13w50u` | Quarter -50% |
+| `13w30u` | Quarter -30% |
+| `13w20u` | Quarter -20% |
+| `13w10u` | Quarter -10% |
+| `13wdown` | Quarter Down |
+| `13wup` | Quarter Up |
+| `13w10o` | Quarter +10% |
+| `13w20o` | Quarter +20% |
+| `13w30o` | Quarter +30% |
+| `13w50o` | Quarter +50% |
 
-#### 半期パフォーマンス
-| 値 | 説明 |
+| Value | Description |
 |---|---|
-| `26w75u` | Half -75% (半期-75%) |
-| `26w50u` | Half -50% (半期-50%) |
-| `26w30u` | Half -30% (半期-30%) |
-| `26w20u` | Half -20% (半期-20%) |
-| `26w10u` | Half -10% (半期-10%) |
-| `26wdown` | Half Down (半期下落) |
-| `26wup` | Half Up (半期上昇) |
-| `26w10o` | Half +10% (半期+10%) |
-| `26w20o` | Half +20% (半期+20%) |
-| `26w30o` | Half +30% (半期+30%) |
-| `26w50o` | Half +50% (半期+50%) |
-| `26w100o` | Half +100% (半期+100%) |
+| `26w75u` | Half -75% |
+| `26w50u` | Half -50% |
+| `26w30u` | Half -30% |
+| `26w20u` | Half -20% |
+| `26w10u` | Half -10% |
+| `26wdown` | Half Down |
+| `26wup` | Half Up |
+| `26w10o` | Half +10% |
+| `26w20o` | Half +20% |
+| `26w30o` | Half +30% |
+| `26w50o` | Half +50% |
+| `26w100o` | Half +100% |
 
-#### 年初来パフォーマンス (YTD)
-| 値 | 説明 |
+#### (YTD)
+| Value | Description |
 |---|---|
-| `ytd75u` | YTD -75% (年初来-75%) |
-| `ytd50u` | YTD -50% (年初来-50%) |
-| `ytd30u` | YTD -30% (年初来-30%) |
-| `ytd20u` | YTD -20% (年初来-20%) |
-| `ytd10u` | YTD -10% (年初来-10%) |
-| `ytd5u` | YTD -5% (年初来-5%) |
-| `ytddown` | YTD Down (年初来下落) |
-| `ytdup` | YTD Up (年初来上昇) |
-| `ytd5o` | YTD +5% (年初来+5%) |
-| `ytd10o` | YTD +10% (年初来+10%) |
-| `ytd20o` | YTD +20% (年初来+20%) |
-| `ytd30o` | YTD +30% (年初来+30%) |
-| `ytd50o` | YTD +50% (年初来+50%) |
-| `ytd100o` | YTD +100% (年初来+100%) |
+| `ytd75u` | YTD -75% |
+| `ytd50u` | YTD -50% |
+| `ytd30u` | YTD -30% |
+| `ytd20u` | YTD -20% |
+| `ytd10u` | YTD -10% |
+| `ytd5u` | YTD -5% |
+| `ytddown` | YTD Down |
+| `ytdup` | YTD Up |
+| `ytd5o` | YTD +5% |
+| `ytd10o` | YTD +10% |
+| `ytd20o` | YTD +20% |
+| `ytd30o` | YTD +30% |
+| `ytd50o` | YTD +50% |
+| `ytd100o` | YTD +100% |
 
-#### 1年間パフォーマンス
-| 値 | 説明 |
+#### 1
+| Value | Description |
 |---|---|
-| `52w75u` | Year -75% (1年間-75%) |
-| `52w50u` | Year -50% (1年間-50%) |
-| `52w30u` | Year -30% (1年間-30%) |
-| `52w20u` | Year -20% (1年間-20%) |
-| `52w10u` | Year -10% (1年間-10%) |
-| `52wdown` | Year Down (1年間下落) |
-| `52wup` | Year Up (1年間上昇) |
-| `52w10o` | Year +10% (1年間+10%) |
-| `52w20o` | Year +20% (1年間+20%) |
-| `52w30o` | Year +30% (1年間+30%) |
-| `52w50o` | Year +50% (1年間+50%) |
-| `52w100o` | Year +100% (1年間+100%) |
-| `52w200o` | Year +200% (1年間+200%) |
-| `52w300o` | Year +300% (1年間+300%) |
-| `52w500o` | Year +500% (1年間+500%) |
+| `52w75u` | Year -75% |
+| `52w50u` | Year -50% |
+| `52w30u` | Year -30% |
+| `52w20u` | Year -20% |
+| `52w10u` | Year -10% |
+| `52wdown` | Year Down |
+| `52wup` | Year Up |
+| `52w10o` | Year +10% |
+| `52w20o` | Year +20% |
+| `52w30o` | Year +30% |
+| `52w50o` | Year +50% |
+| `52w100o` | Year +100% |
+| `52w200o` | Year +200% |
+| `52w300o` | Year +300% |
+| `52w500o` | Year +500% |
 
-#### 3年間パフォーマンス
-| 値 | 説明 |
+#### 3
+| Value | Description |
 |---|---|
-| `3y90u` | 3 Year -90% (3年間-90%) |
-| `3y75u` | 3 Year -75% (3年間-75%) |
-| `3y50u` | 3 Year -50% (3年間-50%) |
-| `3y30u` | 3 Year -30% (3年間-30%) |
-| `3y20u` | 3 Year -20% (3年間-20%) |
-| `3y10u` | 3 Year -10% (3年間-10%) |
-| `3ydown` | 3 Year Down (3年間下落) |
-| `3yup` | 3 Year Up (3年間上昇) |
-| `3y10o` | 3 Year +10% (3年間+10%) |
-| `3y20o` | 3 Year +20% (3年間+20%) |
-| `3y30o` | 3 Year +30% (3年間+30%) |
-| `3y50o` | 3 Year +50% (3年間+50%) |
-| `3y100o` | 3 Year +100% (3年間+100%) |
-| `3y200o` | 3 Year +200% (3年間+200%) |
-| `3y300o` | 3 Year +300% (3年間+300%) |
-| `3y500o` | 3 Year +500% (3年間+500%) |
-| `3y1000o` | 3 Year +1000% (3年間+1000%) |
+| `3y90u` | 3 Year -90% |
+| `3y75u` | 3 Year -75% |
+| `3y50u` | 3 Year -50% |
+| `3y30u` | 3 Year -30% |
+| `3y20u` | 3 Year -20% |
+| `3y10u` | 3 Year -10% |
+| `3ydown` | 3 Year Down |
+| `3yup` | 3 Year Up |
+| `3y10o` | 3 Year +10% |
+| `3y20o` | 3 Year +20% |
+| `3y30o` | 3 Year +30% |
+| `3y50o` | 3 Year +50% |
+| `3y100o` | 3 Year +100% |
+| `3y200o` | 3 Year +200% |
+| `3y300o` | 3 Year +300% |
+| `3y500o` | 3 Year +500% |
+| `3y1000o` | 3 Year +1000% |
 
-#### 5年間パフォーマンス
-| 値 | 説明 |
+#### 5
+| Value | Description |
 |---|---|
-| `5y90u` | 5 Year -90% (5年間-90%) |
-| `5y75u` | 5 Year -75% (5年間-75%) |
-| `5y50u` | 5 Year -50% (5年間-50%) |
-| `5y30u` | 5 Year -30% (5年間-30%) |
-| `5y20u` | 5 Year -20% (5年間-20%) |
-| `5y10u` | 5 Year -10% (5年間-10%) |
-| `5ydown` | 5 Year Down (5年間下落) |
-| `5yup` | 5 Year Up (5年間上昇) |
-| `5y10o` | 5 Year +10% (5年間+10%) |
-| `5y20o` | 5 Year +20% (5年間+20%) |
-| `5y30o` | 5 Year +30% (5年間+30%) |
-| `5y50o` | 5 Year +50% (5年間+50%) |
-| `5y100o` | 5 Year +100% (5年間+100%) |
-| `5y200o` | 5 Year +200% (5年間+200%) |
-| `5y300o` | 5 Year +300% (5年間+300%) |
-| `5y500o` | 5 Year +500% (5年間+500%) |
-| `5y1000o` | 5 Year +1000% (5年間+1000%) |
+| `5y90u` | 5 Year -90% |
+| `5y75u` | 5 Year -75% |
+| `5y50u` | 5 Year -50% |
+| `5y30u` | 5 Year -30% |
+| `5y20u` | 5 Year -20% |
+| `5y10u` | 5 Year -10% |
+| `5ydown` | 5 Year Down |
+| `5yup` | 5 Year Up |
+| `5y10o` | 5 Year +10% |
+| `5y20o` | 5 Year +20% |
+| `5y30o` | 5 Year +30% |
+| `5y50o` | 5 Year +50% |
+| `5y100o` | 5 Year +100% |
+| `5y200o` | 5 Year +200% |
+| `5y300o` | 5 Year +300% |
+| `5y500o` | 5 Year +500% |
+| `5y1000o` | 5 Year +1000% |
 
-#### 10年間パフォーマンス
-| 値 | 説明 |
+#### 10
+| Value | Description |
 |---|---|
-| `10y90u` | 10 Year -90% (10年間-90%) |
-| `10y75u` | 10 Year -75% (10年間-75%) |
-| `10y50u` | 10 Year -50% (10年間-50%) |
-| `10y30u` | 10 Year -30% (10年間-30%) |
-| `10y20u` | 10 Year -20% (10年間-20%) |
-| `10y10u` | 10 Year -10% (10年間-10%) |
-| `10ydown` | 10 Year Down (10年間下落) |
-| `10yup` | 10 Year Up (10年間上昇) |
-| `10y10o` | 10 Year +10% (10年間+10%) |
-| `10y20o` | 10 Year +20% (10年間+20%) |
-| `10y30o` | 10 Year +30% (10年間+30%) |
-| `10y50o` | 10 Year +50% (10年間+50%) |
-| `10y100o` | 10 Year +100% (10年間+100%) |
-| `10y200o` | 10 Year +200% (10年間+200%) |
-| `10y300o` | 10 Year +300% (10年間+300%) |
-| `10y500o` | 10 Year +500% (10年間+500%) |
-| `10y1000o` | 10 Year +1000% (10年間+1000%) |
-| `modal` | Custom (カスタム) |
+| `10y90u` | 10 Year -90% |
+| `10y75u` | 10 Year -75% |
+| `10y50u` | 10 Year -50% |
+| `10y30u` | 10 Year -30% |
+| `10y20u` | 10 Year -20% |
+| `10y10u` | 10 Year -10% |
+| `10ydown` | 10 Year Down |
+| `10yup` | 10 Year Up |
+| `10y10o` | 10 Year +10% |
+| `10y20o` | 10 Year +20% |
+| `10y30o` | 10 Year +30% |
+| `10y50o` | 10 Year +50% |
+| `10y100o` | 10 Year +100% |
+| `10y200o` | 10 Year +200% |
+| `10y300o` | 10 Year +300% |
+| `10y500o` | 10 Year +500% |
+| `10y1000o` | 10 Year +1000% |
+| `modal` | Custom |
 
-## 使用方法
+FinvizURL
 
-これらのパラメーターは、Finvizのスクリーニング機能でURLのクエリパラメーターとして使用されます。
-
-### 例:
 ```
 https://finviz.com/screener.ashx?v=111&f=cap_large,sec_technology,ta_perf_1w_o5
 ```
 
-### 複数条件の組み合わせ:
-- パラメーターはカンマ区切りで複数指定可能
-- 異なるカテゴリーのパラメーターは AND 条件で結合
-- 同一カテゴリーの複数値は OR 条件で結合（一部例外あり）
+- AND
+- OR （）
 
-### カスタム範囲の指定方法:
+Finviz：
 
-#### 📊 基本レンジ形式
-Finvizではカスタム範囲を以下の形式で指定できます：
-
-| パラメーター | 範囲形式 | 例 | URL例 |
+| | | | URL |
 |---|---|---|---|
-| **価格 (sh_price)** | `sh_price_{min}to{max}` | `sh_price_10to50` | `sh_price_10.5to20.11` |
-| **時価総額 (cap)** | `cap_{min}to{max}` | `cap_1to10` | 単位：10億ドル |
-| **平均出来高 (sh_avgvol)** | `sh_avgvol_{min}to{max}` | `sh_avgvol_100to500` | 単位：千株 |
-| **相対出来高 (sh_relvol)** | `sh_relvol_{min}to{max}` | `sh_relvol_1.5to3.0` | 倍率 |
-| **配当利回り (fa_div)** | `fa_div_{min}to{max}` | `fa_div_2to5` | 単位：% |
-| **PER (fa_pe)** | `fa_pe_{min}to{max}` | `fa_pe_10to20` | 倍率 |
-| **PBR (fa_pb)** | `fa_pb_{min}to{max}` | `fa_pb_1to3` | 倍率 |
-| **ROE (fa_roe)** | `fa_roe_{min}to{max}` | `fa_roe_10to25` | 単位：% |
+| ** (sh_price)** | `sh_price_{min}to{max}` | `sh_price_10to50` | `sh_price_10.5to20.11` |
+| ** (cap)** | `cap_{min}to{max}` | `cap_1to10` | ：10 |
+| ** (sh_avgvol)** | `sh_avgvol_{min}to{max}` | `sh_avgvol_100to500` | ： |
+| ** (sh_relvol)** | `sh_relvol_{min}to{max}` | `sh_relvol_1.5to3.0` | |
+| ** (fa_div)** | `fa_div_{min}to{max}` | `fa_div_2to5` | ：% |
+| **PER (fa_pe)** | `fa_pe_{min}to{max}` | `fa_pe_10to20` | |
+| **PBR (fa_pb)** | `fa_pb_{min}to{max}` | `fa_pb_1to3` | |
+| **ROE (fa_roe)** | `fa_roe_{min}to{max}` | `fa_roe_10to25` | ：% |
 | **RSI (ta_rsi)** | `ta_rsi_{min}to{max}` | `ta_rsi_30to70` | 0-100 |
-| **ベータ (ta_beta)** | `ta_beta_{min}to{max}` | `ta_beta_0.5to1.5` | 倍率 |
+| ** (ta_beta)** | `ta_beta_{min}to{max}` | `ta_beta_0.5to1.5` | |
 
-#### 🎯 数値指定の例
-
-**1. 下限のみ指定（以上）**
+**1. （）**
 ```
-sh_price_10to     # $10以上
-fa_div_3to        # 配当利回り3%以上
+sh_price_10to # $10
+fa_div_3to # 3%
 ```
 
-**2. 上限のみ指定（以下）**
+**2. （）**
 ```
-sh_price_to50     # $50以下
-fa_pe_to20        # PER 20倍以下
-```
-
-**3. 範囲指定（between）**
-```
-sh_price_10to50       # $10～$50
-cap_1to10            # 時価総額$1B～$10B
-fa_div_2to5          # 配当利回り2%～5%
+sh_price_to50 # $50
+fa_pe_to20 # PER 20
 ```
 
-**4. 小数点対応**
+**3. （between）**
 ```
-sh_price_10.5to20.11  # $10.50～$20.11
-sh_relvol_1.5to3.0   # 相対出来高1.5倍～3.0倍
-ta_beta_0.5to1.5     # ベータ0.5～1.5
+sh_price_10to50 # $10～$50
+cap_1to10 # $1B～$10B
+fa_div_2to5 # 2%～5%
 ```
 
-#### 💡 実践的な使用例
+**4. **
+```
+sh_price_10.5to20.11 # $10.50～$20.11
+sh_relvol_1.5to3.0 # 1.5～3.0
+ta_beta_0.5to1.5 # 0.5～1.5
+```
 
-**成長株スクリーニング**
 ```
 https://finviz.com/screener.ashx?v=111&f=cap_1to10,sh_price_10to100,fa_pe_15to30,fa_roe_15to,sec_technology
 ```
-- 時価総額：$1B～$10B
-- 株価：$10～$100
-- PER：15～30倍
-- ROE：15%以上
-- セクター：テクノロジー
+- ：$1B～$10B
+- ：$10～$100
+- PER：15～30
+- ROE：15%
 
-**割安高配当株スクリーニング**
 ```
 https://finviz.com/screener.ashx?v=111&f=fa_pe_5to15,fa_div_3to8,fa_pb_1to3,fa_roe_10to
 ```
-- PER：5～15倍
-- 配当利回り：3%～8%
-- PBR：1～3倍
-- ROE：10%以上
+- PER：5～15
+- ：3%～8%
+- PBR：1～3
+- ROE：10%
 
-**ボラティリティ重視スクリーニング**
 ```
 https://finviz.com/screener.ashx?v=111&f=sh_relvol_2to,ta_beta_1.5to,ta_rsi_30to70
 ```
-- 相対出来高：2倍以上
-- ベータ：1.5以上
-- RSI：30～70（適正範囲）
+- ：2
+- ：1.5
+- RSI：30～70（）
 
-#### ⚠️ 重要な注意点
+1. ****
+ - ：10（`cap_1to10` = $1B～$10B）
+ - ：（`sh_avgvol_100to500` = 100K～500K）
+ - ROE：（`fa_div_2to5` = 2%～5%）
 
-1. **数値の単位を確認**
-   - 時価総額：10億ドル単位（`cap_1to10` = $1B～$10B）
-   - 出来高：千株単位（`sh_avgvol_100to500` = 100K～500K）
-   - 配当利回り・ROE：パーセント（`fa_div_2to5` = 2%～5%）
+2. ****
+ - ：`sh_price_o10`（$10）
+ - ：`sh_price_10to`（$10）`sh_price_10to50`（$10～$50）
 
-2. **プリセット形式と範囲形式の使い分け**
-   - プリセット：`sh_price_o10`（$10以上）
-   - 範囲：`sh_price_10to`（$10以上）、`sh_price_10to50`（$10～$50）
+3. ****
+ - ：`10.5to20.11`
+ - ：`10.0to` → `10to`
 
-3. **小数点の扱い**
-   - 小数点は直接指定可能：`10.5to20.11`
-   - 整数の場合は自動で整数に変換：`10.0to` → `10to`
-
-4. **パフォーマンスの考慮**
-   - 範囲が広すぎると結果が多くなりすぎる場合がある
-   - 適切な範囲を設定して効率的にスクリーニング
-
-この一覧を参考に、適切なスクリーニング条件を設定してください。
+4. ****

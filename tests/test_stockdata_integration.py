@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-StockData統合テスト - 実際のオブジェクト作成と属性アクセスをテスト
-server.pyで発生する可能性のある AttributeError を事前に検出
+StockData integration tests - test real object creation and attribute access.
+Preemptively detect AttributeError issues that could occur in server.py.
 """
 
 import pytest
@@ -9,12 +9,12 @@ from src.models import StockData
 from src.server import server
 
 class TestStockDataIntegration:
-    """StockDataモデルの統合テスト"""
+    """Integration tests for the StockData model."""
 
     def test_stockdata_required_attributes_for_earnings_trading_screener(self):
-        """earnings_trading_screenerで使用される属性の存在確認"""
+        """Verify required attributes used by earnings_trading_screener."""
         
-        # 実際のStockDataオブジェクトを作成
+        # Create a real StockData object
         stock = StockData(
             ticker="AAPL",
             company_name="Apple Inc.",
@@ -22,7 +22,7 @@ class TestStockDataIntegration:
             industry="Consumer Electronics"
         )
         
-        # server.pyの748行目で使用される属性をテスト
+        # Test attributes used in server.py around line 748
         required_attributes = [
             'ticker', 'company_name', 'sector', 'price', 'price_change',
             'eps_surprise', 'revenue_surprise', 'volatility', 'performance_1m'
@@ -31,9 +31,9 @@ class TestStockDataIntegration:
         for attr in required_attributes:
             assert hasattr(stock, attr), f"StockData lacks required attribute: {attr}"
         
-        # 属性アクセスが例外を発生させないことを確認
+        # Ensure attribute access does not raise exceptions
         try:
-            # server.pyで行われる操作をシミュレート
+            # Simulate operations performed in server.py
             ticker = stock.ticker
             company = stock.company_name
             sector = stock.sector
@@ -42,12 +42,12 @@ class TestStockDataIntegration:
             eps_surprise = stock.eps_surprise
             revenue_surprise = stock.revenue_surprise
             volatility = stock.volatility
-            performance_1m = stock.performance_1m  # performance_4w から修正
+            performance_1m = stock.performance_1m  # Updated from performance_4w
         except AttributeError as e:
             pytest.fail(f"AttributeError accessing StockData attribute: {e}")
 
     def test_stockdata_performance_attributes_comprehensive(self):
-        """パフォーマンス関連の全属性をテスト"""
+        """Test all performance-related attributes."""
         
         stock = StockData(
             ticker="MSFT",
@@ -56,7 +56,7 @@ class TestStockDataIntegration:
             industry="Software"
         )
         
-        # パフォーマンス関連属性をすべてチェック
+        # Check all performance-related attributes
         performance_attributes = [
             'performance_1min', 'performance_2min', 'performance_3min',
             'performance_5min', 'performance_10min', 'performance_15min',
@@ -69,14 +69,14 @@ class TestStockDataIntegration:
         
         for attr in performance_attributes:
             assert hasattr(stock, attr), f"StockData lacks performance attribute: {attr}"
-            # None値でもAttributeErrorが発生しないことを確認
+            # Ensure AttributeError is not raised even when value is None
             value = getattr(stock, attr)
             assert value is None or isinstance(value, (int, float))
 
     def test_mock_stockdata_with_complete_attributes(self):
-        """完全な属性を持つStockDataオブジェクトのテスト"""
+        """Test a StockData object with complete attributes."""
         
-        # 完全なサンプルデータでStockDataを作成
+        # Create StockData with a complete sample dataset
         complete_stock = StockData(
             ticker="GOOGL",
             company_name="Alphabet Inc.",
@@ -104,7 +104,7 @@ class TestStockDataIntegration:
             beta=1.05
         )
         
-        # server.pyで使用される全ての属性をテスト
+        # Test attributes used in server.py
         assert complete_stock.ticker == "GOOGL"
         assert complete_stock.company_name == "Alphabet Inc."
         assert complete_stock.price == 150.0
@@ -113,9 +113,9 @@ class TestStockDataIntegration:
         assert complete_stock.revenue_surprise == 0.05
 
     def test_earnings_trading_screener_output_format(self):
-        """earnings_trading_screenerの出力フォーマットをテスト"""
+        """Test output format for earnings_trading_screener."""
         
-        # テスト用のStockDataリストを作成
+        # Create a test StockData list
         test_stocks = [
             StockData(
                 ticker="AAPL",
@@ -143,9 +143,9 @@ class TestStockDataIntegration:
             )
         ]
         
-        # 各StockDataオブジェクトから文字列を生成
+        # Build strings from each StockData object
         for stock in test_stocks:
-            # server.pyで行われる処理をシミュレート
+            # Simulate processing performed in server.py
             try:
                 ticker_line = f"Ticker: {stock.ticker}"
                 company_line = f"Company: {stock.company_name}"
@@ -157,7 +157,7 @@ class TestStockDataIntegration:
                 volatility_line = f"Volatility: {stock.volatility:.2f}" if stock.volatility else "Volatility: N/A"
                 performance_line = f"1M Performance: {stock.performance_1m:.2f}%" if stock.performance_1m else "1M Performance: N/A"
                 
-                # 正常に文字列が生成されることを確認
+                # Ensure strings are generated correctly
                 assert ticker_line.startswith("Ticker:")
                 assert company_line.startswith("Company:")
                 assert price_line.startswith("Price:")
@@ -167,9 +167,9 @@ class TestStockDataIntegration:
                 pytest.fail(f"AttributeError in output format generation: {e}")
 
     def test_finviz_128_columns_coverage(self):
-        """Finvizの128カラムがStockDataモデルで網羅されているかテスト"""
+        """Verify StockData covers Finviz's 128 columns."""
         
-        # 重要な Finviz カラムのサンプル
+        # Sample of important Finviz columns
         key_finviz_columns = [
             'ticker', 'company_name', 'sector', 'industry', 'country',
             'price', 'price_change', 'price_change_percent', 'volume', 'avg_volume',

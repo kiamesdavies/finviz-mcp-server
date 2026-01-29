@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Comprehensive test for all Finviz MCP Server features
-すべてのFinviz MCP Server機能の包括的テスト
+Comprehensive test for all Finviz MCP Server features.
 """
 
 import sys
@@ -15,32 +15,32 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 
 def test_basic_setup():
-    """基本セットアップのテスト"""
-    print("=== 基本セットアップテスト ===")
+    """Basic setup test."""
+    print("=== Basic Setup Test ===")
     try:
         from src.server import server
         from src.finviz_client.base import FinvizClient
         from src.finviz_client.screener import FinvizScreener
         from src.finviz_client.news import FinvizNewsClient
         from src.finviz_client.sector_analysis import FinvizSectorAnalysisClient
-        print("✓ すべてのモジュールが正常にインポートされました")
+        print("✓ All modules imported successfully")
         return True
     except Exception as e:
-        print(f"✗ セットアップエラー: {e}")
+        print(f"✗ Setup error: {e}")
         return False
 
 def test_stock_fundamentals():
-    """株式ファンダメンタルデータ取得のテスト"""
-    print("\n=== 株式ファンダメンタルデータテスト ===")
+    """Stock fundamentals data retrieval test."""
+    print("\n=== Stock Fundamentals Test ===")
     
     test_cases = [
         {
-            "name": "単一銘柄（AAPL）",
+            "name": "Single stock (AAPL)",
             "function": "get_stock_fundamentals",
             "params": {"ticker": "AAPL"}
         },
         {
-            "name": "複数銘柄（AAPL, MSFT, GOOGL）",
+            "name": "Multiple stocks (AAPL, MSFT, GOOGL)",
             "function": "get_multiple_stocks_fundamentals", 
             "params": {"tickers": ["AAPL", "MSFT", "GOOGL"]}
         }
@@ -49,80 +49,80 @@ def test_stock_fundamentals():
     results = []
     for case in test_cases:
         try:
-            print(f"テスト中: {case['name']}")
+            print(f"Testing: {case['name']}")
             # Here we would call the actual MCP tool functions
             # For now, we'll simulate the test
-            print(f"✓ {case['name']} - 成功")
+            print(f"✓ {case['name']} - Success")
             results.append(True)
         except Exception as e:
-            print(f"✗ {case['name']} - エラー: {e}")
+            print(f"✗ {case['name']} - Error: {e}")
             results.append(False)
     
     return all(results)
 
 def test_screeners():
-    """スクリーナー機能のテスト"""
-    print("\n=== スクリーナー機能テスト ===")
+    """Screener feature tests."""
+    print("\n=== Screener Feature Tests ===")
     
     screener_tests = [
         {
-            "name": "決算発表予定銘柄スクリーニング",
+            "name": "Upcoming earnings screening",
             "function": "earnings_screener",
             "params": {"earnings_date": "this_week"}
         },
         {
-            "name": "出来高急増銘柄スクリーニング",
+            "name": "Volume surge screening",
             "function": "volume_surge_screener",
             "params": {"min_relative_volume": 1.5, "min_price_change": 2.0}
         },
         {
-            "name": "トレンド反転候補銘柄スクリーニング",
+            "name": "Trend reversion candidates screening",
             "function": "trend_reversion_screener",
             "params": {"market_cap": "mid_large"}
         },
         {
-            "name": "上昇トレンド銘柄スクリーニング",
+            "name": "Uptrend screening",
             "function": "uptrend_screener",
             "params": {"trend_type": "strong_uptrend"}
         },
         {
-            "name": "配当成長銘柄スクリーニング",
+            "name": "Dividend growth screening",
             "function": "dividend_growth_screener",
             "params": {"min_dividend_yield": 2.0}
         },
         {
-            "name": "ETFスクリーニング",
+            "name": "ETF screening",
             "function": "etf_screener",
             "params": {"asset_class": "equity"}
         },
         {
-            "name": "寄り付き前決算発表上昇銘柄",
+            "name": "Premarket earnings movers",
             "function": "earnings_premarket_screener",
             "params": {"earnings_timing": "today_before"}
         },
         {
-            "name": "時間外決算発表上昇銘柄",
+            "name": "After-hours earnings movers",
             "function": "earnings_afterhours_screener",
             "params": {"earnings_timing": "today_after"}
         },
         {
-            "name": "決算トレード対象銘柄",
+            "name": "Earnings trade candidates",
             "function": "earnings_trading_screener",
             "params": {"earnings_revision": "eps_revenue_positive"}
         },
 
         {
-            "name": "相対出来高異常銘柄",
+            "name": "Relative volume anomalies",
             "function": "get_relative_volume_stocks",
             "params": {"min_relative_volume": 2.0}
         },
         {
-            "name": "テクニカル分析スクリーニング",
+            "name": "Technical analysis screening",
             "function": "technical_analysis_screener",
             "params": {"rsi_min": 30, "rsi_max": 70}
         },
         {
-            "name": "来週決算予定銘柄",
+            "name": "Next-week earnings",
             "function": "upcoming_earnings_screener",
             "params": {"earnings_period": "next_week"}
         }
@@ -131,35 +131,35 @@ def test_screeners():
     results = []
     for test in screener_tests:
         try:
-            print(f"テスト中: {test['name']}")
+            print(f"Testing: {test['name']}")
             # Here we would call the actual MCP tool functions
             # For now, we'll simulate the test
             time.sleep(0.5)  # Simulate API delay
-            print(f"✓ {test['name']} - 成功")
+            print(f"✓ {test['name']} - Success")
             results.append(True)
         except Exception as e:
-            print(f"✗ {test['name']} - エラー: {e}")
+            print(f"✗ {test['name']} - Error: {e}")
             results.append(False)
     
     return all(results)
 
 def test_news_functions():
-    """ニュース機能のテスト"""
-    print("\n=== ニュース機能テスト ===")
+    """News feature tests."""
+    print("\n=== News Feature Tests ===")
     
     news_tests = [
         {
-            "name": "個別銘柄ニュース（AAPL）",
+            "name": "Single-stock news (AAPL)",
             "function": "get_stock_news",
             "params": {"ticker": "AAPL", "days_back": 7}
         },
         {
-            "name": "市場全体ニュース",
+            "name": "Market-wide news",
             "function": "get_market_news",
             "params": {"days_back": 3, "max_items": 10}
         },
         {
-            "name": "テクノロジーセクターニュース",
+            "name": "Technology sector news",
             "function": "get_sector_news",
             "params": {"sector": "Technology", "days_back": 5}
         }
@@ -168,45 +168,45 @@ def test_news_functions():
     results = []
     for test in news_tests:
         try:
-            print(f"テスト中: {test['name']}")
+            print(f"Testing: {test['name']}")
             # Here we would call the actual MCP tool functions
             # For now, we'll simulate the test
             time.sleep(0.3)  # Simulate API delay
-            print(f"✓ {test['name']} - 成功")
+            print(f"✓ {test['name']} - Success")
             results.append(True)
         except Exception as e:
-            print(f"✗ {test['name']} - エラー: {e}")
+            print(f"✗ {test['name']} - Error: {e}")
             results.append(False)
     
     return all(results)
 
 def test_performance_analysis():
-    """パフォーマンス分析機能のテスト"""
-    print("\n=== パフォーマンス分析機能テスト ===")
+    """Performance analysis feature tests."""
+    print("\n=== Performance Analysis Feature Tests ===")
     
     performance_tests = [
         {
-            "name": "セクター別パフォーマンス（1日）",
+            "name": "Sector performance (1 day)",
             "function": "get_sector_performance",
             "params": {"timeframe": "1d"}
         },
         {
-            "name": "セクター別パフォーマンス（1週間）",
+            "name": "Sector performance (1 week)",
             "function": "get_sector_performance",
             "params": {"timeframe": "1w"}
         },
         {
-            "name": "業界別パフォーマンス",
+            "name": "Industry performance",
             "function": "get_industry_performance",
             "params": {"timeframe": "1d"}
         },
         {
-            "name": "国別市場パフォーマンス",
+            "name": "Country market performance",
             "function": "get_country_performance",
             "params": {"timeframe": "1d"}
         },
         {
-            "name": "市場全体概要",
+            "name": "Market overview",
             "function": "get_market_overview",
             "params": {}
         }
@@ -215,66 +215,66 @@ def test_performance_analysis():
     results = []
     for test in performance_tests:
         try:
-            print(f"テスト中: {test['name']}")
+            print(f"Testing: {test['name']}")
             # Here we would call the actual MCP tool functions
             # For now, we'll simulate the test
             time.sleep(0.3)  # Simulate API delay
-            print(f"✓ {test['name']} - 成功")
+            print(f"✓ {test['name']} - Success")
             results.append(True)
         except Exception as e:
-            print(f"✗ {test['name']} - エラー: {e}")
+            print(f"✗ {test['name']} - Error: {e}")
             results.append(False)
     
     return all(results)
 
 def run_comprehensive_test():
-    """包括的テストの実行"""
-    print("🚀 Finviz MCP Server 包括的テスト開始")
+    """Run the comprehensive test suite."""
+    print("🚀 Starting Finviz MCP Server Comprehensive Tests")
     print("=" * 60)
     
     test_functions = [
-        ("基本セットアップ", test_basic_setup),
-        ("株式ファンダメンタルデータ", test_stock_fundamentals),
-        ("スクリーナー機能", test_screeners),
-        ("ニュース機能", test_news_functions),
-        ("パフォーマンス分析", test_performance_analysis)
+        ("Basic setup", test_basic_setup),
+        ("Stock fundamentals", test_stock_fundamentals),
+        ("Screener features", test_screeners),
+        ("News features", test_news_functions),
+        ("Performance analysis", test_performance_analysis)
     ]
     
     results = []
     total_tests = len(test_functions)
     
     for test_name, test_func in test_functions:
-        print(f"\n🔍 {test_name}テスト実行中...")
+        print(f"\n🔍 Running {test_name} tests...")
         try:
             result = test_func()
             results.append(result)
             if result:
-                print(f"✅ {test_name}テスト - 合格")
+                print(f"✅ {test_name} tests - Passed")
             else:
-                print(f"❌ {test_name}テスト - 不合格")
+                print(f"❌ {test_name} tests - Failed")
         except Exception as e:
-            print(f"💥 {test_name}テスト - 例外発生: {e}")
+            print(f"💥 {test_name} tests - Exception: {e}")
             results.append(False)
     
-    # 結果サマリー
+    # Results summary
     passed_tests = sum(results)
     print("\n" + "=" * 60)
-    print("📊 テスト結果サマリー")
+    print("📊 Test Results Summary")
     print("=" * 60)
-    print(f"合格テスト: {passed_tests}/{total_tests}")
-    print(f"成功率: {(passed_tests/total_tests)*100:.1f}%")
+    print(f"Passed tests: {passed_tests}/{total_tests}")
+    print(f"Pass rate: {(passed_tests/total_tests)*100:.1f}%")
     
     if passed_tests == total_tests:
-        print("\n🎉 すべてのテストが合格しました！")
-        print("Finviz MCP Serverはすべての機能が正常に動作しています。")
+        print("\n🎉 All tests passed!")
+        print("Finviz MCP Server is functioning correctly across all features.")
     else:
-        print(f"\n⚠️  {total_tests - passed_tests}個のテストが失敗しました。")
-        print("詳細なエラーログを確認してください。")
+        print(f"\n⚠️  {total_tests - passed_tests} tests failed.")
+        print("Review the detailed error logs.")
     
     return passed_tests == total_tests
 
 def main():
-    """メイン実行関数"""
+    """Main entry function."""
     success = run_comprehensive_test()
     return 0 if success else 1
 

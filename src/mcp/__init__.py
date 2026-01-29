@@ -58,7 +58,7 @@ class FastMCP:  # pylint: disable=too-few-public-methods
         """Return a decorator that leaves the function unchanged."""
         return _ToolDecorator()
 
-    # 以前追加した互換 run メソッドを削除し、元の状態に戻す
+    # Removed the previously added compatibility run method and restored original state
 
 
 # ----------------------------------------------------------------------------
