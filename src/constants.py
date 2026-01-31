@@ -1,6 +1,20 @@
 # Finviz Screening Parameters Constants
 # This file contains all valid parameter values for Finviz screening
 
+# Price Bar Timeframes for Quote API
+PRICE_BAR_TIMEFRAMES = {
+    'i5': '5 minutes',
+    'i15': '15 minutes',
+    'i30': '30 minutes',
+    'h': 'Hourly',
+    'd': 'Daily',
+    'w': 'Weekly',
+    'm': 'Monthly'
+}
+
+# Finviz Quote API URL for price bars
+FINVIZ_QUOTE_API_URL = "https://api.finviz.com/api/quote.ashx"
+
 # Exchange - exch
 EXCHANGE_VALUES = {
     '': 'Any',

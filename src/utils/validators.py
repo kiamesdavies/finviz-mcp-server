@@ -1,7 +1,7 @@
 import re
 import difflib
 from typing import Optional, List, Any, Dict, Union, Tuple
-from ..constants import ALL_PARAMETERS, SUBTHEME_VALUES
+from ..constants import ALL_PARAMETERS, SUBTHEME_VALUES, PRICE_BAR_TIMEFRAMES
 
 def validate_ticker(ticker: str) -> bool:
     """
@@ -156,6 +156,21 @@ def validate_subtheme(subtheme: str) -> bool:
     if not subtheme or not isinstance(subtheme, str):
         return False
     return subtheme.lower() in SUBTHEME_VALUES
+
+
+def validate_timeframe(timeframe: str) -> bool:
+    """
+    Validate a price bar timeframe.
+
+    Args:
+        timeframe: Timeframe code (i5, i15, i30, h, d, w, m)
+
+    Returns:
+        True if the timeframe is valid
+    """
+    if not timeframe or not isinstance(timeframe, str):
+        return False
+    return timeframe.lower() in PRICE_BAR_TIMEFRAMES
 
 
 def validate_sector(sector: str) -> bool:

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 from mcp.server.fastmcp import FastMCP
 from mcp.types import TextContent
 
-from .utils.validators import validate_ticker, validate_tickers, parse_tickers, validate_market_cap, validate_earnings_date, validate_price_range, validate_sector, validate_volume, validate_screening_params, validate_data_fields, validate_data_fields_with_suggestions, validate_subtheme
+from .utils.validators import validate_ticker, validate_tickers, parse_tickers, validate_market_cap, validate_earnings_date, validate_price_range, validate_sector, validate_volume, validate_screening_params, validate_data_fields, validate_data_fields_with_suggestions, validate_subtheme, validate_timeframe
 from .utils.formatters import format_large_number
 from .finviz_client.base import FinvizClient
 from .finviz_client.screener import FinvizScreener
@@ -435,6 +435,120 @@ def get_stock_fundamentals(
     except Exception as e:
         logger.error(f"Error in get_stock_fundamentals: {str(e)}")
         return [TextContent(type="text", text=f"Error: {str(e)}")]
+
+
+@server.tool()
+def get_price_bars(
+    ticker: str,
+    timeframe: str = "i15",
+    bars: int = 20,
+    include_extended: bool = False
+) -> List[TextContent]:
+    """
+    Get OHLCV price bars from Finviz Quote API
+
+    Args:
+        ticker: Stock ticker symbol (e.g., "NVDA", "AAPL")
+        timeframe: Bar timeframe - i5 (5min), i15 (15min), i30 (30min), h (hourly), d (daily), w (weekly), m (monthly)
+        bars: Number of bars to retrieve (default: 20, max varies by timeframe)
+        include_extended: Include extended hours data (default: False)
+
+    Returns:
+        CSV-formatted price bar data with columns: Time, Close, Open, High, Low, Volume
+    """
+    from .constants import PRICE_BAR_TIMEFRAMES
+    from datetime import datetime
+
+    try:
+        # Validate ticker
+        if not validate_ticker(ticker):
+            raise ValueError(f"Invalid ticker: {ticker}")
+
+        # Validate timeframe
+        if not validate_timeframe(timeframe):
+            valid_timeframes = ', '.join(PRICE_BAR_TIMEFRAMES.keys())
+            raise ValueError(f"Invalid timeframe: {timeframe}. Valid options: {valid_timeframes}")
+
+        # Validate bars count
+        if bars < 1 or bars > 1000:
+            raise ValueError(f"Invalid bars count: {bars}. Must be between 1 and 1000.")
+
+        # Get price bar data from client
+        data = finviz_client.get_price_bars(
+            ticker=ticker,
+            timeframe=timeframe,
+            bars=bars,
+            include_extended=include_extended
+        )
+
+        if not data:
+            return [TextContent(type="text", text=f"No price data found for {ticker.upper()}")]
+
+        # Extract arrays from response
+        dates = data.get('date', [])
+        opens = data.get('open', [])
+        highs = data.get('high', [])
+        lows = data.get('low', [])
+        closes = data.get('close', [])
+        volumes = data.get('volume', [])
+        prev_close = data.get('prevClose')
+
+        if not dates:
+            return [TextContent(type="text", text=f"No price bars returned for {ticker.upper()}")]
+
+        # Get timeframe description
+        timeframe_desc = PRICE_BAR_TIMEFRAMES.get(timeframe.lower(), timeframe)
+
+        # Format time range
+        first_time = dates[0] if dates else "N/A"
+        last_time = dates[-1] if dates else "N/A"
+
+        # Calculate current price and change from prev close
+        current_price = closes[-1] if closes else None
+        price_change_pct = None
+        if current_price is not None and prev_close is not None and prev_close != 0:
+            price_change_pct = ((current_price - prev_close) / prev_close) * 100
+
+        # Build header
+        output_lines = [
+            f"{ticker.upper()} | {timeframe_desc} bars | {len(dates)} bars | {first_time} - {last_time}"
+        ]
+
+        # Add prev close and change info
+        if prev_close is not None:
+            header_parts = [f"Prev Close: ${prev_close:.2f}"]
+            if current_price is not None:
+                header_parts.append(f"Current: ${current_price:.2f}")
+            if price_change_pct is not None:
+                change_str = f"+{price_change_pct:.2f}%" if price_change_pct >= 0 else f"{price_change_pct:.2f}%"
+                header_parts.append(f"Change: {change_str}")
+            output_lines.append(" | ".join(header_parts))
+
+        output_lines.append("=" * 60)
+
+        # CSV header (column order: Time, Close, Open, High, Low, Volume)
+        output_lines.append("Time,Close,Open,High,Low,Volume")
+
+        # Format each bar as CSV row
+        for i in range(len(dates)):
+            time_val = dates[i] if i < len(dates) else ""
+            close_val = f"{closes[i]:.2f}" if i < len(closes) and closes[i] is not None else ""
+            open_val = f"{opens[i]:.2f}" if i < len(opens) and opens[i] is not None else ""
+            high_val = f"{highs[i]:.2f}" if i < len(highs) and highs[i] is not None else ""
+            low_val = f"{lows[i]:.2f}" if i < len(lows) and lows[i] is not None else ""
+            vol_val = str(int(volumes[i])) if i < len(volumes) and volumes[i] is not None else ""
+
+            output_lines.append(f"{time_val},{close_val},{open_val},{high_val},{low_val},{vol_val}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except ValueError as e:
+        logger.error(f"Validation error in get_price_bars: {str(e)}")
+        raise e
+    except Exception as e:
+        logger.error(f"Error in get_price_bars: {str(e)}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+
 
 @server.tool()
 def get_multiple_stocks_fundamentals(

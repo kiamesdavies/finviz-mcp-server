@@ -136,6 +136,20 @@ get_moving_average_position(ticker="TSLA")
 
 ---
 
+## Price Bars (OHLCV)
+
+```python
+get_price_bars(ticker="NVDA")                              # Default: 15min bars, 20 bars
+get_price_bars(ticker="AAPL", timeframe="d", bars=5)       # Daily bars
+get_price_bars(ticker="TSLA", timeframe="h", bars=20)      # Hourly bars
+get_price_bars(ticker="META", timeframe="i5", bars=50, include_extended=True)  # 5min with extended hours
+```
+**Timeframes:** `i5` (5min) | `i15` (15min) | `i30` (30min) | `h` (hourly) | `d` (daily) | `w` (weekly) | `m` (monthly)
+
+**Output format:** CSV with columns `Time,Close,Open,High,Low,Volume` plus header showing prev close and change %
+
+---
+
 ## News
 
 ```python

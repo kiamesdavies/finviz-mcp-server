@@ -1776,3 +1776,72 @@ class FinvizClient:
         except Exception as e:
             logger.error(f"Error getting market overview: {e}")
             return {'error': str(e)}
+
+    def get_price_bars(
+        self,
+        ticker: str,
+        timeframe: str = "i15",
+        bars: int = 20,
+        include_extended: bool = False
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get OHLCV price bars from Finviz Quote API.
+
+        Args:
+            ticker: Stock ticker symbol
+            timeframe: Bar timeframe (i5, i15, i30, h, d, w, m)
+            bars: Number of bars to retrieve (default: 20)
+            include_extended: Include extended hours data (default: False)
+
+        Returns:
+            Dict with price bar data or None on error
+        """
+        from ..constants import FINVIZ_QUOTE_API_URL
+
+        try:
+            # Build request parameters
+            params = {
+                'ticker': ticker.upper(),
+                'timeframe': timeframe.lower(),
+                'barsCount': str(bars),
+                'instrument': 'stock'
+            }
+
+            # Add API key for authentication
+            if self.api_key:
+                params['auth'] = self.api_key
+            else:
+                env_api_key = os.getenv('FINVIZ_API_KEY')
+                if env_api_key:
+                    params['auth'] = env_api_key
+                else:
+                    logger.warning("No Finviz API key found - request may fail")
+
+            # Include extended hours if requested
+            if include_extended:
+                params['extended'] = '1'
+
+            logger.info(f"Fetching price bars for {ticker} ({timeframe}, {bars} bars)")
+            logger.debug(f"Quote API URL: {FINVIZ_QUOTE_API_URL}, params: {params}")
+
+            # Make the API request
+            response = self._make_request(FINVIZ_QUOTE_API_URL, params)
+
+            # Check for HTML response (error)
+            if response.text.startswith('<!DOCTYPE html>') or '<html' in response.text.lower():
+                logger.error(f"Received HTML instead of JSON from Quote API for {ticker}")
+                return None
+
+            # Parse JSON response
+            data = response.json()
+
+            if not data:
+                logger.warning(f"Empty response for {ticker}")
+                return None
+
+            logger.info(f"Successfully retrieved {len(data.get('date', []))} price bars for {ticker}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Error getting price bars for {ticker}: {e}")
+            return None
