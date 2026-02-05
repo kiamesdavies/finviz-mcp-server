@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from ..models import StockData, FINVIZ_FIELD_MAPPING
+from ..constants import FINVIZ_FIELD_ALIASES, FINVIZ_CANONICAL_TO_NORMALIZED
 
 # Load environment variables
 load_dotenv()
@@ -1306,9 +1307,12 @@ class FinvizClient:
                     # Numeric conversion
                     if isinstance(value, str):
                         cleaned_value = self._clean_numeric_value(value)
-                        setattr(stock_data, field, cleaned_value)
                     else:
-                        setattr(stock_data, field, float(value) if value != 0 else None)
+                        cleaned_value = float(value) if value != 0 else None
+                    if cleaned_value is not None and field in ['avg_volume', 'average_volume']:
+                        # Finviz export average volume is reported in thousands
+                        cleaned_value = cleaned_value * 1000
+                    setattr(stock_data, field, cleaned_value)
         
         # Set string fields (extended)
         string_fields = {
@@ -1501,13 +1505,17 @@ class FinvizClient:
                     # Preserve empty values to keep structure consistent
                     field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                     result[field_name] = None
+
+            # Normalize average volume (Finviz export uses thousands)
+            if 'average_volume' in result and isinstance(result['average_volume'], (int, float)):
+                result['average_volume'] = result['average_volume'] * 1000
             
             # Always include basic info
             result['ticker'] = ticker
             
             # Return only requested fields
             if data_fields:
-                # Field alias mapping
+                # Field alias mapping (legacy -> canonical)
                 field_aliases = {
                     'roi': 'roic',  # Return on Invested Capital
                     'debt_equity': 'debt_to_equity',  # Total Debt/Equity
@@ -1519,26 +1527,29 @@ class FinvizClient:
                 
                 filtered_result = {}
                 for field in data_fields:
-                    # Resolve alias
+                    # Resolve legacy aliases first
                     actual_field = field_aliases.get(field, field)
-                    
-                    # Normalize field name
-                    normalized_field = actual_field.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
+                    # Resolve normalized CSV aliases to canonical keys
+                    canonical_field = FINVIZ_FIELD_ALIASES.get(actual_field, actual_field)
+                    # Resolve canonical to normalized CSV header
+                    normalized_field = FINVIZ_CANONICAL_TO_NORMALIZED.get(canonical_field, canonical_field)
                     
                     if normalized_field in result:
                         filtered_result[field] = result[normalized_field]
+                    elif canonical_field in result:
+                        filtered_result[field] = result[canonical_field]
                     elif actual_field in result:
                         filtered_result[field] = result[actual_field]
                     else:
                         # Partial match search
                         found = False
                         for key in result.keys():
-                            if actual_field.lower() in key.lower() or key.lower() in actual_field.lower():
+                            if canonical_field.lower() in key.lower() or key.lower() in canonical_field.lower():
                                 filtered_result[field] = result[key]
                                 found = True
                                 break
                         if not found:
-                            logger.warning(f"Field '{field}' (mapped to '{actual_field}') not found for {ticker}")
+                            logger.warning(f"Field '{field}' (mapped to '{canonical_field}') not found for {ticker}")
                             filtered_result[field] = None
                 
                 return filtered_result
@@ -1635,6 +1646,10 @@ class FinvizClient:
                             # Preserve empty values to keep structure consistent
                             field_name = col.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
                             result[field_name] = None
+
+                    # Normalize average volume (Finviz export uses thousands)
+                    if 'average_volume' in result and isinstance(result['average_volume'], (int, float)):
+                        result['average_volume'] = result['average_volume'] * 1000
                     
                     # Ensure ticker info is included
                     if 'ticker' in result and result['ticker']:
@@ -1650,7 +1665,7 @@ class FinvizClient:
                     
                     # Return only requested fields
                     if data_fields:
-                        # Field alias mapping
+                        # Field alias mapping (legacy -> canonical)
                         field_aliases = {
                             'roi': 'roic',  # Return on Invested Capital
                             'debt_equity': 'debt_to_equity',  # Total Debt/Equity
@@ -1662,26 +1677,29 @@ class FinvizClient:
                         
                         filtered_result = {'ticker': result['ticker']}  # Always include ticker
                         for field in data_fields:
-                            # Resolve alias
+                            # Resolve legacy aliases first
                             actual_field = field_aliases.get(field, field)
-                            
-                            # Normalize field name
-                            normalized_field = actual_field.lower().replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace('.', '').replace('-', '_').replace('%', 'percent')
+                            # Resolve normalized CSV aliases to canonical keys
+                            canonical_field = FINVIZ_FIELD_ALIASES.get(actual_field, actual_field)
+                            # Resolve canonical to normalized CSV header
+                            normalized_field = FINVIZ_CANONICAL_TO_NORMALIZED.get(canonical_field, canonical_field)
                             
                             if normalized_field in result:
                                 filtered_result[field] = result[normalized_field]
+                            elif canonical_field in result:
+                                filtered_result[field] = result[canonical_field]
                             elif actual_field in result:
                                 filtered_result[field] = result[actual_field]
                             else:
                                 # Partial match search
                                 found = False
                                 for key in result.keys():
-                                    if actual_field.lower() in key.lower() or key.lower() in actual_field.lower():
+                                    if canonical_field.lower() in key.lower() or key.lower() in canonical_field.lower():
                                         filtered_result[field] = result[key]
                                         found = True
                                         break
                                 if not found:
-                                    logger.warning(f"Field '{field}' (mapped to '{actual_field}') not found for {result.get('ticker', f'row {idx}')}")
+                                    logger.warning(f"Field '{field}' (mapped to '{canonical_field}') not found for {result.get('ticker', f'row {idx}')}")
                                     filtered_result[field] = None
                         
                         results.append(filtered_result)

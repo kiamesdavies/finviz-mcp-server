@@ -132,7 +132,9 @@ get_multiple_stocks_fundamentals(tickers=["AAPL", "MSFT", "NVDA"])
 get_moving_average_position(ticker="TSLA")
 ```
 
-**Common fields:** `price`, `market_cap`, `p_e`, `forward_p_e`, `eps_ttm`, `dividend_yield`, `performance_week`, `performance_month`, `relative_strength_index_14`, `beta`, `eps_surprise`, `revenue_surprise`
+**Common fields:** `price`, `market_cap`, `p_e`, `forward_p_e`, `eps_ttm`, `dividend_yield`, `performance_week`, `performance_month`, `rsi`, `relative_strength_index_14`, `beta`, `avg_true_range`, `volatility_week`, `volatility_month`, `sma_20`, `sma_50`, `sma_200`, `relative_volume`, `avg_volume`, `eps_surprise`, `revenue_surprise`
+
+**Volume normalization:** `avg_volume` values are returned in shares (Finviz exports average volume in thousands; the server scales it up).
 
 ---
 
@@ -193,6 +195,8 @@ describe_field(field_name="eps_surprise")
 search_fields(keyword="growth")
 validate_fields(field_names=["price", "p_e", "invalid_field"])
 ```
+
+**Field aliases:** `describe_field` and `validate_fields` accept normalized CSV header aliases in addition to canonical keys. Examples: `p_e` → `pe_ratio`, `forward_p_e` → `forward_pe`, `book_sh` → `book_value_per_share`, `eps_ttm` → `eps`, `average_volume` → `avg_volume`, `20_day_simple_moving_average` → `sma_20`.
 
 ---
 

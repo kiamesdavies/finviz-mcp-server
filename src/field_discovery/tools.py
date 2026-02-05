@@ -29,10 +29,10 @@ except Exception:  # pragma: no cover – testing environments without mcp
 
 # Import field mapping from constants
 try:
-    from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+    from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
 except ImportError:
     try:
-        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
     except ImportError:
         # Fallback minimal mapping for testing (using fake 128 fields for test compliance)
         # Include all test-required fields
@@ -62,6 +62,7 @@ except ImportError:
         
         for i in range(128 - len(FINVIZ_COMPREHENSIVE_FIELD_MAPPING)):
             FINVIZ_COMPREHENSIVE_FIELD_MAPPING[f'test_field_{i}'] = {'csv_name': f'Test Field {i}', 'column_id': 100 + i}
+        FINVIZ_FIELD_ALIASES = {}
 
 
 def list_available_fields() -> List[TextContent]:
@@ -90,7 +91,8 @@ def list_available_fields() -> List[TextContent]:
             "performance_6m", "performance_1y", "performance_ytd"
         ],
         "Technical Indicators": [
-            "rsi", "beta", "volatility", "sma20", "sma50", "sma200", "relative_volume"
+            "rsi", "beta", "avg_true_range", "volatility_week", "volatility_month",
+            "sma_20", "sma_50", "sma_200", "relative_volume"
         ],
         "Fundamental Data": [
             "eps_ttm", "revenue", "profit_margin", "roe", "debt_equity", 
@@ -175,7 +177,8 @@ def get_field_categories() -> List[TextContent]:
         "technical": {
             "name": "Technical Indicators",
             "icon": "🔧",
-            "fields": ["rsi", "beta", "volatility", "sma20", "sma50", "sma200", "relative_volume"]
+            "fields": ["rsi", "beta", "avg_true_range", "volatility_week", "volatility_month",
+                      "sma_20", "sma_50", "sma_200", "relative_volume"]
         },
         "fundamental": {
             "name": "Fundamental Data",
@@ -239,28 +242,34 @@ def describe_field(field_name: str) -> List[TextContent]:
         Detailed field information including description, data type,
         format, and usage examples
     """
-    # Check if field exists in mapping
+    original_field = field_name
+    alias_target = None
+    # Check if field exists in mapping (or is an alias)
     if field_name not in FINVIZ_COMPREHENSIVE_FIELD_MAPPING:
-        # Suggest similar fields
-        similar_fields = []
-        for existing_field in FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys():
-            if field_name.lower() in existing_field.lower() or existing_field.lower() in field_name.lower():
-                similar_fields.append(existing_field)
-        
-        output_lines = [
-            f"❌ Field '{field_name}' not found",
-            "",
-            "💡 Similar fields available:",
-        ]
-        
-        if similar_fields:
-            for field in similar_fields[:5]:
-                output_lines.append(f"  • {field}")
+        if field_name in FINVIZ_FIELD_ALIASES:
+            alias_target = FINVIZ_FIELD_ALIASES[field_name]
+            field_name = alias_target
         else:
-            output_lines.append("  • No similar fields found")
-            output_lines.append("  • Use search_fields() to find fields by keyword")
-        
-        return [TextContent(type="text", text="\n".join(output_lines))]
+            # Suggest similar fields
+            similar_fields = []
+            for existing_field in FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys():
+                if field_name.lower() in existing_field.lower() or existing_field.lower() in field_name.lower():
+                    similar_fields.append(existing_field)
+            
+            output_lines = [
+                f"❌ Field '{field_name}' not found",
+                "",
+                "💡 Similar fields available:",
+            ]
+            
+            if similar_fields:
+                for field in similar_fields[:5]:
+                    output_lines.append(f"  • {field}")
+            else:
+                output_lines.append("  • No similar fields found")
+                output_lines.append("  • Use search_fields() to find fields by keyword")
+            
+            return [TextContent(type="text", text="\n".join(output_lines))]
     
     # Get field metadata
     field_info = FINVIZ_COMPREHENSIVE_FIELD_MAPPING[field_name]
@@ -349,6 +358,8 @@ def describe_field(field_name: str) -> List[TextContent]:
         f"  {desc['format']}",
         "",
     ]
+    if alias_target:
+        output_lines.insert(3, f"  • Alias: {original_field} → {alias_target}")
     
     # Add interpretation section
     if "interpretation" in desc and desc["interpretation"]:
@@ -400,7 +411,8 @@ def search_fields(keyword: str, category: Optional[str] = None) -> List[TextCont
                      "forward_pe", "price_to_cash", "price_to_free_cash_flow"],
         "performance": ["performance_1w", "performance_1m", "performance_3m", 
                        "performance_6m", "performance_1y", "performance_ytd"],
-        "technical": ["rsi", "beta", "volatility", "sma20", "sma50", "sma200", "relative_volume"],
+        "technical": ["rsi", "beta", "avg_true_range", "volatility_week", "volatility_month",
+                      "sma_20", "sma_50", "sma_200", "relative_volume"],
         "fundamental": ["eps_ttm", "revenue", "profit_margin", "roe", "debt_equity", 
                        "current_ratio", "book_value_per_share", "cash_per_share"],
         "earnings": ["eps_growth_qtr", "eps_growth_this_y", "sales_growth_qtr", "earnings_date", "dividend_growth"],
@@ -420,7 +432,9 @@ def search_fields(keyword: str, category: Optional[str] = None) -> List[TextCont
     # Search in CSV names (display names)
     for field, field_info in FINVIZ_COMPREHENSIVE_FIELD_MAPPING.items():
         csv_name = field_info.get('csv_name', '')
-        if keyword_lower in csv_name.lower() and field not in matching_fields:
+        csv_lower = csv_name.lower()
+        keyword_alt = keyword_lower.replace('_', ' ')
+        if (keyword_lower in csv_lower or keyword_alt in csv_lower) and field not in matching_fields:
             matching_fields.append(field)
     
     # Apply category filter if provided
@@ -519,6 +533,7 @@ def validate_fields(field_names: List[str]) -> List[TextContent]:
     valid_fields = []
     invalid_fields = []
     suggestions = {}
+    alias_used = {}
     
     # Define common typos and corrections
     common_corrections = {
@@ -536,6 +551,9 @@ def validate_fields(field_names: List[str]) -> List[TextContent]:
     for field in field_names:
         if field in all_fields:
             valid_fields.append(field)
+        elif field in FINVIZ_FIELD_ALIASES:
+            valid_fields.append(field)
+            alias_used[field] = FINVIZ_FIELD_ALIASES[field]
         else:
             invalid_fields.append(field)
             
@@ -581,7 +599,9 @@ def validate_fields(field_names: List[str]) -> List[TextContent]:
             field_info = FINVIZ_COMPREHENSIVE_FIELD_MAPPING.get(field, {})
             csv_name = field_info.get('csv_name', field)
             output_lines.append(f"  ✓ {field}")
-            if csv_name != field:
+            if field in alias_used:
+                output_lines.append(f"    ↳ Alias for: {alias_used[field]}")
+            elif csv_name != field:
                 output_lines.append(f"    ↳ Display: {csv_name}")
         output_lines.append("")
     

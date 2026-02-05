@@ -94,7 +94,7 @@ def format_field_value(field: str, value: Any) -> str:
         return f"{value:.2f}%" if isinstance(value, (int, float)) else str(value)
     
     # Volume fields
-    if field in ['volume', 'avg_volume']:
+    if field in ['volume', 'avg_volume', 'average_volume']:
         return format_large_number(value) if isinstance(value, (int, float)) else str(value)
     
     # Ratio fields

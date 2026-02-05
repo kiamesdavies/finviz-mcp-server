@@ -416,15 +416,16 @@ def validate_data_fields(fields: List[str]) -> List[str]:
     """
     # Load valid fields dynamically from FINVIZ_COMPREHENSIVE_FIELD_MAPPING in constants.py
     try:
-        from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+        from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
     except ImportError:
         # When running directly
         import sys
         import os
         sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
     
     valid_fields = set(FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys())
+    valid_fields.update(FINVIZ_FIELD_ALIASES.keys())
     
     # Additional valid fields (for backward compatibility)
     additional_valid_fields = {
@@ -492,15 +493,16 @@ def validate_data_fields_with_suggestions(fields: List[str]) -> Tuple[List[str],
     """
     # Load valid fields dynamically from FINVIZ_COMPREHENSIVE_FIELD_MAPPING in constants.py
     try:
-        from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+        from ..constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
     except ImportError:
         # When running directly
         import sys
         import os
         sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING
+        from constants import FINVIZ_COMPREHENSIVE_FIELD_MAPPING, FINVIZ_FIELD_ALIASES
 
     valid_fields = set(FINVIZ_COMPREHENSIVE_FIELD_MAPPING.keys())
+    valid_fields.update(FINVIZ_FIELD_ALIASES.keys())
 
     # Additional valid fields (for backward compatibility)
     additional_valid_fields = {

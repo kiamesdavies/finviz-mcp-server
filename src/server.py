@@ -307,7 +307,9 @@ def get_stock_fundamentals(
             if value is not None:
                 if key == 'Price' and isinstance(value, (int, float)):
                     output_lines.append(f"{key:15}: ${value:.2f}")
-                elif key in ['Volume', 'Avg Volume'] and isinstance(value, (int, float)):
+                elif key == 'Avg Volume' and isinstance(value, (int, float)):
+                    output_lines.append(f"{key:15}: {format_large_number(value)}")
+                elif key == 'Volume' and isinstance(value, (int, float)):
                     output_lines.append(f"{key:15}: {value:,}")
                 elif key == 'Market Cap' and isinstance(value, (int, float)):
                     # Market cap data is stored in millions, multiply by 1M for conversion
@@ -405,7 +407,7 @@ def get_stock_fundamentals(
             for key, value in technical_data.items():
                 if value is not None:
                     if key in ['52W High', '52W Low'] and isinstance(value, (int, float)):
-                        output_lines.append(f"{key:15}: ${value:.2f}")
+                        output_lines.append(f"{key:15}: {value:.2f}%")
                     elif isinstance(value, (int, float)):
                         output_lines.append(f"{key:15}: {value:.2f}")
                     else:
@@ -2539,7 +2541,10 @@ def _format_earnings_winners_list(results: List, params: Dict[str, Any]) -> List
             if stock.sales_qoq_growth or stock.sales_growth_qtr:
                 sales_growth = safe_float(stock.sales_qoq_growth or stock.sales_growth_qtr)
                 metrics.append(f"Sales QoQ: {sales_growth:.1f}%")
-            if stock.volume and stock.avg_volume and safe_float(stock.avg_volume) > 0:
+            if stock.relative_volume:
+                rel_vol = safe_float(stock.relative_volume)
+                metrics.append(f"Relative Volume: {rel_vol:.1f}x")
+            elif stock.volume and stock.avg_volume and safe_float(stock.avg_volume) > 0:
                 rel_vol = safe_float(stock.volume) / safe_float(stock.avg_volume)
                 metrics.append(f"Relative Volume: {rel_vol:.1f}x")
             if stock.pe_ratio:
